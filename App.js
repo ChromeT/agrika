@@ -79,9 +79,78 @@ function getYieldInfo(nama) {
   return { bdd: 1.0, cookingYield: 1.0, category: 'Lainnya' };
 }
 
-function getIngredientGizi(nama, qty) {
+function getIngredientGramsPerUnit(nama, unitName) {
+  const u = (unitName || '').toLowerCase().trim();
+  const nameLower = (nama || '').toLowerCase();
+  
+  if (nameLower.includes('telur')) {
+    return 60;
+  } else if (nameLower.includes('jeruk')) {
+    return 100;
+  } else if (nameLower.includes('pisang')) {
+    return 80;
+  } else if (nameLower.includes('salak')) {
+    return 70;
+  } else if (nameLower.includes('tahu') || nameLower.includes('tempe')) {
+    return 50;
+  } else if (nameLower.includes('kentang') || nameLower.includes('singkong') || nameLower.includes('apel') || nameLower.includes('pear')) {
+    return 150;
+  }
+  
+  if (u.includes('butir')) return 60;
+  if (u.includes('potong')) return 50;
+  if (u.includes('buah')) return 100;
+  
+  return 100;
+}
+
+function getIngredientWeightInGrams(nama, qty, unit) {
+  const q = parseFloat(qty) || 0;
+  const u = (unit || '').toLowerCase().trim();
+  if (u === 'g' || u === 'gram' || u === '') {
+    return q;
+  }
+  return q * getIngredientGramsPerUnit(nama, u);
+}
+
+function calculateIngredientCost(nama, qtyPerPorsi, recipeUnit, price, priceUnit) {
+  const rUnit = (recipeUnit || 'g').toLowerCase().trim();
+  const pUnit = (priceUnit || 'kg').toLowerCase().trim();
+  
+  const yieldInfo = getYieldInfo(nama);
+  const bddVal = yieldInfo.bdd || 1.0;
+  const grossQty = qtyPerPorsi / bddVal;
+  
+  if (rUnit === pUnit) {
+    return grossQty * price;
+  }
+  
+  const isRecipeWeight = (rUnit === 'g' || rUnit === 'gram');
+  const isPriceWeight = (pUnit === 'kg' || pUnit === 'liter');
+  
+  if (isRecipeWeight && isPriceWeight) {
+    return (grossQty / 1000) * price;
+  }
+  
+  if (isRecipeWeight && !isPriceWeight) {
+    const gramsPerPiece = getIngredientGramsPerUnit(nama, pUnit);
+    const piecesCount = grossQty / gramsPerPiece;
+    return piecesCount * price;
+  }
+  
+  if (!isRecipeWeight && isPriceWeight) {
+    const gramsPerPiece = getIngredientGramsPerUnit(nama, rUnit);
+    const grossGrams = grossQty * gramsPerPiece;
+    return (grossGrams / 1000) * price;
+  }
+  
+  return grossQty * price;
+}
+
+function getIngredientGizi(nama, qty, unit) {
   if (!nama) return { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
   
+  const qtyInGrams = getIngredientWeightInGrams(nama, qty, unit);
   const cleanName = nama.split('(')[0].trim().toLowerCase();
   
   let found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanName);
@@ -100,7 +169,7 @@ function getIngredientGizi(nama, qty) {
     return { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
   }
   
-  const factor = qty / 100;
+  const factor = qtyInGrams / 100;
   return {
     kalori: (found.kalori || 0) * factor,
     protein: (found.protein || 0) * factor,
@@ -717,17 +786,7 @@ export default function App() {
     const info = ingredientPrices[nama] || DEFAULT_INGREDIENT_PRICES[nama];
     if (!info) return 0;
     
-    const price = info.price; // price per kg or per liter or per unit
-    const priceUnit = info.unit; // 'kg', 'liter', 'butir', 'buah'
-    
-    // Hitung berat kotor belanja (Gross) berdasarkan BDD
-    const yieldInfo = getYieldInfo(nama);
-    const grossQty = qtyPerPorsi / yieldInfo.bdd;
-    
-    if (priceUnit === 'kg' || priceUnit === 'liter') {
-      return (grossQty / 1000) * price;
-    }
-    return grossQty * price;
+    return calculateIngredientCost(nama, qtyPerPorsi, unit, info.price, info.unit);
   };
 
   const getMenuCostPerPortion = (item) => {
@@ -781,7 +840,7 @@ export default function App() {
     
     let total = { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
     if (recipe.utama && recipe.utama.nama) {
-      const g = getIngredientGizi(recipe.utama.nama, recipe.utama.qty);
+      const g = getIngredientGizi(recipe.utama.nama, recipe.utama.qty, recipe.utama.unit);
       total.kalori += g.kalori;
       total.protein += g.protein;
       total.karbo += g.karbo;
@@ -791,7 +850,7 @@ export default function App() {
     if (recipe.pelengkap) {
       recipe.pelengkap.forEach(ing => {
         if (ing.nama) {
-          const g = getIngredientGizi(ing.nama, ing.qty);
+          const g = getIngredientGizi(ing.nama, ing.qty, ing.unit);
           total.kalori += g.kalori;
           total.protein += g.protein;
           total.karbo += g.karbo;
@@ -2654,22 +2713,16 @@ export default function App() {
           return info ? info.unit : 'kg';
         };
 
-        const getSingleCost = (name, qty) => {
+        const getSingleCost = (name, qty, unit) => {
           const price = getPrice(name);
           const priceUnit = getPriceUnit(name);
-          const yieldInfo = getYieldInfo(name);
-          const grossQty = qty / yieldInfo.bdd;
-          
-          if (priceUnit === 'kg' || priceUnit === 'liter') {
-            return (grossQty / 1000) * price;
-          }
-          return grossQty * price;
+          return calculateIngredientCost(name, qty, unit, price, priceUnit);
         };
 
-        cost += getSingleCost(parsedUtama.nama, parsedUtama.qty);
+        cost += getSingleCost(parsedUtama.nama, parsedUtama.qty, parsedUtama.unit);
         parsedPelengkap.forEach(p => {
           if (p.nama.trim() !== '') {
-            cost += getSingleCost(p.nama, p.qty);
+            cost += getSingleCost(p.nama, p.qty, p.unit);
           }
         });
       }
@@ -2698,10 +2751,7 @@ export default function App() {
       const price = parseFloat(pInfo.price) || 0;
       const priceUnit = pInfo.unit;
       
-      if (priceUnit === 'kg' || priceUnit === 'liter') {
-        return (qty / 1000) * price;
-      }
-      return qty * price;
+      return calculateIngredientCost(name, qty, unitStr, price, priceUnit);
     };
     
     previewPrice += getPreviewIngCost(editRecipeUtama.nama, editRecipeUtama.qty, editRecipeUtama.unit);
@@ -2981,9 +3031,9 @@ export default function App() {
                 const getPreviewRecipeGizi = () => {
                   let gizi = { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
                   
-                  const addIngGizi = (name, qtyStr) => {
+                  const addIngGizi = (name, qtyStr, unitStr) => {
                     const qty = parseFloat(qtyStr) || 0;
-                    const itemG = getIngredientGizi(name, qty);
+                    const itemG = getIngredientGizi(name, qty, unitStr);
                     gizi.kalori += itemG.kalori;
                     gizi.protein += itemG.protein;
                     gizi.karbo += itemG.karbo;
@@ -2992,11 +3042,11 @@ export default function App() {
                   };
 
                   if (editRecipeUtama.nama.trim() !== '') {
-                    addIngGizi(editRecipeUtama.nama, editRecipeUtama.qty);
+                    addIngGizi(editRecipeUtama.nama, editRecipeUtama.qty, editRecipeUtama.unit);
                   }
                   editRecipePelengkap.forEach(p => {
                     if (p.nama.trim() !== '') {
-                      addIngGizi(p.nama, p.qty);
+                      addIngGizi(p.nama, p.qty, p.unit);
                     }
                   });
 
