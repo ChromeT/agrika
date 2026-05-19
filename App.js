@@ -21,9 +21,9 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { generateSPPGHtml } from './pdfTemplate';
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  DATABASE KAMUS GIZI TKPI KEMENKES (90+ ITEMS)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 const TKPI_DATABASE = [
   // Karbohidrat / Staples
   { nama: 'Beras Giling (Mentah)', kat: 'karbo', icon: 'food-variant', kalori: 360, protein: 6.8, karbo: 78.9, lemak: 0.7, serat: 0.4, mbgStatus: 'aman', mbgNotes: 'Bahan pokok segar lokal.' },
@@ -35,111 +35,111 @@ const TKPI_DATABASE = [
   { nama: 'Ubi Jalar Merah Segar', kat: 'karbo', icon: 'food-variant', kalori: 123, protein: 1.8, karbo: 27.9, lemak: 0.4, serat: 1.2, mbgStatus: 'aman', mbgNotes: 'Ubi manis kaya vitamin A.' },
   { nama: 'Ubi Jalar Kuning Segar', kat: 'karbo', icon: 'food-variant', kalori: 115, protein: 1.6, karbo: 26.5, lemak: 0.3, serat: 1.1, mbgStatus: 'aman', mbgNotes: 'Ubi kuning segar manis.' },
   { nama: 'Talas Bogor Kukus', kat: 'karbo', icon: 'food-variant', kalori: 120, protein: 1.5, karbo: 28.2, lemak: 0.2, serat: 0.9, mbgStatus: 'aman', mbgNotes: 'Talas kukus lokal.' },
-  { nama: 'Jagung Pipil Kuning', kat: 'karbo', icon: 'ðŸŒ½', kalori: 366, protein: 9.8, karbo: 73.7, lemak: 4.7, serat: 2.8, mbgStatus: 'aman', mbgNotes: 'Jagung kuning pipil segar.' },
-  { nama: 'Jagung Manis Rebus', kat: 'karbo', icon: 'ðŸŒ½', kalori: 96, protein: 3.4, karbo: 21.0, lemak: 1.5, serat: 0.8, mbgStatus: 'aman', mbgNotes: 'Jagung manis rebus segar.' },
-  { nama: 'Roti Tawar Putih', kat: 'karbo', icon: 'ðŸž', kalori: 248, protein: 8.0, karbo: 50.0, lemak: 1.2, serat: 2.0, mbgStatus: 'dibatasi', mbgNotes: 'Gunakan produk lokal tanpa bahan pengawet berlebih.' },
-  { nama: 'Roti Gandum', kat: 'karbo', icon: 'ðŸž', kalori: 215, protein: 9.0, karbo: 43.0, lemak: 2.5, serat: 4.2, mbgStatus: 'aman', mbgNotes: 'Roti gandum kaya serat.' },
-  { nama: 'Tepung Terigu', kat: 'karbo', icon: 'ðŸ¥–', kalori: 365, protein: 8.9, karbo: 77.3, lemak: 1.3, serat: 0.3, mbgStatus: 'aman', mbgNotes: 'Bahan penolong adonan masakan.' },
-  { nama: 'Tepung Tapioka', kat: 'karbo', icon: 'ðŸ¥–', kalori: 362, protein: 0.5, karbo: 86.9, lemak: 0.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Tepung pati singkong lokal.' },
-  { nama: 'Tepung Beras', kat: 'karbo', icon: 'ðŸ¥–', kalori: 353, protein: 7.0, karbo: 80.0, lemak: 0.5, serat: 0.2, mbgStatus: 'aman', mbgNotes: 'Tepung beras murni.' },
-  { nama: 'Bihun Jagung / Kering', kat: 'karbo', icon: 'ðŸ', kalori: 360, protein: 4.8, karbo: 82.0, lemak: 0.5, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Bihun kering lokal.' },
-  { nama: 'Mie Basah Segar', kat: 'karbo', icon: 'ðŸ', kalori: 86, protein: 0.6, karbo: 14.0, lemak: 3.3, serat: 0.1, mbgStatus: 'aman', mbgNotes: 'Mie basah buatan lokal UMKM tanpa pengawet.' },
-  { nama: 'Sagu Aren', kat: 'karbo', icon: 'ðŸ¥¯', kalori: 355, protein: 0.6, karbo: 84.7, lemak: 0.4, serat: 0.6, mbgStatus: 'aman', mbgNotes: 'Sagu aren murni lokal.' },
+  { nama: 'Jagung Pipil Kuning', kat: 'karbo', icon: '🌽', kalori: 366, protein: 9.8, karbo: 73.7, lemak: 4.7, serat: 2.8, mbgStatus: 'aman', mbgNotes: 'Jagung kuning pipil segar.' },
+  { nama: 'Jagung Manis Rebus', kat: 'karbo', icon: '🌽', kalori: 96, protein: 3.4, karbo: 21.0, lemak: 1.5, serat: 0.8, mbgStatus: 'aman', mbgNotes: 'Jagung manis rebus segar.' },
+  { nama: 'Roti Tawar Putih', kat: 'karbo', icon: '🍞', kalori: 248, protein: 8.0, karbo: 50.0, lemak: 1.2, serat: 2.0, mbgStatus: 'dibatasi', mbgNotes: 'Gunakan produk lokal tanpa bahan pengawet berlebih.' },
+  { nama: 'Roti Gandum', kat: 'karbo', icon: '🍞', kalori: 215, protein: 9.0, karbo: 43.0, lemak: 2.5, serat: 4.2, mbgStatus: 'aman', mbgNotes: 'Roti gandum kaya serat.' },
+  { nama: 'Tepung Terigu', kat: 'karbo', icon: '🥖', kalori: 365, protein: 8.9, karbo: 77.3, lemak: 1.3, serat: 0.3, mbgStatus: 'aman', mbgNotes: 'Bahan penolong adonan masakan.' },
+  { nama: 'Tepung Tapioka', kat: 'karbo', icon: '🥖', kalori: 362, protein: 0.5, karbo: 86.9, lemak: 0.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Tepung pati singkong lokal.' },
+  { nama: 'Tepung Beras', kat: 'karbo', icon: '🥖', kalori: 353, protein: 7.0, karbo: 80.0, lemak: 0.5, serat: 0.2, mbgStatus: 'aman', mbgNotes: 'Tepung beras murni.' },
+  { nama: 'Bihun Jagung / Kering', kat: 'karbo', icon: '🍝', kalori: 360, protein: 4.8, karbo: 82.0, lemak: 0.5, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Bihun kering lokal.' },
+  { nama: 'Mie Basah Segar', kat: 'karbo', icon: '🍝', kalori: 86, protein: 0.6, karbo: 14.0, lemak: 3.3, serat: 0.1, mbgStatus: 'aman', mbgNotes: 'Mie basah buatan lokal UMKM tanpa pengawet.' },
+  { nama: 'Sagu Aren', kat: 'karbo', icon: '🥯', kalori: 355, protein: 0.6, karbo: 84.7, lemak: 0.4, serat: 0.6, mbgStatus: 'aman', mbgNotes: 'Sagu aren murni lokal.' },
 
   // Protein Hewani (Segar & Awetan)
-  { nama: 'Daging Sapi Segar (Lemak Sedang)', kat: 'protein', icon: 'ðŸ¥©', kalori: 201, protein: 18.8, karbo: 0, lemak: 14.0, serat: 0, mbgStatus: 'aman', mbgNotes: 'Daging sapi lokal segar.' },
-  { nama: 'Daging Sapi Lemak Tinggi', kat: 'protein', icon: 'ðŸ¥©', kalori: 250, protein: 16.0, karbo: 0, lemak: 20.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Mengandung lemak jenuh tinggi. Batasi porsi.' },
-  { nama: 'Daging Kambing Segar', kat: 'protein', icon: 'ðŸ¥©', kalori: 154, protein: 16.6, karbo: 0, lemak: 9.4, serat: 0, mbgStatus: 'aman', mbgNotes: 'Daging kambing lokal segar.' },
-  { nama: 'Daging Ayam Fillet (Dada)', kat: 'protein', icon: 'ðŸ—', kalori: 110, protein: 23.0, karbo: 0, lemak: 1.2, serat: 0, mbgStatus: 'aman', mbgNotes: 'Sangat baik untuk pertumbuhan otot anak.' },
-  { nama: 'Daging Ayam (Paha dengan kulit)', kat: 'protein', icon: 'ðŸ—', kalori: 245, protein: 18.2, karbo: 0, lemak: 19.0, serat: 0, mbgStatus: 'aman', mbgNotes: 'Daging ayam bagian paha segar.' },
-  { nama: 'Hati Sapi Segar', kat: 'protein', icon: 'ðŸ–', kalori: 136, protein: 19.7, karbo: 6.0, lemak: 3.2, serat: 0, mbgStatus: 'aman', mbgNotes: 'Kaya zat besi, sangat baik mencegah anemia.' },
-  { nama: 'Hati Ayam Broiler', kat: 'protein', icon: 'ðŸ–', kalori: 139, protein: 22.4, karbo: 0.9, lemak: 4.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Sumber gizi mikro yang murah dan bergizi.' },
-  { nama: 'Ampela Ayam Segar', kat: 'protein', icon: 'ðŸ–', kalori: 94, protein: 17.5, karbo: 0, lemak: 2.1, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ampela ayam segar.' },
-  { nama: 'Telur Ayam Negeri', kat: 'protein', icon: 'ðŸ¥š', kalori: 154, protein: 12.4, karbo: 0.7, lemak: 10.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Pastikan dimasak matang sempurna untuk cegah Salmonella.' },
-  { nama: 'Telur Ayam Kampung', kat: 'protein', icon: 'ðŸ¥š', kalori: 162, protein: 12.8, karbo: 0.8, lemak: 11.5, serat: 0, mbgStatus: 'aman', mbgNotes: 'Telur ayam kampung murni.' },
-  { nama: 'Telur Bebek Segar', kat: 'protein', icon: 'ðŸ¥š', kalori: 189, protein: 13.1, karbo: 0.8, lemak: 14.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Telur bebek segar.' },
-  { nama: 'Telur Puyuh Segar', kat: 'protein', icon: 'ðŸ¥š', kalori: 168, protein: 12.7, karbo: 1.0, lemak: 12.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Kolesterol tinggi. Batasi konsumsi mingguan anak.' },
-  { nama: 'Ikan Lele Segar', kat: 'protein', icon: 'ðŸŸ', kalori: 105, protein: 14.8, karbo: 0, lemak: 4.4, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ikan lele segar lokal, murah dan disukai anak.' },
-  { nama: 'Ikan Kembung Segar', kat: 'protein', icon: 'ðŸŸ', kalori: 109, protein: 18.6, karbo: 0, lemak: 3.4, serat: 0, mbgStatus: 'aman', mbgNotes: 'Mengandung Omega-3 tinggi setara ikan salmon.' },
-  { nama: 'Ikan Mas Segar', kat: 'protein', icon: 'ðŸŸ', kalori: 86, protein: 16.0, karbo: 0, lemak: 2.0, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ikan mas lokal segar.' },
-  { nama: 'Ikan Bandeng Segar', kat: 'protein', icon: 'ðŸŸ', kalori: 123, protein: 20.0, karbo: 0, lemak: 4.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Hati-hati duri saat pengolahan porsi anak.' },
-  { nama: 'Ikan Nila Segar', kat: 'protein', icon: 'ðŸŸ', kalori: 96, protein: 19.5, karbo: 0, lemak: 1.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ikan tawar lokal unggulan.' },
-  { nama: 'Ikan Patin Segar', kat: 'protein', icon: 'ðŸŸ', kalori: 132, protein: 17.0, karbo: 0, lemak: 6.6, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ikan patin kaya lemak baik.' },
-  { nama: 'Ikan Salmon Segar', kat: 'protein', icon: 'ðŸŸ', kalori: 142, protein: 19.8, karbo: 0, lemak: 6.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Sangat baik namun harga relatif tinggi.' },
-  { nama: 'Ikan Tuna Segar', kat: 'protein', icon: 'ðŸŸ', kalori: 116, protein: 24.0, karbo: 0, lemak: 1.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Tuna kaya protein tinggi.' },
-  { nama: 'Ikan Asin Kering', kat: 'protein', icon: 'ðŸŸ', kalori: 190, protein: 42.0, karbo: 0, lemak: 1.5, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Kadar garam (natrium) sangat tinggi. Jangan sering disajikan.' },
-  { nama: 'Ikan Teri Nasi Kering', kat: 'protein', icon: 'ðŸŸ', kalori: 170, protein: 32.5, karbo: 0, lemak: 3.5, serat: 0, mbgStatus: 'aman', mbgNotes: 'Kaya kalsium tinggi, bersihkan sebelum diolah.' },
-  { nama: 'Udang Windu Segar', kat: 'protein', icon: 'ðŸ¤', kalori: 91, protein: 21.0, karbo: 0.1, lemak: 0.2, serat: 0, mbgStatus: 'aman', mbgNotes: 'Udang segar lokal.' },
-  { nama: 'Cumi-cumi Segar', kat: 'protein', icon: 'ðŸ¦‘', kalori: 75, protein: 16.1, karbo: 0.8, lemak: 0.7, serat: 0, mbgStatus: 'aman', mbgNotes: 'Cumi segar lokal.' },
-  { nama: 'Kerang Dara Segar', kat: 'protein', icon: 'ðŸš', kalori: 59, protein: 11.5, karbo: 1.5, lemak: 0.5, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Pastikan dicuci bersih dan dimasak matang untuk hindari logam berat/bakteri.' },
+  { nama: 'Daging Sapi Segar (Lemak Sedang)', kat: 'protein', icon: '🥩', kalori: 201, protein: 18.8, karbo: 0, lemak: 14.0, serat: 0, mbgStatus: 'aman', mbgNotes: 'Daging sapi lokal segar.' },
+  { nama: 'Daging Sapi Lemak Tinggi', kat: 'protein', icon: '🥩', kalori: 250, protein: 16.0, karbo: 0, lemak: 20.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Mengandung lemak jenuh tinggi. Batasi porsi.' },
+  { nama: 'Daging Kambing Segar', kat: 'protein', icon: '🥩', kalori: 154, protein: 16.6, karbo: 0, lemak: 9.4, serat: 0, mbgStatus: 'aman', mbgNotes: 'Daging kambing lokal segar.' },
+  { nama: 'Daging Ayam Fillet (Dada)', kat: 'protein', icon: '🍗', kalori: 110, protein: 23.0, karbo: 0, lemak: 1.2, serat: 0, mbgStatus: 'aman', mbgNotes: 'Sangat baik untuk pertumbuhan otot anak.' },
+  { nama: 'Daging Ayam (Paha dengan kulit)', kat: 'protein', icon: '🍗', kalori: 245, protein: 18.2, karbo: 0, lemak: 19.0, serat: 0, mbgStatus: 'aman', mbgNotes: 'Daging ayam bagian paha segar.' },
+  { nama: 'Hati Sapi Segar', kat: 'protein', icon: '🍖', kalori: 136, protein: 19.7, karbo: 6.0, lemak: 3.2, serat: 0, mbgStatus: 'aman', mbgNotes: 'Kaya zat besi, sangat baik mencegah anemia.' },
+  { nama: 'Hati Ayam Broiler', kat: 'protein', icon: '🍖', kalori: 139, protein: 22.4, karbo: 0.9, lemak: 4.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Sumber gizi mikro yang murah dan bergizi.' },
+  { nama: 'Ampela Ayam Segar', kat: 'protein', icon: '🍖', kalori: 94, protein: 17.5, karbo: 0, lemak: 2.1, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ampela ayam segar.' },
+  { nama: 'Telur Ayam Negeri', kat: 'protein', icon: '🥚', kalori: 154, protein: 12.4, karbo: 0.7, lemak: 10.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Pastikan dimasak matang sempurna untuk cegah Salmonella.' },
+  { nama: 'Telur Ayam Kampung', kat: 'protein', icon: '🥚', kalori: 162, protein: 12.8, karbo: 0.8, lemak: 11.5, serat: 0, mbgStatus: 'aman', mbgNotes: 'Telur ayam kampung murni.' },
+  { nama: 'Telur Bebek Segar', kat: 'protein', icon: '🥚', kalori: 189, protein: 13.1, karbo: 0.8, lemak: 14.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Telur bebek segar.' },
+  { nama: 'Telur Puyuh Segar', kat: 'protein', icon: '🥚', kalori: 168, protein: 12.7, karbo: 1.0, lemak: 12.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Kolesterol tinggi. Batasi konsumsi mingguan anak.' },
+  { nama: 'Ikan Lele Segar', kat: 'protein', icon: '🐟', kalori: 105, protein: 14.8, karbo: 0, lemak: 4.4, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ikan lele segar lokal, murah dan disukai anak.' },
+  { nama: 'Ikan Kembung Segar', kat: 'protein', icon: '🐟', kalori: 109, protein: 18.6, karbo: 0, lemak: 3.4, serat: 0, mbgStatus: 'aman', mbgNotes: 'Mengandung Omega-3 tinggi setara ikan salmon.' },
+  { nama: 'Ikan Mas Segar', kat: 'protein', icon: '🐟', kalori: 86, protein: 16.0, karbo: 0, lemak: 2.0, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ikan mas lokal segar.' },
+  { nama: 'Ikan Bandeng Segar', kat: 'protein', icon: '🐟', kalori: 123, protein: 20.0, karbo: 0, lemak: 4.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Hati-hati duri saat pengolahan porsi anak.' },
+  { nama: 'Ikan Nila Segar', kat: 'protein', icon: '🐟', kalori: 96, protein: 19.5, karbo: 0, lemak: 1.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ikan tawar lokal unggulan.' },
+  { nama: 'Ikan Patin Segar', kat: 'protein', icon: '🐟', kalori: 132, protein: 17.0, karbo: 0, lemak: 6.6, serat: 0, mbgStatus: 'aman', mbgNotes: 'Ikan patin kaya lemak baik.' },
+  { nama: 'Ikan Salmon Segar', kat: 'protein', icon: '🐟', kalori: 142, protein: 19.8, karbo: 0, lemak: 6.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Sangat baik namun harga relatif tinggi.' },
+  { nama: 'Ikan Tuna Segar', kat: 'protein', icon: '🐟', kalori: 116, protein: 24.0, karbo: 0, lemak: 1.8, serat: 0, mbgStatus: 'aman', mbgNotes: 'Tuna kaya protein tinggi.' },
+  { nama: 'Ikan Asin Kering', kat: 'protein', icon: '🐟', kalori: 190, protein: 42.0, karbo: 0, lemak: 1.5, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Kadar garam (natrium) sangat tinggi. Jangan sering disajikan.' },
+  { nama: 'Ikan Teri Nasi Kering', kat: 'protein', icon: '🐟', kalori: 170, protein: 32.5, karbo: 0, lemak: 3.5, serat: 0, mbgStatus: 'aman', mbgNotes: 'Kaya kalsium tinggi, bersihkan sebelum diolah.' },
+  { nama: 'Udang Windu Segar', kat: 'protein', icon: '🍤', kalori: 91, protein: 21.0, karbo: 0.1, lemak: 0.2, serat: 0, mbgStatus: 'aman', mbgNotes: 'Udang segar lokal.' },
+  { nama: 'Cumi-cumi Segar', kat: 'protein', icon: '🦑', kalori: 75, protein: 16.1, karbo: 0.8, lemak: 0.7, serat: 0, mbgStatus: 'aman', mbgNotes: 'Cumi segar lokal.' },
+  { nama: 'Kerang Dara Segar', kat: 'protein', icon: '🐚', kalori: 59, protein: 11.5, karbo: 1.5, lemak: 0.5, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Pastikan dicuci bersih dan dimasak matang untuk hindari logam berat/bakteri.' },
 
   // Protein Nabati / Kacang
-  { nama: 'Tempe Kedelai Murni', kat: 'protein', icon: 'ðŸŸ«', kalori: 150, protein: 14.0, karbo: 9.1, lemak: 7.7, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Protein nabati unggulan lokal Indonesia.' },
-  { nama: 'Tahu Putih Basah', kat: 'protein', icon: 'ðŸŸ¨', kalori: 76, protein: 8.1, karbo: 1.9, lemak: 4.6, serat: 0.1, mbgStatus: 'aman', mbgNotes: 'Tahu putih segar.' },
-  { nama: 'Tahu Kuning Kediri', kat: 'protein', icon: 'ðŸŸ¨', kalori: 80, protein: 8.4, karbo: 2.1, lemak: 4.8, serat: 0.1, mbgStatus: 'aman', mbgNotes: 'Tahu kuning pewarna kunyit alami.' },
-  { nama: 'Kacang Tanah Kupas', kat: 'protein', icon: 'ðŸ¥œ', kalori: 525, protein: 27.0, karbo: 21.0, lemak: 42.0, serat: 4.0, mbgStatus: 'aman', mbgNotes: 'Kacang tanah kupas mentah.' },
-  { nama: 'Kacang Hijau (Kering)', kat: 'protein', icon: 'ðŸŸ¢', kalori: 323, protein: 22.0, karbo: 56.8, lemak: 1.5, serat: 7.5, mbgStatus: 'aman', mbgNotes: 'Sangat baik untuk bubur/tambahan snack.' },
-  { nama: 'Kacang Merah (Kering)', kat: 'protein', icon: 'ðŸ”´', kalori: 314, protein: 22.1, karbo: 56.2, lemak: 1.1, serat: 4.0, mbgStatus: 'aman', mbgNotes: 'Kacang merah kering.' },
-  { nama: 'Oncom Merah Tradisional', kat: 'protein', icon: 'ðŸŸ§', kalori: 187, protein: 13.0, karbo: 22.6, lemak: 6.0, serat: 2.1, mbgStatus: 'aman', mbgNotes: 'Pangan fermentasi lokal Jawa Barat.' },
+  { nama: 'Tempe Kedelai Murni', kat: 'protein', icon: '🟫', kalori: 150, protein: 14.0, karbo: 9.1, lemak: 7.7, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Protein nabati unggulan lokal Indonesia.' },
+  { nama: 'Tahu Putih Basah', kat: 'protein', icon: '🟨', kalori: 76, protein: 8.1, karbo: 1.9, lemak: 4.6, serat: 0.1, mbgStatus: 'aman', mbgNotes: 'Tahu putih segar.' },
+  { nama: 'Tahu Kuning Kediri', kat: 'protein', icon: '🟨', kalori: 80, protein: 8.4, karbo: 2.1, lemak: 4.8, serat: 0.1, mbgStatus: 'aman', mbgNotes: 'Tahu kuning pewarna kunyit alami.' },
+  { nama: 'Kacang Tanah Kupas', kat: 'protein', icon: '🥜', kalori: 525, protein: 27.0, karbo: 21.0, lemak: 42.0, serat: 4.0, mbgStatus: 'aman', mbgNotes: 'Kacang tanah kupas mentah.' },
+  { nama: 'Kacang Hijau (Kering)', kat: 'protein', icon: '🟢', kalori: 323, protein: 22.0, karbo: 56.8, lemak: 1.5, serat: 7.5, mbgStatus: 'aman', mbgNotes: 'Sangat baik untuk bubur/tambahan snack.' },
+  { nama: 'Kacang Merah (Kering)', kat: 'protein', icon: '🔴', kalori: 314, protein: 22.1, karbo: 56.2, lemak: 1.1, serat: 4.0, mbgStatus: 'aman', mbgNotes: 'Kacang merah kering.' },
+  { nama: 'Oncom Merah Tradisional', kat: 'protein', icon: '🟧', kalori: 187, protein: 13.0, karbo: 22.6, lemak: 6.0, serat: 2.1, mbgStatus: 'aman', mbgNotes: 'Pangan fermentasi lokal Jawa Barat.' },
 
   // Sayuran Segar
-  { nama: 'Bayam Hijau Segar', kat: 'sayur', icon: 'ðŸ¥¬', kalori: 23, protein: 2.3, karbo: 4.0, lemak: 0.4, serat: 0.7, mbgStatus: 'aman', mbgNotes: 'Sayur hijau segar tinggi zat besi.' },
-  { nama: 'Kangkung Segar', kat: 'sayur', icon: 'ðŸ¥¬', kalori: 29, protein: 3.0, karbo: 5.4, lemak: 0.3, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Kangkung darat/air segar.' },
-  { nama: 'Wortel Segar', kat: 'sayur', icon: 'ðŸ¥•', kalori: 36, protein: 1.0, karbo: 7.9, lemak: 0.6, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Wortel segar kaya beta karoten.' },
-  { nama: 'Buncis Muda Segar', kat: 'sayur', icon: 'ðŸ¥•', kalori: 35, protein: 2.4, karbo: 7.2, lemak: 0.3, serat: 1.9, mbgStatus: 'aman', mbgNotes: 'Buncis muda manis.' },
-  { nama: 'Kembang Kol', kat: 'sayur', icon: 'ðŸ¥¦', kalori: 25, protein: 2.4, karbo: 4.9, lemak: 0.2, serat: 1.5, mbgStatus: 'aman', mbgNotes: 'Kembang kol segar.' },
-  { nama: 'Brokoli Segar', kat: 'sayur', icon: 'ðŸ¥¦', kalori: 34, protein: 2.8, karbo: 6.6, lemak: 0.4, serat: 2.6, mbgStatus: 'aman', mbgNotes: 'Brokoli segar kaya gizi mikro.' },
-  { nama: 'Sawi Hijau / Caisim', kat: 'sayur', icon: 'ðŸ¥¬', kalori: 15, protein: 1.5, karbo: 2.2, lemak: 0.2, serat: 1.2, mbgStatus: 'aman', mbgNotes: 'Sawi hijau segar.' },
-  { nama: 'Sawi Putih', kat: 'sayur', icon: 'ðŸ¥¬', kalori: 9, protein: 1.0, karbo: 1.7, lemak: 0.1, serat: 0.8, mbgStatus: 'aman', mbgNotes: 'Sawi putih segar.' },
-  { nama: 'Kubis / Kol Putih', kat: 'sayur', icon: 'ðŸ¥¬', kalori: 22, protein: 1.4, karbo: 5.3, lemak: 0.2, serat: 1.3, mbgStatus: 'aman', mbgNotes: 'Kol kubis segar.' },
-  { nama: 'Labu Siam', kat: 'sayur', icon: 'ðŸ«‘', kalori: 26, protein: 0.6, karbo: 6.7, lemak: 0.1, serat: 0.6, mbgStatus: 'aman', mbgNotes: 'Sangat aman dan lembut dikonsumsi.' },
-  { nama: 'Terong Ungu Segar', kat: 'sayur', icon: 'ðŸ†', kalori: 24, protein: 1.1, karbo: 5.5, lemak: 0.2, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Terong ungu lokal segar.' },
-  { nama: 'Tomat Merah Segar', kat: 'sayur', icon: 'ðŸ…', kalori: 20, protein: 1.0, karbo: 4.2, lemak: 0.3, serat: 1.5, mbgStatus: 'aman', mbgNotes: 'Tomat merah segar lokal.' },
-  { nama: 'Mentimun Segar', kat: 'sayur', icon: 'ðŸ¥’', kalori: 12, protein: 0.7, karbo: 2.7, lemak: 0.1, serat: 0.5, mbgStatus: 'aman', mbgNotes: 'Lalapan penyegar kaya air.' },
-  { nama: 'Kacang Panjang', kat: 'sayur', icon: 'ðŸ¥¬', kalori: 44, protein: 2.7, karbo: 7.8, lemak: 0.4, serat: 1.9, mbgStatus: 'aman', mbgNotes: 'Kacang panjang lokal.' },
-  { nama: 'Labu Kuning / Parang', kat: 'sayur', icon: 'ðŸŽƒ', kalori: 29, protein: 1.1, karbo: 6.6, lemak: 0.3, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Labu kuning kaya serat dan vitamin.' },
-  { nama: 'Daun Singkong Muda', kat: 'sayur', icon: 'ðŸŒ¿', kalori: 73, protein: 6.8, karbo: 13.0, lemak: 1.2, serat: 2.2, mbgStatus: 'aman', mbgNotes: 'Kaya zat besi tinggi, rebus lama agar lunak.' },
-  { nama: 'Daun Kelor Segar', kat: 'sayur', icon: 'ðŸŒ¿', kalori: 92, protein: 6.7, karbo: 13.4, lemak: 1.7, serat: 2.8, mbgStatus: 'aman', mbgNotes: 'Superfood lokal, sangat baik meningkatkan gizi.' },
-  { nama: 'Jamur Tiram Segar', kat: 'sayur', icon: 'ðŸ„', kalori: 30, protein: 1.9, karbo: 5.8, lemak: 0.1, serat: 1.5, mbgStatus: 'aman', mbgNotes: 'Jamur tiram lokal.' },
+  { nama: 'Bayam Hijau Segar', kat: 'sayur', icon: '🥬', kalori: 23, protein: 2.3, karbo: 4.0, lemak: 0.4, serat: 0.7, mbgStatus: 'aman', mbgNotes: 'Sayur hijau segar tinggi zat besi.' },
+  { nama: 'Kangkung Segar', kat: 'sayur', icon: '🥬', kalori: 29, protein: 3.0, karbo: 5.4, lemak: 0.3, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Kangkung darat/air segar.' },
+  { nama: 'Wortel Segar', kat: 'sayur', icon: '🥕', kalori: 36, protein: 1.0, karbo: 7.9, lemak: 0.6, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Wortel segar kaya beta karoten.' },
+  { nama: 'Buncis Muda Segar', kat: 'sayur', icon: '🥕', kalori: 35, protein: 2.4, karbo: 7.2, lemak: 0.3, serat: 1.9, mbgStatus: 'aman', mbgNotes: 'Buncis muda manis.' },
+  { nama: 'Kembang Kol', kat: 'sayur', icon: '🥦', kalori: 25, protein: 2.4, karbo: 4.9, lemak: 0.2, serat: 1.5, mbgStatus: 'aman', mbgNotes: 'Kembang kol segar.' },
+  { nama: 'Brokoli Segar', kat: 'sayur', icon: '🥦', kalori: 34, protein: 2.8, karbo: 6.6, lemak: 0.4, serat: 2.6, mbgStatus: 'aman', mbgNotes: 'Brokoli segar kaya gizi mikro.' },
+  { nama: 'Sawi Hijau / Caisim', kat: 'sayur', icon: '🥬', kalori: 15, protein: 1.5, karbo: 2.2, lemak: 0.2, serat: 1.2, mbgStatus: 'aman', mbgNotes: 'Sawi hijau segar.' },
+  { nama: 'Sawi Putih', kat: 'sayur', icon: '🥬', kalori: 9, protein: 1.0, karbo: 1.7, lemak: 0.1, serat: 0.8, mbgStatus: 'aman', mbgNotes: 'Sawi putih segar.' },
+  { nama: 'Kubis / Kol Putih', kat: 'sayur', icon: '🥬', kalori: 22, protein: 1.4, karbo: 5.3, lemak: 0.2, serat: 1.3, mbgStatus: 'aman', mbgNotes: 'Kol kubis segar.' },
+  { nama: 'Labu Siam', kat: 'sayur', icon: '🫑', kalori: 26, protein: 0.6, karbo: 6.7, lemak: 0.1, serat: 0.6, mbgStatus: 'aman', mbgNotes: 'Sangat aman dan lembut dikonsumsi.' },
+  { nama: 'Terong Ungu Segar', kat: 'sayur', icon: '🍆', kalori: 24, protein: 1.1, karbo: 5.5, lemak: 0.2, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Terong ungu lokal segar.' },
+  { nama: 'Tomat Merah Segar', kat: 'sayur', icon: '🍅', kalori: 20, protein: 1.0, karbo: 4.2, lemak: 0.3, serat: 1.5, mbgStatus: 'aman', mbgNotes: 'Tomat merah segar lokal.' },
+  { nama: 'Mentimun Segar', kat: 'sayur', icon: '🥒', kalori: 12, protein: 0.7, karbo: 2.7, lemak: 0.1, serat: 0.5, mbgStatus: 'aman', mbgNotes: 'Lalapan penyegar kaya air.' },
+  { nama: 'Kacang Panjang', kat: 'sayur', icon: '🥬', kalori: 44, protein: 2.7, karbo: 7.8, lemak: 0.4, serat: 1.9, mbgStatus: 'aman', mbgNotes: 'Kacang panjang lokal.' },
+  { nama: 'Labu Kuning / Parang', kat: 'sayur', icon: '🎃', kalori: 29, protein: 1.1, karbo: 6.6, lemak: 0.3, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Labu kuning kaya serat dan vitamin.' },
+  { nama: 'Daun Singkong Muda', kat: 'sayur', icon: '🌿', kalori: 73, protein: 6.8, karbo: 13.0, lemak: 1.2, serat: 2.2, mbgStatus: 'aman', mbgNotes: 'Kaya zat besi tinggi, rebus lama agar lunak.' },
+  { nama: 'Daun Kelor Segar', kat: 'sayur', icon: '🌿', kalori: 92, protein: 6.7, karbo: 13.4, lemak: 1.7, serat: 2.8, mbgStatus: 'aman', mbgNotes: 'Superfood lokal, sangat baik meningkatkan gizi.' },
+  { nama: 'Jamur Tiram Segar', kat: 'sayur', icon: '🍄', kalori: 30, protein: 1.9, karbo: 5.8, lemak: 0.1, serat: 1.5, mbgStatus: 'aman', mbgNotes: 'Jamur tiram lokal.' },
 
   // Buah-buahan Segar
-  { nama: 'Pisang Ambon Segar', kat: 'buah', icon: 'ðŸŒ', kalori: 99, protein: 1.3, karbo: 25.8, lemak: 0.2, serat: 0.6, mbgStatus: 'aman', mbgNotes: 'Buah lokal manis, kaya kalium.' },
-  { nama: 'Pisang Mas Segar', kat: 'buah', icon: 'ðŸŒ', kalori: 92, protein: 1.4, karbo: 23.4, lemak: 0.2, serat: 0.7, mbgStatus: 'aman', mbgNotes: 'Pisang mas kecil manis.' },
-  { nama: 'Pepaya California Segar', kat: 'buah', icon: 'ðŸ¥­', kalori: 46, protein: 0.5, karbo: 12.2, lemak: 0.1, serat: 1.6, mbgStatus: 'aman', mbgNotes: 'Kaya vitamin C, melancarkan pencernaan anak.' },
-  { nama: 'Jeruk Manis Lokal', kat: 'buah', icon: 'ðŸŠ', kalori: 45, protein: 0.9, karbo: 11.2, lemak: 0.2, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Jeruk manis peras/kupas lokal.' },
-  { nama: 'Semangka Merah Segar', kat: 'buah', icon: 'ðŸ‰', kalori: 28, protein: 0.5, karbo: 6.9, lemak: 0.2, serat: 0.4, mbgStatus: 'aman', mbgNotes: 'Semangka kaya air dan likopen.' },
-  { nama: 'Melon Hijau', kat: 'buah', icon: 'ðŸˆ', kalori: 36, protein: 0.5, karbo: 9.0, lemak: 0.2, serat: 0.9, mbgStatus: 'aman', mbgNotes: 'Melon hijau segar.' },
-  { nama: 'Apel Merah Segar', kat: 'buah', icon: 'ðŸŽ', kalori: 58, protein: 0.3, karbo: 14.9, lemak: 0.4, serat: 2.6, mbgStatus: 'aman', mbgNotes: 'Apel manis impor/lokal.' },
-  { nama: 'Apel Malang Segar', kat: 'buah', icon: 'ðŸ', kalori: 50, protein: 0.3, karbo: 12.5, lemak: 0.4, serat: 2.4, mbgStatus: 'aman', mbgNotes: 'Apel hijau lokal sedikit asam segar.' },
-  { nama: 'Mangga Harum Manis', kat: 'buah', icon: 'ðŸ¥­', kalori: 46, protein: 0.4, karbo: 11.9, lemak: 0.2, serat: 1.6, mbgStatus: 'aman', mbgNotes: 'Buah musiman tinggi vitamin A & C.' },
-  { nama: 'Alpukat Mentega Segar', kat: 'buah', icon: 'ðŸ¥‘', kalori: 85, protein: 0.9, karbo: 7.7, lemak: 6.5, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Kaya lemak baik untuk tumbuh kembang anak.' },
-  { nama: 'Jambu Biji Merah', kat: 'buah', icon: 'ðŸˆ', kalori: 49, protein: 0.9, karbo: 12.2, lemak: 0.3, serat: 2.4, mbgStatus: 'aman', mbgNotes: 'Jambu biji lokal, super tinggi vitamin C.' },
-  { nama: 'Nanas Palembang', kat: 'buah', icon: 'ðŸ', kalori: 40, protein: 0.4, karbo: 10.5, lemak: 0.1, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Nanas lokal kupas.' },
-  { nama: 'Salak Pondoh Lokal', kat: 'buah', icon: 'ðŸ¥¥', kalori: 77, protein: 0.8, karbo: 20.9, lemak: 0.4, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Salak pondoh manis Yogyakarta.' },
+  { nama: 'Pisang Ambon Segar', kat: 'buah', icon: '🍌', kalori: 99, protein: 1.3, karbo: 25.8, lemak: 0.2, serat: 0.6, mbgStatus: 'aman', mbgNotes: 'Buah lokal manis, kaya kalium.' },
+  { nama: 'Pisang Mas Segar', kat: 'buah', icon: '🍌', kalori: 92, protein: 1.4, karbo: 23.4, lemak: 0.2, serat: 0.7, mbgStatus: 'aman', mbgNotes: 'Pisang mas kecil manis.' },
+  { nama: 'Pepaya California Segar', kat: 'buah', icon: '🥭', kalori: 46, protein: 0.5, karbo: 12.2, lemak: 0.1, serat: 1.6, mbgStatus: 'aman', mbgNotes: 'Kaya vitamin C, melancarkan pencernaan anak.' },
+  { nama: 'Jeruk Manis Lokal', kat: 'buah', icon: '🍊', kalori: 45, protein: 0.9, karbo: 11.2, lemak: 0.2, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Jeruk manis peras/kupas lokal.' },
+  { nama: 'Semangka Merah Segar', kat: 'buah', icon: '🍉', kalori: 28, protein: 0.5, karbo: 6.9, lemak: 0.2, serat: 0.4, mbgStatus: 'aman', mbgNotes: 'Semangka kaya air dan likopen.' },
+  { nama: 'Melon Hijau', kat: 'buah', icon: '🍈', kalori: 36, protein: 0.5, karbo: 9.0, lemak: 0.2, serat: 0.9, mbgStatus: 'aman', mbgNotes: 'Melon hijau segar.' },
+  { nama: 'Apel Merah Segar', kat: 'buah', icon: '🍎', kalori: 58, protein: 0.3, karbo: 14.9, lemak: 0.4, serat: 2.6, mbgStatus: 'aman', mbgNotes: 'Apel manis impor/lokal.' },
+  { nama: 'Apel Malang Segar', kat: 'buah', icon: '🍏', kalori: 50, protein: 0.3, karbo: 12.5, lemak: 0.4, serat: 2.4, mbgStatus: 'aman', mbgNotes: 'Apel hijau lokal sedikit asam segar.' },
+  { nama: 'Mangga Harum Manis', kat: 'buah', icon: '🥭', kalori: 46, protein: 0.4, karbo: 11.9, lemak: 0.2, serat: 1.6, mbgStatus: 'aman', mbgNotes: 'Buah musiman tinggi vitamin A & C.' },
+  { nama: 'Alpukat Mentega Segar', kat: 'buah', icon: '🥑', kalori: 85, protein: 0.9, karbo: 7.7, lemak: 6.5, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Kaya lemak baik untuk tumbuh kembang anak.' },
+  { nama: 'Jambu Biji Merah', kat: 'buah', icon: '🍈', kalori: 49, protein: 0.9, karbo: 12.2, lemak: 0.3, serat: 2.4, mbgStatus: 'aman', mbgNotes: 'Jambu biji lokal, super tinggi vitamin C.' },
+  { nama: 'Nanas Palembang', kat: 'buah', icon: '🍍', kalori: 40, protein: 0.4, karbo: 10.5, lemak: 0.1, serat: 1.0, mbgStatus: 'aman', mbgNotes: 'Nanas lokal kupas.' },
+  { nama: 'Salak Pondoh Lokal', kat: 'buah', icon: '🥥', kalori: 77, protein: 0.8, karbo: 20.9, lemak: 0.4, serat: 1.4, mbgStatus: 'aman', mbgNotes: 'Salak pondoh manis Yogyakarta.' },
 
   // Olahan / Susu / Lainnya
-  { nama: 'Susu Sapi Segar Murni', kat: 'protein', icon: 'ðŸ¥›', kalori: 66, protein: 3.2, karbo: 4.8, lemak: 3.7, serat: 0, mbgStatus: 'aman', mbgNotes: 'Susu murni segar, sangat direkomendasikan.' },
-  { nama: 'Susu UHT Plain (Tanpa Rasa)', kat: 'protein', icon: 'ðŸ¥›', kalori: 60, protein: 3.2, karbo: 4.8, lemak: 3.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Susu UHT tawar direkomendasikan Kemenkes untuk kalsium.' },
-  { nama: 'Susu UHT Manis (Cokelat/Strawberi)', kat: 'protein', icon: 'ðŸ¥›', kalori: 75, protein: 3.0, karbo: 9.8, lemak: 2.5, serat: 0.2, mbgStatus: 'dibatasi', mbgNotes: 'Mengandung gula tambahan tinggi. Batasi pemberian harian.' },
-  { nama: 'Susu Kental Manis (SKM)', kat: 'protein', icon: 'ðŸ¥›', kalori: 320, protein: 8.0, karbo: 54.0, lemak: 10.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Tinggi kandungan gula. Tidak boleh dijadikan pengganti susu utama.' },
-  { nama: 'Keju Cheddar Olahan', kat: 'protein', icon: 'ðŸ§€', kalori: 326, protein: 22.8, karbo: 13.1, lemak: 20.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Kaya kalsium, baik untuk parutan topping makanan anak.' },
-  { nama: 'Bakso Sapi Lokal (Segar)', kat: 'protein', icon: 'ðŸ²', kalori: 190, protein: 11.0, karbo: 15.0, lemak: 9.0, serat: 0.2, mbgStatus: 'aman', mbgNotes: 'Bakso lokal UMKM segar (non-pabrikan kemasan besar).' },
-  { nama: 'Susu Bubuk Full Cream', kat: 'protein', icon: 'ðŸ¥›', kalori: 509, protein: 24.6, karbo: 38.0, lemak: 30.0, serat: 0, mbgStatus: 'aman', mbgNotes: 'Susu bubuk murni.' },
+  { nama: 'Susu Sapi Segar Murni', kat: 'protein', icon: '🥛', kalori: 66, protein: 3.2, karbo: 4.8, lemak: 3.7, serat: 0, mbgStatus: 'aman', mbgNotes: 'Susu murni segar, sangat direkomendasikan.' },
+  { nama: 'Susu UHT Plain (Tanpa Rasa)', kat: 'protein', icon: '🥛', kalori: 60, protein: 3.2, karbo: 4.8, lemak: 3.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Susu UHT tawar direkomendasikan Kemenkes untuk kalsium.' },
+  { nama: 'Susu UHT Manis (Cokelat/Strawberi)', kat: 'protein', icon: '🥛', kalori: 75, protein: 3.0, karbo: 9.8, lemak: 2.5, serat: 0.2, mbgStatus: 'dibatasi', mbgNotes: 'Mengandung gula tambahan tinggi. Batasi pemberian harian.' },
+  { nama: 'Susu Kental Manis (SKM)', kat: 'protein', icon: '🥛', kalori: 320, protein: 8.0, karbo: 54.0, lemak: 10.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Tinggi kandungan gula. Tidak boleh dijadikan pengganti susu utama.' },
+  { nama: 'Keju Cheddar Olahan', kat: 'protein', icon: '🧀', kalori: 326, protein: 22.8, karbo: 13.1, lemak: 20.3, serat: 0, mbgStatus: 'aman', mbgNotes: 'Kaya kalsium, baik untuk parutan topping makanan anak.' },
+  { nama: 'Bakso Sapi Lokal (Segar)', kat: 'protein', icon: '🍲', kalori: 190, protein: 11.0, karbo: 15.0, lemak: 9.0, serat: 0.2, mbgStatus: 'aman', mbgNotes: 'Bakso lokal UMKM segar (non-pabrikan kemasan besar).' },
+  { nama: 'Susu Bubuk Full Cream', kat: 'protein', icon: '🥛', kalori: 509, protein: 24.6, karbo: 38.0, lemak: 30.0, serat: 0, mbgStatus: 'aman', mbgNotes: 'Susu bubuk murni.' },
   
   // Dilarang (UPF Pabrikan Komersial Besar)
-  { nama: 'Nugget Ayam Pabrikan', kat: 'protein', icon: 'ðŸ—', kalori: 250, protein: 14.0, karbo: 18.0, lemak: 15.0, serat: 0.5, mbgStatus: 'dilarang', mbgNotes: 'Ultra-Processed Food (UPF) pabrikan dilarang oleh BGN. Silakan buat nugget homemade.' },
-  { nama: 'Sosis Sapi Pabrikan', kat: 'protein', icon: 'ðŸŒ­', kalori: 300, protein: 12.0, karbo: 5.0, lemak: 27.0, serat: 0, mbgStatus: 'dilarang', mbgNotes: 'UPF pabrikan dilarang BGN. Ganti dengan olahan daging segar lokal.' },
-  { nama: 'Sosis Ayam Pabrikan', kat: 'protein', icon: 'ðŸŒ­', kalori: 280, protein: 11.0, karbo: 6.0, lemak: 24.0, serat: 0, mbgStatus: 'dilarang', mbgNotes: 'UPF pabrikan dilarang BGN.' },
-  { nama: 'Kornet Daging Sapi Kaleng', kat: 'protein', icon: 'ðŸ¥©', kalori: 240, protein: 15.0, karbo: 1.0, lemak: 18.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Mengandung bahan pengawet natrium tinggi. Sangat dibatasi BGN.' },
-  { nama: 'Ikan Sarden Kaleng Saus Tomat', kat: 'protein', icon: 'ðŸŸ', kalori: 180, protein: 17.5, karbo: 2.0, lemak: 11.0, serat: 0.4, mbgStatus: 'dibatasi', mbgNotes: 'Makanan kaleng tinggi pengawet. Batasi penggunaannya.' },
-  { nama: 'Mie Instan Pabrikan', kat: 'karbo', icon: 'ðŸœ', kalori: 440, protein: 9.0, karbo: 64.0, lemak: 16.0, serat: 2.0, mbgStatus: 'dilarang', mbgNotes: 'Dilarang BGN karena kandungan gizi murni rendah & tinggi natrium.' },
-  { nama: 'Margarin Nabati Kemasan', kat: 'protein', icon: 'ðŸ§ˆ', kalori: 720, protein: 0.6, karbo: 0.4, lemak: 81.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Gunakan secukupnya hanya sebagai minyak tumis.' },
-  { nama: 'Mentega Susu / Butter', kat: 'protein', icon: 'ðŸ§ˆ', kalori: 717, protein: 0.9, karbo: 0.1, lemak: 81.1, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Gunakan secukupnya saja.' }
+  { nama: 'Nugget Ayam Pabrikan', kat: 'protein', icon: '🍗', kalori: 250, protein: 14.0, karbo: 18.0, lemak: 15.0, serat: 0.5, mbgStatus: 'dilarang', mbgNotes: 'Ultra-Processed Food (UPF) pabrikan dilarang oleh BGN. Silakan buat nugget homemade.' },
+  { nama: 'Sosis Sapi Pabrikan', kat: 'protein', icon: '🌭', kalori: 300, protein: 12.0, karbo: 5.0, lemak: 27.0, serat: 0, mbgStatus: 'dilarang', mbgNotes: 'UPF pabrikan dilarang BGN. Ganti dengan olahan daging segar lokal.' },
+  { nama: 'Sosis Ayam Pabrikan', kat: 'protein', icon: '🌭', kalori: 280, protein: 11.0, karbo: 6.0, lemak: 24.0, serat: 0, mbgStatus: 'dilarang', mbgNotes: 'UPF pabrikan dilarang BGN.' },
+  { nama: 'Kornet Daging Sapi Kaleng', kat: 'protein', icon: '🥩', kalori: 240, protein: 15.0, karbo: 1.0, lemak: 18.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Mengandung bahan pengawet natrium tinggi. Sangat dibatasi BGN.' },
+  { nama: 'Ikan Sarden Kaleng Saus Tomat', kat: 'protein', icon: '🐟', kalori: 180, protein: 17.5, karbo: 2.0, lemak: 11.0, serat: 0.4, mbgStatus: 'dibatasi', mbgNotes: 'Makanan kaleng tinggi pengawet. Batasi penggunaannya.' },
+  { nama: 'Mie Instan Pabrikan', kat: 'karbo', icon: '🍜', kalori: 440, protein: 9.0, karbo: 64.0, lemak: 16.0, serat: 2.0, mbgStatus: 'dilarang', mbgNotes: 'Dilarang BGN karena kandungan gizi murni rendah & tinggi natrium.' },
+  { nama: 'Margarin Nabati Kemasan', kat: 'protein', icon: '🧈', kalori: 720, protein: 0.6, karbo: 0.4, lemak: 81.0, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Gunakan secukupnya hanya sebagai minyak tumis.' },
+  { nama: 'Mentega Susu / Butter', kat: 'protein', icon: '🧈', kalori: 717, protein: 0.9, karbo: 0.1, lemak: 81.1, serat: 0, mbgStatus: 'dibatasi', mbgNotes: 'Gunakan secukupnya saja.' }
 ];
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  DATA MENU AWAL (TKPI KEMENKES + NEW MBG RECIPES)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 const INITIAL_MENU_DATA = {
   karbo: [
     { id: 'nasi-putih', icon: 'rice', nama: 'Nasi Putih', porsi: '100g beras mentah', kalori: 360, protein: 6.8, karbo: 78.9, lemak: 0.7, serat: 0.4, harga: 1200, mbgStatus: 'aman', mbgNotes: 'Karbohidrat utama segar lokal.' },
@@ -379,10 +379,10 @@ const DEFAULT_INGREDIENT_PRICES = {
 const RECIPE_DETAILS = {
   // Karbo
   'nasi-putih': {
-    utama: { nama: 'Beras', qty: 80, unit: 'g', catatan: 'Nasi matang Â±200g/porsi' }
+    utama: { nama: 'Beras', qty: 80, unit: 'g', catatan: 'Nasi matang ±200g/porsi' }
   },
   'nasi-merah': {
-    utama: { nama: 'Beras Merah', qty: 80, unit: 'g', catatan: 'Nasi merah matang Â±180g/porsi' }
+    utama: { nama: 'Beras Merah', qty: 80, unit: 'g', catatan: 'Nasi merah matang ±180g/porsi' }
   },
   'nasi-jagung': {
     utama: { nama: 'Beras Jagung', qty: 90, unit: 'g', catatan: 'Variasi karbo berserat tinggi' }
@@ -690,9 +690,9 @@ export default function App() {
       recipeDetails, ingredientPrices,
       qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus]);
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════
   //  MATHEMATICAL CALCULATIONS
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════
   const siswaNum = parseInt(jmlSiswa, 10) || 0;
   const spareValNum = parseFloat(spareVal) || 0;
   const budgetNum = parseFloat(budget) || 0;
@@ -785,9 +785,9 @@ export default function App() {
   const pctProt = (calProt / totalMacroCal * 100);
   const pctLemak = (calLemak / totalMacroCal * 100);
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════
   //  UI INTERACTION ACTIONS
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════
   const toggleSelectMenu = (kat, id) => {
     setSelected(prev => ({
       ...prev,
@@ -808,7 +808,7 @@ export default function App() {
     const id = 'custom-' + Date.now();
     const newItem = {
       id,
-      icon: customIcon.trim() || 'ðŸ²',
+      icon: customIcon.trim() || '🍲',
       nama: customNama,
       porsi: '1 Porsi',
       kalori: parseFloat(customKalori) || 0,
@@ -830,7 +830,7 @@ export default function App() {
           nama: mainIng.nama,
           qty: parseFloat(mainIng.qty) || 0,
           unit: mainIng.unit || 'g',
-          catatan: mainIng.catatan || 'â€”'
+          catatan: mainIng.catatan || '—'
         }
       };
       if (activeIngs.length > 1) {
@@ -1032,7 +1032,7 @@ export default function App() {
           nama: item.nama,
           qtyPerPorsi: 1,
           unit: item.porsi.toLowerCase().includes('buah') ? 'buah' : 'porsi',
-          catatan: item.mbgNotes || 'â€”',
+          catatan: item.mbgNotes || '—',
           isUtama: item.kat === 'protein'
         });
       }
@@ -1040,8 +1040,8 @@ export default function App() {
 
     if (hasCooked) {
       list.push({ nama: 'Minyak goreng', qtyPerPorsi: 15, unit: 'ml', catatan: 'Tumis + finishing' });
-      list.push({ nama: 'Garam', qtyPerPorsi: 2, unit: 'g', catatan: 'â€”' });
-      list.push({ nama: 'Gula pasir', qtyPerPorsi: 3, unit: 'g', catatan: 'â€”' });
+      list.push({ nama: 'Garam', qtyPerPorsi: 2, unit: 'g', catatan: '—' });
+      list.push({ nama: 'Gula pasir', qtyPerPorsi: 3, unit: 'g', catatan: '—' });
       list.push({ nama: 'Bawang merah', qtyPerPorsi: 8, unit: 'g', catatan: 'Bumbu dasar' });
       list.push({ nama: 'Bawang putih', qtyPerPorsi: 5, unit: 'g', catatan: 'Bumbu dasar' });
     }
@@ -1101,9 +1101,9 @@ export default function App() {
     return `${Math.ceil(val * totalPorsiVal)} porsi`;
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════
   //  EXPORT PDF & SHARE CSV
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════
   const generatePDFReport = async () => {
     if (selectedItems.length === 0) {
       Alert.alert('Perhatian', 'Pilih minimal satu menu untuk dicetak!');
@@ -1138,7 +1138,7 @@ export default function App() {
           <td style="border:1px solid #333;padding:5px 8px;${boldStyle}">${ing.nama}${badge}</td>
           <td style="border:1px solid #333;padding:5px 8px;text-align:center;">${qtyStr}</td>
           <td style="border:1px solid #333;padding:5px 8px;text-align:center;font-weight:bold;">${totStr}</td>
-          <td style="border:1px solid #333;padding:5px 8px;font-size:10px;color:#555;">${ing.catatan || 'â€”'}</td>
+          <td style="border:1px solid #333;padding:5px 8px;font-size:10px;color:#555;">${ing.catatan || '—'}</td>
         </tr>
       `;
       rowIdx++;
@@ -1153,6 +1153,7 @@ export default function App() {
       qcRasa, qcAroma, qcTekstur, qcPenampilan,
       qcHigienitas, qcSuhu, qcWaktu,
       qcTesterName, qcNotes, qcStatus,
+      consolidatedIngredients: consolidated
     });
 
     try {
@@ -1205,12 +1206,12 @@ export default function App() {
     }
   };
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════
   //  TAB RENDER PAGES
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ═══════════════════════════════════════
   const renderTab1 = () => (
     <ScrollView style={styles.tabContent}>
-      <Text style={styles.sectionTitle}>ðŸ‘¤ Penerima Manfaat</Text>
+      <Text style={styles.sectionTitle}>👤 Penerima Manfaat</Text>
       <View style={styles.card}>
         <Text style={styles.label}>Jumlah Siswa Utama</Text>
         <TextInput
@@ -1241,7 +1242,7 @@ export default function App() {
         </Text>
       </View>
 
-      <Text style={styles.sectionTitle}>ðŸ‘¥ Porsi Cadangan / Relawan</Text>
+      <Text style={styles.sectionTitle}>👥 Porsi Cadangan / Relawan</Text>
       <View style={styles.card}>
         <Text style={styles.label}>Metode Perhitungan</Text>
         <View style={styles.toggleGroup}>
@@ -1273,7 +1274,7 @@ export default function App() {
         </Text>
       </View>
 
-      <Text style={styles.sectionTitle}>ðŸ’° Anggaran &amp; Overhead</Text>
+      <Text style={styles.sectionTitle}>💰 Anggaran &amp; Overhead</Text>
       <View style={styles.card}>
         <Text style={styles.label}>Budget per Porsi (Rp)</Text>
         <TextInput
@@ -1340,10 +1341,10 @@ export default function App() {
 
   const renderTab2 = () => {
     const categories = [
-      { key: 'karbo', title: 'ðŸŒ¾ Karbohidrat Utama' },
-      { key: 'protein', title: 'ðŸ— Protein Hewani / Nabati' },
-      { key: 'sayur', title: 'ðŸ¥¬ Sayuran Hijau' },
-      { key: 'buah', title: 'ðŸŽ Buah Pencuci Mulut' }
+      { key: 'karbo', title: '🌾 Karbohidrat Utama' },
+      { key: 'protein', title: '🍗 Protein Hewani / Nabati' },
+      { key: 'sayur', title: '🥬 Sayuran Hijau' },
+      { key: 'buah', title: '🍎 Buah Pencuci Mulut' }
     ];
 
     return (
@@ -1378,31 +1379,31 @@ export default function App() {
                         </View>
                       )}
                       <Text style={styles.itemEmoji}>
-                        {item.icon === 'rice' ? 'ðŸš' :
-                         item.icon === 'bowl-rice' ? 'ðŸ™' :
-                         item.icon === 'corn' ? 'ðŸŒ½' :
-                         item.icon === 'potato' ? 'ðŸ¥”' :
-                         item.icon === 'food-potato' ? 'ðŸ¥”' :
-                         item.icon === 'ellipse' ? 'ðŸŸ¡' :
-                         item.icon === 'food-chicken' ? 'ðŸ—' :
-                         item.icon === 'poultry-leg' ? 'ðŸ–' :
-                         item.icon === 'egg-fried' ? 'ðŸ³' :
-                         item.icon === 'square' ? 'ðŸŸ«' :
-                         item.icon === 'square-outline' ? 'ðŸŸ¨' :
-                         item.icon === 'fish' ? 'ðŸŸ' :
-                         item.icon === 'food-steak' ? 'ðŸ¥©' :
-                         item.icon === 'egg' ? 'ðŸ¥š' :
-                         item.icon === 'carrot' ? 'ðŸ¥•' :
-                         item.icon === 'leaf' ? 'ðŸ¥¬' :
-                         item.icon === 'silverware-clean' ? 'ðŸ¥¦' :
-                         item.icon === 'pot-steam' ? 'ðŸ²' :
-                         item.icon === 'sprout' ? 'ðŸŒ¿' :
-                         item.icon === 'shaker-outline' ? 'ðŸ«‘' :
-                         item.icon === 'food-apple' ? 'ðŸŒ' :
-                         item.icon === 'fruit-citrus' ? 'ðŸŠ' :
-                         item.icon === 'fruit-watermelon' ? 'ðŸ‰' :
-                         item.icon === 'fruit-pear' ? 'ðŸ¥­' :
-                         item.icon === 'fruit-grapes' ? 'ðŸˆ' : 'ðŸ½ï¸'}
+                        {item.icon === 'rice' ? '🍚' :
+                         item.icon === 'bowl-rice' ? '🍙' :
+                         item.icon === 'corn' ? '🌽' :
+                         item.icon === 'potato' ? '🥔' :
+                         item.icon === 'food-potato' ? '🥔' :
+                         item.icon === 'ellipse' ? '🟡' :
+                         item.icon === 'food-chicken' ? '🍗' :
+                         item.icon === 'poultry-leg' ? '🍖' :
+                         item.icon === 'egg-fried' ? '🍳' :
+                         item.icon === 'square' ? '🟫' :
+                         item.icon === 'square-outline' ? '🟨' :
+                         item.icon === 'fish' ? '🐟' :
+                         item.icon === 'food-steak' ? '🥩' :
+                         item.icon === 'egg' ? '🥚' :
+                         item.icon === 'carrot' ? '🥕' :
+                         item.icon === 'leaf' ? '🥬' :
+                         item.icon === 'silverware-clean' ? '🥦' :
+                         item.icon === 'pot-steam' ? '🍲' :
+                         item.icon === 'sprout' ? '🌿' :
+                         item.icon === 'shaker-outline' ? '🫑' :
+                         item.icon === 'food-apple' ? '🍌' :
+                         item.icon === 'fruit-citrus' ? '🍊' :
+                         item.icon === 'fruit-watermelon' ? '🍉' :
+                         item.icon === 'fruit-pear' ? '🥭' :
+                         item.icon === 'fruit-grapes' ? '🍈' : '🍽️'}
                       </Text>
                       <Text style={styles.itemName} numberOfLines={1}>{item.nama}</Text>
                       <Text style={styles.itemPortion} numberOfLines={1}>{item.porsi}</Text>
@@ -1425,11 +1426,11 @@ export default function App() {
                         </View>
                       )}
 
-                      <Text style={styles.itemGizi}>{item.kalori} kkal Â· P:{item.protein}g</Text>
+                      <Text style={styles.itemGizi}>{item.kalori} kkal · P:{item.protein}g</Text>
                       
                       {getRecipeIngredientsListStr(item.id) !== '' && (
                         <Text style={styles.itemIngredientsText} numberOfLines={1}>
-                          ðŸ“¦ {getRecipeIngredientsListStr(item.id)}
+                          📦 {getRecipeIngredientsListStr(item.id)}
                         </Text>
                       )}
 
@@ -1456,7 +1457,7 @@ export default function App() {
         })}
 
         {/* Form Tambah Custom */}
-        <Text style={styles.sectionTitle}>âž• Tambah Bahan Custom Lokal</Text>
+        <Text style={styles.sectionTitle}>➕ Tambah Bahan Custom Lokal</Text>
         
         {/* Tombol Kamus Gizi TKPI & Regulasi */}
         <TouchableOpacity 
@@ -1469,7 +1470,7 @@ export default function App() {
           }}
         >
           <MaterialCommunityIcons name="magnify" size={18} color="#4ADE80" />
-          <Text style={styles.searchTkpiBtnText}>ðŸ” Cari Kamus Gizi TKPI & Kepatuhan MBG</Text>
+          <Text style={styles.searchTkpiBtnText}>🔍 Cari Kamus Gizi TKPI & Kepatuhan MBG</Text>
         </TouchableOpacity>
 
         <View style={styles.card}>
@@ -1479,7 +1480,7 @@ export default function App() {
               style={[styles.input, { flex: 1, marginRight: 8, fontSize: 14 }]}
               value={customIcon}
               onChangeText={setCustomIcon}
-              placeholder="Emoji (contoh: ðŸ²)"
+              placeholder="Emoji (contoh: 🍲)"
               placeholderTextColor="#626C90"
             />
             <TextInput
@@ -1560,7 +1561,7 @@ export default function App() {
 
           {/* Custom Recipe Builder Section */}
           <Text style={[styles.label, { marginTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', paddingTop: 12 }]}>
-            ðŸ“‹ Rincian Bahan Baku Resep (Opsional)
+            📋 Rincian Bahan Baku Resep (Opsional)
           </Text>
           <Text style={{ color: '#626C90', fontSize: 10, marginBottom: 8, lineHeight: 14 }}>
             Baris pertama akan dianggap sebagai Bahan Utama. Baris selanjutnya adalah Bahan Pelengkap.
@@ -1651,7 +1652,7 @@ export default function App() {
         {/* Live Preview Box */}
         {selectedItems.length > 0 && (
           <View style={styles.previewBox}>
-            <Text style={styles.previewTitle}>ðŸ”„ RINGKASAN SEMENTARA</Text>
+            <Text style={styles.previewTitle}>🔄 RINGKASAN SEMENTARA</Text>
             <View style={styles.previewGrid}>
               <View>
                 <Text style={styles.pLabel}>Energi</Text>
@@ -1740,13 +1741,13 @@ export default function App() {
             <View style={[styles.complianceAlertBox, styles.complianceAlertRed]}>
               <MaterialCommunityIcons name="close-circle" size={20} color="#F87171" />
               <View style={{ flex: 1, marginLeft: 8 }}>
-                <Text style={styles.complianceAlertTitleRed}>âŒ PELANGGARAN REGULASI MBG</Text>
+                <Text style={styles.complianceAlertTitleRed}>❌ PELANGGARAN REGULASI MBG</Text>
                 <Text style={styles.complianceAlertDesc}>
                   Ditemukan bahan makanan dilarang (Ultra-Processed Food pabrikan) dalam menu terpilih:
                 </Text>
                 {dilarangItems.map(it => (
                   <Text key={it.id} style={styles.complianceAlertItem}>
-                    â€¢ {it.nama} (Catatan: {it.mbgNotes || 'Dilarang oleh Badan Gizi Nasional'})
+                    • {it.nama} (Catatan: {it.mbgNotes || 'Dilarang oleh Badan Gizi Nasional'})
                   </Text>
                 ))}
               </View>
@@ -1757,13 +1758,13 @@ export default function App() {
             <View style={[styles.complianceAlertBox, styles.complianceAlertYellow]}>
               <MaterialCommunityIcons name="alert" size={20} color="#FACC15" />
               <View style={{ flex: 1, marginLeft: 8 }}>
-                <Text style={styles.complianceAlertTitleYellow}>âš ï¸ PERHATIAN KEPATUHAN MBG</Text>
+                <Text style={styles.complianceAlertTitleYellow}>⚠️ PERHATIAN KEPATUHAN MBG</Text>
                 <Text style={styles.complianceAlertDesc}>
                   Menu Anda menggunakan bahan yang diawasi/dibatasi Kemenkes:
                 </Text>
                 {dibatasiItems.map(it => (
                   <Text key={it.id} style={styles.complianceAlertItem}>
-                    â€¢ {it.nama} ({it.mbgNotes})
+                    • {it.nama} ({it.mbgNotes})
                   </Text>
                 ))}
               </View>
@@ -1774,7 +1775,7 @@ export default function App() {
             <View style={[styles.complianceAlertBox, styles.complianceAlertGreen]}>
               <MaterialCommunityIcons name="check-decagram" size={20} color="#4ADE80" />
               <View style={{ flex: 1, marginLeft: 8 }}>
-                <Text style={styles.complianceAlertTitleGreen}>âœ… LOLOS REGULASI MBG</Text>
+                <Text style={styles.complianceAlertTitleGreen}>✅ LOLOS REGULASI MBG</Text>
                 <Text style={styles.complianceAlertDesc}>
                   Semua bahan menu terpilih adalah bahan segar & lokal yang direkomendasikan oleh BGN.
                 </Text>
@@ -1814,7 +1815,7 @@ export default function App() {
       </View>
 
       {/* Target Acuan Gizi */}
-      <Text style={styles.sectionTitle}>ðŸ“Š Nilai Gizi Terhadap Target Utama</Text>
+      <Text style={styles.sectionTitle}>📊 Nilai Gizi Terhadap Target Utama</Text>
       <View style={styles.card}>
         <Text style={styles.label}>Perbandingan Nutrisi vs {activeAkg.name}:</Text>
         
@@ -1856,7 +1857,7 @@ export default function App() {
       </View>
 
       {/* DIAGRAM AKG KOMPARATIF SD & SMP (FITUR UTAMA) */}
-      <Text style={styles.sectionTitle}>ðŸ“ˆ Matriks AKG Lintas Kelas (SD &amp; SMP)</Text>
+      <Text style={styles.sectionTitle}>📈 Matriks AKG Lintas Kelas (SD &amp; SMP)</Text>
       <View style={styles.card}>
         <Text style={styles.hintText}>
           Tingkat kecukupan makan siang (Energi &amp; Protein) menu terpilih untuk seluruh jenjang umur:
@@ -1885,7 +1886,7 @@ export default function App() {
             >
               <View style={styles.matrixColInfo}>
                 <Text style={styles.matrixAgeName}>
-                  {g.name} {isUsiaActive ? 'â­ï¸' : ''}
+                  {g.name} {isUsiaActive ? '⭐️' : ''}
                 </Text>
                 <Text style={styles.matrixAgeSub}>Target: {g.kal} kkal / {g.protein}g</Text>
                 <View style={[styles.smallBadge, { borderColor: statusColor }]}>
@@ -1916,9 +1917,9 @@ export default function App() {
         })}
       </View>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+      {/* ═══════════════════════════════════════
           ESTIMASI BAHAN BAKU LENGKAP (PER PORSI & TOTAL)
-          â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          ═══════════════════════════════════════ */}
       {(() => {
         const selectedProtein = selectedItems.find(it => it.kat === 'protein');
         const protCard = getProteinCardInfo(selectedProtein, totalPorsi);
@@ -1939,7 +1940,7 @@ export default function App() {
               </View>
               <View style={styles.topInfoCard}>
                 <Text style={styles.topInfoLabel}>Menu</Text>
-                <Text style={[styles.topInfoValue, { fontSize: 14 }]}>{selectedProtein ? selectedProtein.nama : 'â€”'}</Text>
+                <Text style={[styles.topInfoValue, { fontSize: 14 }]}>{selectedProtein ? selectedProtein.nama : '—'}</Text>
                 <Text style={styles.topInfoSub}>Protein utama</Text>
               </View>
             </View>
@@ -1948,7 +1949,7 @@ export default function App() {
             {renderPelengkapCards(selectedProtein, totalPorsi)}
 
             {/* Tabel Bahan Baku Lengkap */}
-            <Text style={styles.sectionTitle}>ðŸ“‹ ESTIMASI BAHAN BAKU LENGKAP (PER PORSI & TOTAL)</Text>
+            <Text style={styles.sectionTitle}>📋 ESTIMASI BAHAN BAKU LENGKAP (PER PORSI & TOTAL)</Text>
             <View style={styles.card}>
               <View style={styles.tableHeaderRow}>
                 <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Bahan baku</Text>
@@ -1988,7 +1989,7 @@ export default function App() {
       })()}
 
       {/* Rincian Biaya per Porsi */}
-      <Text style={styles.sectionTitle}>ðŸ’³ Rincian biaya per porsi</Text>
+      <Text style={styles.sectionTitle}>💳 Rincian biaya per porsi</Text>
       <View style={styles.card}>
         {selectedItems.map(item => (
           <View key={item.id} style={styles.costLine}>
@@ -2043,7 +2044,7 @@ export default function App() {
           <Text style={styles.ghostButtonText}>Bagikan Data (CSV)</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.ghostButton, { marginTop: 10, borderColor: '#F87171' }]} onPress={() => setActiveTab(2)}>
-          <Text style={[styles.ghostButtonText, { color: '#F87171' }]}>â† Kembali Ubah Menu</Text>
+          <Text style={[styles.ghostButtonText, { color: '#F87171' }]}>← Kembali Ubah Menu</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -2059,7 +2060,7 @@ export default function App() {
           </Text>
         </View>
 
-        <Text style={styles.sectionTitle}>ðŸ‘… 1. UJI ORGANOLEPTIK / SENSORIS</Text>
+        <Text style={styles.sectionTitle}>👅 1. UJI ORGANOLEPTIK / SENSORIS</Text>
         <View style={styles.card}>
           <Text style={styles.hintText}>
             Wajib dicicipi oleh Ahli Gizi / Kepala Dapur minimal 30 menit sebelum pengiriman.
@@ -2130,7 +2131,7 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>ðŸ›¡ï¸ 2. PARAMETER HIGIENITAS & FISIK</Text>
+        <Text style={styles.sectionTitle}>🛡️ 2. PARAMETER HIGIENITAS & FISIK</Text>
         <View style={styles.card}>
           {/* Row 5: Higienitas Penjamah */}
           <TouchableOpacity 
@@ -2160,7 +2161,7 @@ export default function App() {
             />
             <View style={{ marginLeft: 10, flex: 1 }}>
               <Text style={[styles.qcLabel, qcSuhu && styles.qcLabelActive]}>Suhu Masak Inti (Core Temp)</Text>
-              <Text style={styles.qcDesc}>Suhu makanan hangat matang terjaga &gt;60Â°C saat diporsi untuk mencegah bakteri.</Text>
+              <Text style={styles.qcDesc}>Suhu makanan hangat matang terjaga &gt;60°C saat diporsi untuk mencegah bakteri.</Text>
             </View>
           </TouchableOpacity>
 
@@ -2181,7 +2182,7 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.sectionTitle}>âœï¸ 3. TANDA TANGAN & REKOMENDASI</Text>
+        <Text style={styles.sectionTitle}>✍️ 3. TANDA TANGAN & REKOMENDASI</Text>
         <View style={styles.card}>
           <Text style={styles.label}>Nama Ahli Gizi / Pemeriksa</Text>
           <TextInput
@@ -2209,7 +2210,7 @@ export default function App() {
               onPress={() => setQcStatus('layak')}
             >
               <Text style={[styles.toggleBtnText, qcStatus === 'layak' && { color: '#4ADE80' }]}>
-                âœ… LAYAK DISTRIBUSI
+                ✅ LAYAK DISTRIBUSI
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -2217,7 +2218,7 @@ export default function App() {
               onPress={() => setQcStatus('tunda')}
             >
               <Text style={[styles.toggleBtnText, qcStatus === 'tunda' && { color: '#F87171' }]}>
-                âš ï¸ TUNDA / RE-COOK
+                ⚠️ TUNDA / RE-COOK
               </Text>
             </TouchableOpacity>
           </View>
@@ -2364,7 +2365,7 @@ export default function App() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { height: '85%' }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>âœï¸ Edit Resep &amp; Harga</Text>
+              <Text style={styles.modalTitle}>✏️ Edit Resep &amp; Harga</Text>
               <TouchableOpacity 
                 style={styles.modalCloseBtn}
                 onPress={() => setEditingItem(null)}
@@ -2378,7 +2379,7 @@ export default function App() {
               <Text style={{ color: '#626C90', fontSize: 11, marginBottom: 15 }}>Kategori: {editingItem.kat.toUpperCase()}</Text>
               
               {/* BAHAN UTAMA SECTION */}
-              <Text style={[styles.sectionTitle, { marginTop: 0 }]}>ðŸ¥© BAHAN UTAMA</Text>
+              <Text style={[styles.sectionTitle, { marginTop: 0 }]}>🥩 BAHAN UTAMA</Text>
               <View style={styles.card}>
                 <Text style={styles.label}>Nama Bahan Utama</Text>
                 <TextInput
@@ -2461,7 +2462,7 @@ export default function App() {
 
               {/* BAHAN PELENGKAP SECTION */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 15, marginBottom: 10 }}>
-                <Text style={[styles.sectionTitle, { marginTop: 0, marginBottom: 0 }]}>ðŸŒ¾ BAHAN PELENGKAP / BUMBU</Text>
+                <Text style={[styles.sectionTitle, { marginTop: 0, marginBottom: 0 }]}>🌾 BAHAN PELENGKAP / BUMBU</Text>
                 <TouchableOpacity 
                   style={{ backgroundColor: 'rgba(96,165,250,0.1)', paddingVertical: 4, paddingHorizontal: 8, borderRadius: 4 }}
                   onPress={() => {
@@ -2684,7 +2685,7 @@ export default function App() {
             
             {/* Header */}
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>ðŸ” Kamus Gizi & Regulasi MBG</Text>
+              <Text style={styles.modalTitle}>🔍 Kamus Gizi & Regulasi MBG</Text>
               <TouchableOpacity onPress={() => setShowTkpiModal(false)} style={styles.modalCloseBtn}>
                 <MaterialCommunityIcons name="close" size={24} color="#A5ACCC" />
               </TouchableOpacity>
@@ -2725,7 +2726,7 @@ export default function App() {
                       <View style={{ flex: 1, marginLeft: 10 }}>
                         <Text style={styles.tkpiNameText}>{item.nama}</Text>
                         <Text style={styles.tkpiNutrientDesc}>
-                          {item.kalori} kkal Â· P:{item.protein}g Â· K:{item.karbo}g Â· L:{item.lemak}g per 100g
+                          {item.kalori} kkal · P:{item.protein}g · K:{item.karbo}g · L:{item.lemak}g per 100g
                         </Text>
                       </View>
                       
@@ -2755,7 +2756,7 @@ export default function App() {
                   style={styles.backBtn}
                   onPress={() => setSelectedTkpiItem(null)}
                 >
-                  <Text style={styles.backBtnText}>â† Kembali ke Pencarian</Text>
+                  <Text style={styles.backBtnText}>← Kembali ke Pencarian</Text>
                 </TouchableOpacity>
 
                 {/* Selected Item Info Card */}
@@ -2912,9 +2913,9 @@ export default function App() {
   );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 //  DESIGN STYLING SYSTEM
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════
 const styles = StyleSheet.create({
   container: {
     flex: 1,

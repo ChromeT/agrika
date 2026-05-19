@@ -1,6 +1,95 @@
 // pdfTemplate.js — Template Laporan Resmi BGN SP-MBG
 // Mengacu pada Juknis BGN 2025 & Format Formulir SPPG-MBG-QC
 
+// Database Yield & BDD (Bahan Dapat Dimakan) Kemenkes & Juknis BGN
+const YIELD_DATABASE = {
+  // Karbohidrat
+  'beras': { bdd: 1.0, cookingYield: 2.5, category: 'Karbohidrat' }, // Beras jadi Nasi 2.5x
+  'singkong': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
+  'kentang': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
+  'ubi': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
+  'talas': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
+  'jagung': { bdd: 0.60, cookingYield: 0.95, category: 'Karbohidrat' },
+  'roti': { bdd: 1.0, cookingYield: 1.0, category: 'Karbohidrat' },
+  'mie': { bdd: 1.0, cookingYield: 1.5, category: 'Karbohidrat' },
+  
+  // Protein
+  'ayam': { bdd: 0.80, cookingYield: 0.75, category: 'Protein Hewani' }, // susut masak 25%
+  'daging': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' }, // susut 30%
+  'sapi': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' },
+  'kambing': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' },
+  'ikan': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
+  'lele': { bdd: 0.65, cookingYield: 0.80, category: 'Protein Hewani' },
+  'kembung': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
+  'bandeng': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
+  'nila': { bdd: 0.65, cookingYield: 0.80, category: 'Protein Hewani' },
+  'patin': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
+  'tuna': { bdd: 1.0, cookingYield: 0.80, category: 'Protein Hewani' },
+  'salmon': { bdd: 1.0, cookingYield: 0.80, category: 'Protein Hewani' },
+  'telur': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' }, // kulit 12%
+  'puyuh': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' },
+  'bebek': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' },
+  'udang': { bdd: 0.70, cookingYield: 0.85, category: 'Protein Hewani' },
+  'cumi': { bdd: 0.85, cookingYield: 0.80, category: 'Protein Hewani' },
+  'kerang': { bdd: 0.40, cookingYield: 0.85, category: 'Protein Hewani' },
+  'tempe': { bdd: 1.0, cookingYield: 0.95, category: 'Protein Nabati' },
+  'tahu': { bdd: 1.0, cookingYield: 0.90, category: 'Protein Nabati' },
+  'kacang': { bdd: 1.0, cookingYield: 1.0, category: 'Protein Nabati' },
+  'oncom': { bdd: 1.0, cookingYield: 0.95, category: 'Protein Nabati' },
+  
+  // Sayuran
+  'bayam': { bdd: 0.65, cookingYield: 0.60, category: 'Sayuran' }, // susut penyiangan 35%, layu 40%
+  'kangkung': { bdd: 0.65, cookingYield: 0.60, category: 'Sayuran' },
+  'wortel': { bdd: 0.85, cookingYield: 0.90, category: 'Sayuran' },
+  'buncis': { bdd: 0.90, cookingYield: 0.90, category: 'Sayuran' },
+  'kol': { bdd: 0.85, cookingYield: 0.85, category: 'Sayuran' },
+  'brokoli': { bdd: 0.80, cookingYield: 0.85, category: 'Sayuran' },
+  'sawi': { bdd: 0.85, cookingYield: 0.70, category: 'Sayuran' },
+  'labu': { bdd: 0.80, cookingYield: 0.90, category: 'Sayuran' },
+  
+  // Buah
+  'pisang': { bdd: 0.65, cookingYield: 1.0, category: 'Buah' },
+  'jeruk': { bdd: 0.70, cookingYield: 1.0, category: 'Buah' },
+  'semangka': { bdd: 0.60, cookingYield: 1.0, category: 'Buah' },
+  'pepaya': { bdd: 0.70, cookingYield: 1.0, category: 'Buah' },
+  'melon': { bdd: 0.65, cookingYield: 1.0, category: 'Buah' }
+};
+
+function getYieldInfo(nama) {
+  const lowercaseNama = nama.toLowerCase();
+  for (const key in YIELD_DATABASE) {
+    if (lowercaseNama.includes(key)) {
+      return YIELD_DATABASE[key];
+    }
+  }
+  return { bdd: 1.0, cookingYield: 1.0, category: 'Lainnya' };
+}
+
+// Database Alergen Utama
+const ALLERGENS = {
+  'udang': 'Seafood (Udang) - Risiko Alergi Tinggi',
+  'cumi': 'Seafood (Cumi) - Risiko Alergi Tinggi',
+  'ikan': 'Seafood (Ikan) - Risiko Alergi Sedang',
+  'lele': 'Seafood (Ikan) - Risiko Alergi Sedang',
+  'kembung': 'Seafood (Ikan) - Risiko Alergi Sedang',
+  'bandeng': 'Seafood (Ikan) - Risiko Alergi Sedang',
+  'nila': 'Seafood (Ikan) - Risiko Alergi Sedang',
+  'patin': 'Seafood (Ikan) - Risiko Alergi Sedang',
+  'tuna': 'Seafood (Ikan) - Risiko Alergi Sedang',
+  'salmon': 'Seafood (Ikan) - Risiko Alergi Sedang',
+  'telur': 'Telur Unggas - Risiko Alergi Sedang',
+  'puyuh': 'Telur Unggas - Risiko Alergi Sedang',
+  'bebek': 'Telur Unggas - Risiko Alergi Sedang',
+  'roti': 'Gluten (Terigu) - Risiko Alergi Rendah/Sedang',
+  'terigu': 'Gluten (Terigu) - Risiko Alergi Rendah/Sedang'
+};
+
+const ALTERNATIVES = {
+  'Seafood': 'Daging Ayam Fillet Dada / Tempe Kedelai Murni',
+  'Telur': 'Tahu Kuning Kediri / Tempe Kedelai Murni / Daging Ayam',
+  'Gluten': 'Bahan Karbohidrat Kentang Rebus / Ubi Jalar Merah'
+};
+
 export function generateSPPGHtml({
   // Data produksi
   totalPorsi, siswaNum, spareNum, budgetNum, overhead,
@@ -14,18 +103,18 @@ export function generateSPPGHtml({
   qcRasa, qcAroma, qcTekstur, qcPenampilan,
   qcHigienitas, qcSuhu, qcWaktu,
   qcTesterName, qcNotes, qcStatus,
+  consolidatedIngredients
 }) {
   const tgl = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const jam = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-  // Build menu rows for organoleptik table
+  // 1. Build menu rows for organoleptik table
   const katLabels = { karbo: 'Makanan Pokok', protein: 'Lauk Hewani/Nabati', sayur: 'Sayuran', buah: 'Buah-buahan' };
   let organoRows = '';
   let rowNum = 1;
   selectedItems.forEach(item => {
     const katLabel = katLabels[item.kat] || item.kat;
     const isChecked = (param) => {
-      // All items share the global QC checks in this version
       return param ? '<span style="color:#166534;font-weight:bold;">✓ Baik</span>' : '<span style="color:#991b1b;">— Belum</span>';
     };
     organoRows += `
@@ -48,6 +137,135 @@ export function generateSPPGHtml({
   const statusBadge = qcStatus === 'layak'
     ? '<span style="background:#166534;color:#fff;padding:4px 14px;border-radius:3px;font-weight:bold;font-size:13px;letter-spacing:0.5px;">✅ LAYAK DISTRIBUSI</span>'
     : '<span style="background:#991b1b;color:#fff;padding:4px 14px;border-radius:3px;font-weight:bold;font-size:13px;letter-spacing:0.5px;">⚠️ TUNDA / RE-COOK</span>';
+
+  // 2. Yield & Waste Factor calculations
+  let itemsTableHtml = '';
+  let rowIdx = 1;
+  
+  if (consolidatedIngredients && consolidatedIngredients.length > 0) {
+    consolidatedIngredients.forEach(ing => {
+      const yieldInfo = getYieldInfo(ing.nama);
+      const bddPct = yieldInfo.bdd * 100;
+      const cookingYieldPct = yieldInfo.cookingYield * 100;
+      
+      const qtyPerPorsi = ing.qtyPerPorsi;
+      const unit = ing.unit.toLowerCase();
+      
+      let grossStr = '—';
+      let netStr = '—';
+      let cookedStr = '—';
+      
+      if (unit === 'g' || unit.includes('g ')) {
+        const totalGrossVal = qtyPerPorsi * totalPorsi;
+        const totalNetVal = totalGrossVal * yieldInfo.bdd;
+        const cookedValPerPorsi = qtyPerPorsi * yieldInfo.bdd * yieldInfo.cookingYield;
+        
+        grossStr = totalGrossVal >= 1000 ? `${(totalGrossVal/1000).toFixed(2).replace('.', ',')} kg` : `${Math.round(totalGrossVal)} g`;
+        netStr = totalNetVal >= 1000 ? `${(totalNetVal/1000).toFixed(2).replace('.', ',')} kg` : `${Math.round(totalNetVal)} g`;
+        cookedStr = `${Math.round(cookedValPerPorsi)} g`;
+      } else {
+        const totalGrossVal = qtyPerPorsi * totalPorsi;
+        grossStr = `${Math.ceil(totalGrossVal)} ${ing.unit}`;
+        netStr = `${Math.ceil(totalGrossVal * yieldInfo.bdd)} ${ing.unit}`;
+        cookedStr = `${(qtyPerPorsi * yieldInfo.bdd * yieldInfo.cookingYield).toFixed(1)} ${ing.unit}`;
+      }
+      
+      const boldStyle = ing.isUtama ? 'font-weight:bold;' : '';
+      const badge = ing.isUtama ? ' <span style="font-size:7px;background:#1e3a8a;color:#93c5fd;padding:1px 4px;border-radius:2px;text-transform:uppercase;font-weight:800;">UTAMA</span>' : '';
+      
+      itemsTableHtml += `
+        <tr style="${boldStyle}">
+          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${rowIdx}</td>
+          <td style="border:1px solid #333;padding:5px 6px;">${ing.nama}${badge}</td>
+          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${bddPct}%</td>
+          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${grossStr}</td>
+          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${netStr}</td>
+          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${cookingYieldPct === 100 ? '—' : cookingYieldPct + '%'}</td>
+          <td style="border:1px solid #333;padding:5px 6px;text-align:center;font-weight:bold;">${cookedStr}</td>
+          <td style="border:1px solid #333;padding:5px 6px;font-size:9.5px;color:#555;">${ing.catatan || '—'}</td>
+        </tr>
+      `;
+      rowIdx++;
+    });
+  } else {
+    itemsTableHtml = itemsHtml; // fallback
+  }
+
+  // 3. Allergen Screening
+  const allergenNotes = [];
+  selectedItems.forEach(item => {
+    const lowercaseName = item.nama.toLowerCase();
+    for (const key in ALLERGENS) {
+      if (lowercaseName.includes(key)) {
+        const allergenType = ALLERGENS[key];
+        let altSuggest = '';
+        if (allergenType.includes('Seafood')) altSuggest = ALTERNATIVES.Seafood;
+        else if (allergenType.includes('Telur')) altSuggest = ALTERNATIVES.Telur;
+        else if (allergenType.includes('Gluten')) altSuggest = ALTERNATIVES.Gluten;
+        
+        const note = `<strong>${allergenType}</strong>: Rekomendasi alternatif menu penyeimbang gizi: <strong>${altSuggest}</strong>.`;
+        if (!allergenNotes.includes(note)) {
+          allergenNotes.push(note);
+        }
+      }
+    }
+  });
+
+  const allergenSectionHtml = allergenNotes.length > 0
+    ? `
+      <div style="background:#fffbeb;border:1.5px solid #d97706;border-radius:4px;padding:8px 12px;margin-bottom:14px;font-size:11px;">
+        <span style="font-weight:bold;color:#b45309;font-size:11.5px;">⚠️ PROTOKOL MITIGASI ALERGI SISWA (Deteksi Bahan Baku):</span>
+        <ul style="margin:4px 0 0 16px;padding:0;color:#92400e;">
+          ${allergenNotes.map(n => `<li style="margin-bottom:3px;">${n}</li>`).join('')}
+        </ul>
+      </div>
+    `
+    : `
+      <div style="background:#f0fdf4;border:1.5px solid #16a34a;border-radius:4px;padding:8px 12px;margin-bottom:14px;font-size:11px;color:#15803d;font-weight:bold;">
+        ✓ Bebas Alergen Utama: Tidak terdeteksi seafood, telur unggas, atau gluten dalam bahan menu terpilih.
+      </div>
+    `;
+
+  // 4. Food Costing & Waste analysis
+  const lossPorsi = (totalPorsi * 0.05).toFixed(1);
+  const costActualPortion = totBiaya + Math.round(budgetNum * overhead / 100);
+  const costDiff = budgetNum - costActualPortion;
+  const isCostOk = costDiff >= 0;
+
+  // 5. Timeline Logistik & Golden Hour
+  const timelineHtml = `
+    <table class="data" style="margin-bottom:14px;">
+      <thead>
+        <tr>
+          <th style="width:25%;">Tahapan Distribusi</th>
+          <th style="width:25%;">Estimasi Jam</th>
+          <th style="width:50%;">Prosedur Keamanan & Kualitas Pangan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:bold;">Selesai Masak & Uji QC</td>
+          <td style="text-align:center;">09:30 WIB</td>
+          <td>Makanan matang selesai diproduksi, dilakukan pengetesan organoleptik dan pengukuran suhu inti matang (&ge;60&deg;C).</td>
+        </tr>
+        <tr>
+          <td style="font-weight:bold;">Loading & Distribusi</td>
+          <td style="text-align:center;">10:15 WIB</td>
+          <td>Makanan dipacking dalam wadah mika/steril rapat, dimuat ke armada logistik yang bersih dan tertutup.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:bold;">Tiba & Pembagian</td>
+          <td style="text-align:center;">11:00 WIB</td>
+          <td>Serah terima di sekolah dengan panitia/relawan, pembagian porsi makan siang ke piring/wadah siswa.</td>
+        </tr>
+        <tr style="background:#fef2f2;color:#991b1b;font-weight:bold;">
+          <td>Batas Konsumsi (Golden Hour)</td>
+          <td style="text-align:center;">12:30 WIB</td>
+          <td>Maksimal 3 jam setelah selesai masak. Sisa makanan setelah jam ini WAJIB dibuang / dilarang dikonsumsi demi keselamatan siswa.</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
 
   return `
 <html>
@@ -108,7 +326,7 @@ export function generateSPPGHtml({
     <td class="lbl">Tanggal</td><td>: ${tgl}</td>
   </tr>
   <tr>
-    <td class="lbl">Revisi</td><td>: 00</td>
+    <td class="lbl">Revisi</td><td>: 01 (Ahli Gizi Yield & Alergen)</td>
     <td class="lbl">Waktu Cetak</td><td>: ${jam} WIB</td>
   </tr>
   <tr>
@@ -120,7 +338,7 @@ export function generateSPPGHtml({
 <div class="sub-judul">Checklist Uji Organoleptik, Monitoring Keamanan Pangan & Rencana Belanja Bahan</div>
 
 <!-- ═══ INFORMASI UMUM ═══ -->
-<div class="section"><span class="num">I</span> Informasi Umum Produksi</div>
+<div class="section"><span class="num">I</span> Informasi Umum & Evaluasi Anggaran</div>
 <table class="info-grid">
   <tr>
     <td class="lbl">Kelompok Usia Target</td><td>: ${activeAkg.name}</td>
@@ -129,33 +347,46 @@ export function generateSPPGHtml({
     <td class="lbl">Total Produksi</td><td>: <strong>${totalPorsi} porsi</strong> (${siswaNum} siswa + ${spareNum} cadangan)</td>
   </tr>
   <tr>
-    <td class="lbl">Anggaran per Porsi</td><td>: Rp ${budgetNum.toLocaleString('id')} (Bahan Baku: Rp ${budgetBB.toLocaleString('id')} + Overhead ${overhead}%)</td>
+    <td class="lbl">Anggaran Pagu / Porsi</td><td>: Rp ${budgetNum.toLocaleString('id')} (Bahan Baku: Rp ${budgetBB.toLocaleString('id')} + Overhead ${overhead}%)</td>
   </tr>
   <tr>
-    <td class="lbl">Realisasi Biaya Bahan/Porsi</td><td>: <strong>Rp ${totBiaya.toLocaleString('id')}</strong> ${isBudgetOk ? '(✓ Dalam Batas)' : '(⚠ Melebihi Batas)'}</td>
+    <td class="lbl">Realisasi Biaya Aktual</td><td>: Rp ${costActualPortion.toLocaleString('id')} / porsi (Bahan Baku: Rp ${totBiaya.toLocaleString('id')} + Overhead Operasional)</td>
   </tr>
   <tr>
     <td class="lbl">Total Anggaran Harian</td><td>: <strong>Rp ${totalAnggaran.toLocaleString('id')}</strong></td>
   </tr>
 </table>
 
+<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:8px 12px;margin-bottom:14px;font-size:11px;">
+  <strong>ANALISIS FOOD COSTING & TOLERANSI SUSUT:</strong><br>
+  • Sisa Anggaran Per Porsi: <span style="font-weight:bold;color:${isCostOk ? '#15803d' : '#b91c1c'};">Rp ${costDiff.toLocaleString('id')} (${isCostOk ? '✓ Hemat / Dalam Batas' : '⚠️ Defisit'})</span><br>
+  • Toleransi Kehilangan / Waste Dapur (5%): <strong>${lossPorsi} porsi</strong> dari total produksi untuk buffer susut penyimpanan/pembagian.<br>
+  • Estimasi Total Biaya Belanja Bahan Baku (dengan 5% Buffer Loss): <strong>Rp ${Math.round(totBiaya * totalPorsi * 1.05).toLocaleString('id')}</strong>
+</div>
+
+<!-- ═══ MITIGASI ALERGI ═══ -->
+${allergenSectionHtml}
+
 <!-- ═══ MENU & BAHAN BAKU ═══ -->
-<div class="section"><span class="num">II</span> Ringkasan Menu & Kebutuhan Bahan Baku</div>
+<div class="section"><span class="num">II</span> Kebutuhan Bahan Baku & Faktor Susut Gizi (Yield Factor)</div>
 <table class="data">
   <thead>
     <tr>
-      <th style="width:5%;">No</th>
+      <th style="width:4%;">No</th>
       <th>Bahan Baku</th>
-      <th style="width:18%;">Takaran/Porsi</th>
-      <th style="width:18%;">Total Kebutuhan</th>
-      <th style="width:22%;">Catatan</th>
+      <th style="width:10%;">BDD %</th>
+      <th style="width:18%;">Keb. Kotor (Gross)</th>
+      <th style="width:18%;">Keb. Bersih (Net)</th>
+      <th style="width:10%;">Yield Matang</th>
+      <th style="width:14%;">Est. Berat Matang/p</th>
+      <th>Catatan Belanja & Logistik</th>
     </tr>
   </thead>
   <tbody>
-    ${itemsHtml}
+    ${itemsTableHtml}
     <tr class="total-row">
-      <td colspan="3" style="text-align:right;border:1px solid #333;padding:6px 8px;">Subtotal Bahan Baku per Porsi</td>
-      <td colspan="2" style="border:1px solid #333;padding:6px 8px;">Rp ${totBiaya.toLocaleString('id')}</td>
+      <td colspan="3" style="text-align:right;border:1px solid #333;padding:6px 8px;">Subtotal Biaya Bahan Baku per Porsi</td>
+      <td colspan="5" style="border:1px solid #333;padding:6px 8px;font-weight:bold;">Rp ${totBiaya.toLocaleString('id')}</td>
     </tr>
   </tbody>
 </table>
@@ -218,29 +449,33 @@ export function generateSPPGHtml({
     <tr>
       <td style="text-align:center;">2</td>
       <td>Suhu Inti Makanan Matang (Core Temperature)</td>
-      <td style="text-align:center;">≥ 60°C</td>
-      <td style="text-align:center;">${qcSuhu ? '≥ 60°C' : 'Belum Diukur'}</td>
+      <td style="text-align:center;">&ge; 60&deg;C</td>
+      <td style="text-align:center;">${qcSuhu ? '&ge; 60&deg;C' : 'Belum Diukur'}</td>
       <td style="text-align:center;font-weight:bold;color:${qcSuhu ? '#166534' : '#991b1b'};">${qcSuhu ? '✓ MEMENUHI' : '✗ BELUM'}</td>
     </tr>
     <tr>
       <td style="text-align:center;">3</td>
       <td>Jeda Waktu Masak — Konsumsi (Golden Hour)</td>
-      <td style="text-align:center;">< 3 Jam</td>
-      <td style="text-align:center;">${qcWaktu ? '< 3 Jam' : 'Belum Diverifikasi'}</td>
+      <td style="text-align:center;">&lt; 3 Jam</td>
+      <td style="text-align:center;">${qcWaktu ? '&lt; 3 Jam' : 'Belum Diverifikasi'}</td>
       <td style="text-align:center;font-weight:bold;color:${qcWaktu ? '#166534' : '#991b1b'};">${qcWaktu ? '✓ MEMENUHI' : '✗ BELUM'}</td>
     </tr>
   </tbody>
 </table>
 
+<!-- ═══ TIMELINE LOGISTIK DISTRIBUSI ═══ -->
+<div class="section"><span class="num">VI</span> Timeline Logistik Distribusi & Golden Hour</div>
+${timelineHtml}
+
 <!-- ═══ KEPUTUSAN KELAYAKAN ═══ -->
-<div class="section"><span class="num">VI</span> Keputusan Kelayakan Distribusi</div>
+<div class="section"><span class="num">VII</span> Keputusan Kelayakan Distribusi</div>
 <div class="${qcStatus === 'layak' ? 'badge-layak' : 'badge-tunda'}">
   ${statusBadge}
 </div>
 
 <table class="info-grid" style="margin-top:8px;">
   <tr>
-    <td class="lbl">Catatan Lapangan</td>
+    <td class="lbl">Catatan Lapangan Ahli Gizi</td>
     <td>: ${qcNotes || 'Tidak ada catatan tambahan.'}</td>
   </tr>
 </table>
