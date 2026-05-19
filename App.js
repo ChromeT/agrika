@@ -813,9 +813,15 @@ export default function App() {
       return;
     }
     const id = 'custom-' + Date.now();
+    const emojiMap = {
+      karbo: '🌾',
+      protein: '🍗',
+      sayur: '🥬',
+      buah: '🍎'
+    };
     const newItem = {
       id,
-      icon: customIcon.trim() || '🍲',
+      icon: emojiMap[customKat] || '🍽️',
       nama: customNama,
       porsi: '1 Porsi',
       kalori: parseFloat(customKalori) || 0,
@@ -1511,40 +1517,39 @@ export default function App() {
 
         <View style={styles.card}>
           <Text style={styles.label}>Kategori &amp; Nama Pangan</Text>
-          <View style={styles.row}>
-            <TextInput
-              style={[styles.input, { flex: 1, marginRight: 8, fontSize: 14 }]}
-              value={customIcon}
-              onChangeText={setCustomIcon}
-              placeholder="Emoji (contoh: 🍲)"
-              placeholderTextColor="#626C90"
-            />
-            <TextInput
-              style={[styles.input, { flex: 2, fontSize: 14 }]}
-              value={customNama}
-              onChangeText={setCustomNama}
-              placeholder="Nama Menu / Makanan"
-              placeholderTextColor="#626C90"
-            />
+          <View style={[styles.row, { alignItems: 'center', marginBottom: 8 }]}>
+            {/* Category selector dropdown triggers on the left (replacing customIcon) */}
+            <View style={{ flex: 1.2, marginRight: 8 }}>
+              <TouchableOpacity 
+                style={[styles.dropdownHeader, { marginBottom: 0, paddingVertical: 10, paddingHorizontal: 8 }]} 
+                onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+              >
+                <Text style={[styles.dropdownHeaderText, { fontSize: 12.5 }]} numberOfLines={1}>
+                  {customKat ? customKat.toUpperCase() : 'KATEGORI'}
+                </Text>
+                <MaterialCommunityIcons 
+                  name={showCategoryDropdown ? "chevron-up" : "chevron-down"} 
+                  size={16} 
+                  color="#60A5FA" 
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Nama Menu / Makanan text input on the right */}
+            <View style={{ flex: 2 }}>
+              <TextInput
+                style={[styles.input, { fontSize: 14, marginBottom: 0, paddingVertical: 8 }]}
+                value={customNama}
+                onChangeText={setCustomNama}
+                placeholder="Nama Menu / Makanan"
+                placeholderTextColor="#626C90"
+              />
+            </View>
           </View>
 
-          <Text style={styles.label}>Pilih Kelompok Gizi</Text>
-          <TouchableOpacity 
-            style={styles.dropdownHeader} 
-            onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
-          >
-            <Text style={styles.dropdownHeaderText}>
-              {customKat ? customKat.toUpperCase() : 'Pilih Kelompok Gizi'}
-            </Text>
-            <MaterialCommunityIcons 
-              name={showCategoryDropdown ? "chevron-up" : "chevron-down"} 
-              size={20} 
-              color="#60A5FA" 
-            />
-          </TouchableOpacity>
-
+          {/* Category Dropdown List overlay */}
           {showCategoryDropdown && (
-            <View style={styles.dropdownListContainer}>
+            <View style={[styles.dropdownListContainer, { marginTop: -4 }]}>
               {categoriesList.map(k => (
                 <TouchableOpacity
                   key={k}
@@ -1575,6 +1580,7 @@ export default function App() {
             </View>
           )}
 
+          {/* Custom Category Input Panel */}
           {isAddingNewCategory && (
             <View style={{ marginTop: 4, marginBottom: 12, padding: 12, backgroundColor: 'rgba(15, 18, 28, 0.6)', borderWidth: 1.5, borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 8 }}>
               <Text style={[styles.label, { marginTop: 0, marginBottom: 6 }]}>Nama Kategori Baru</Text>
