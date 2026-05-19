@@ -92,8 +92,37 @@ export function generateSPPGHtml({
   qcRasa, qcAroma, qcTekstur, qcPenampilan,
   qcHigienitas, qcSuhu, qcWaktu,
   qcTesterName, qcNotes, qcStatus,
-  consolidatedIngredients
+  consolidatedIngredients,
+  jamMakanSiang = '11:30'
 }) {
+  const calculateTimeline = (jamMakan) => {
+    try {
+      const [h, m] = jamMakan.split(':').map(Number);
+      const makeTimeString = (hour, min) => {
+        let hr = (hour + 24) % 24;
+        let mn = (min + 60) % 60;
+        return `${String(hr).padStart(2, '0')}:${String(mn).padStart(2, '0')}`;
+      };
+
+      return {
+        makanSiang: makeTimeString(h, m),
+        distribusi: makeTimeString(h - 1, m),
+        pemorsian: makeTimeString(h - 2, m),
+        mulaiMasak: makeTimeString(h - 4, m),
+        batasAman: makeTimeString(h - 2 + 3, m)
+      };
+    } catch (e) {
+      return {
+        makanSiang: '11:30',
+        distribusi: '10:30',
+        pemorsian: '09:30',
+        mulaiMasak: '07:30',
+        batasAman: '12:30'
+      };
+    }
+  };
+
+  const times = calculateTimeline(jamMakanSiang);
   const tgl = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const jam = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   const tglSingkat = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/\//g, '');
@@ -155,18 +184,18 @@ export function generateSPPGHtml({
       let cookedStr = '—';
       
       if (unit === 'g' || unit.includes('g ')) {
-        const totalGrossVal = qtyPerPorsi * totalPorsi;
-        const totalNetVal = totalGrossVal * yieldInfo.bdd;
-        const cookedValPerPorsi = qtyPerPorsi * yieldInfo.bdd * yieldInfo.cookingYield;
+        const totalGrossVal = (qtyPerPorsi / yieldInfo.bdd) * totalPorsi;
+        const totalNetVal = qtyPerPorsi * totalPorsi;
+        const cookedValPerPorsi = qtyPerPorsi * yieldInfo.cookingYield;
         
         grossStr = totalGrossVal >= 1000 ? `${(totalGrossVal/1000).toFixed(2).replace('.', ',')} kg` : `${Math.round(totalGrossVal)} g`;
         netStr = totalNetVal >= 1000 ? `${(totalNetVal/1000).toFixed(2).replace('.', ',')} kg` : `${Math.round(totalNetVal)} g`;
         cookedStr = `${Math.round(cookedValPerPorsi)} g`;
       } else {
-        const totalGrossVal = qtyPerPorsi * totalPorsi;
+        const totalGrossVal = (qtyPerPorsi / yieldInfo.bdd) * totalPorsi;
         grossStr = `${Math.ceil(totalGrossVal)} ${ing.unit}`;
-        netStr = `${Math.ceil(totalGrossVal * yieldInfo.bdd)} ${ing.unit}`;
-        cookedStr = `${(qtyPerPorsi * yieldInfo.bdd * yieldInfo.cookingYield).toFixed(1)} ${ing.unit}`;
+        netStr = `${Math.ceil(qtyPerPorsi * totalPorsi)} ${ing.unit}`;
+        cookedStr = `${(qtyPerPorsi * yieldInfo.cookingYield).toFixed(1)} ${ing.unit}`;
       }
       
       const isUtamaBadge = ing.isUtama ? ' <span style="font-size:6px;background:#e0f2fe;color:#0369a1;padding:1px 3px;border-radius:2px;font-weight:bold;text-transform:uppercase;">UTAMA</span>' : '';
@@ -416,22 +445,27 @@ export function generateSPPGHtml({
   <div style="font-size:9.5px;font-weight:bold;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">🕒 Jadwal Distribusi & Golden Hour Keamanan Pangan</div>
   <div class="timeline">
     <div class="time-step">
-      <span class="time-val">09:30 WIB</span>
-      <span class="time-lbl">Selesai Masak & QC</span>
+      <span class="time-val">${times.mulaiMasak} WIB</span>
+      <span class="time-lbl">Mulai Masak</span>
     </div>
     <div style="color:#cbd5e1;font-weight:bold;">➔</div>
     <div class="time-step">
-      <span class="time-val">10:15 WIB</span>
+      <span class="time-val">${times.pemorsian} WIB</span>
+      <span class="time-lbl">Selesai & Plating</span>
+    </div>
+    <div style="color:#cbd5e1;font-weight:bold;">➔</div>
+    <div class="time-step">
+      <span class="time-val">${times.distribusi} WIB</span>
       <span class="time-lbl">Loading Armada</span>
     </div>
     <div style="color:#cbd5e1;font-weight:bold;">➔</div>
     <div class="time-step">
-      <span class="time-val">11:00 WIB</span>
-      <span class="time-lbl">Saji di Sekolah</span>
+      <span class="time-val">${times.makanSiang} WIB</span>
+      <span class="time-lbl">Target Sajian</span>
     </div>
     <div style="color:#cbd5e1;font-weight:bold;">➔</div>
     <div class="time-step" style="background:#fef2f2;border-radius:4px;padding:2px 6px;">
-      <span class="time-val" style="color:#b91c1c;">12:30 WIB</span>
+      <span class="time-val" style="color:#b91c1c;">${times.batasAman} WIB</span>
       <span class="time-lbl" style="color:#991b1b;font-weight:bold;">Batas Aman Konsumsi</span>
     </div>
   </div>

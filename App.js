@@ -22,6 +22,63 @@ import * as FileSystem from 'expo-file-system';
 import { generateSPPGHtml } from './pdfTemplate';
 import TKPI_DATABASE from './tkpi_database.json';
 
+// Database Yield & BDD (Bahan Dapat Dimakan) Kemenkes & Juknis BGN
+const YIELD_DATABASE = {
+  'beras': { bdd: 1.0, cookingYield: 2.5, category: 'Karbohidrat' },
+  'singkong': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
+  'kentang': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
+  'ubi': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
+  'talas': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
+  'jagung': { bdd: 0.60, cookingYield: 0.95, category: 'Karbohidrat' },
+  'roti': { bdd: 1.0, cookingYield: 1.0, category: 'Karbohidrat' },
+  'mie': { bdd: 1.0, cookingYield: 1.5, category: 'Karbohidrat' },
+  'ayam': { bdd: 0.80, cookingYield: 0.75, category: 'Protein Hewani' },
+  'daging': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' },
+  'sapi': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' },
+  'kambing': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' },
+  'ikan': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
+  'lele': { bdd: 0.65, cookingYield: 0.80, category: 'Protein Hewani' },
+  'kembung': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
+  'bandeng': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
+  'nila': { bdd: 0.65, cookingYield: 0.80, category: 'Protein Hewani' },
+  'patin': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
+  'tuna': { bdd: 1.0, cookingYield: 0.80, category: 'Protein Hewani' },
+  'salmon': { bdd: 1.0, cookingYield: 0.80, category: 'Protein Hewani' },
+  'telur': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' },
+  'puyuh': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' },
+  'bebek': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' },
+  'udang': { bdd: 0.70, cookingYield: 0.85, category: 'Protein Hewani' },
+  'cumi': { bdd: 0.85, cookingYield: 0.80, category: 'Protein Hewani' },
+  'kerang': { bdd: 0.40, cookingYield: 0.85, category: 'Protein Hewani' },
+  'tempe': { bdd: 1.0, cookingYield: 0.95, category: 'Protein Nabati' },
+  'tahu': { bdd: 1.0, cookingYield: 0.90, category: 'Protein Nabati' },
+  'kacang': { bdd: 1.0, cookingYield: 1.0, category: 'Protein Nabati' },
+  'oncom': { bdd: 1.0, cookingYield: 0.95, category: 'Protein Nabati' },
+  'bayam': { bdd: 0.65, cookingYield: 0.60, category: 'Sayuran' },
+  'kangkung': { bdd: 0.65, cookingYield: 0.60, category: 'Sayuran' },
+  'wortel': { bdd: 0.85, cookingYield: 0.90, category: 'Sayuran' },
+  'buncis': { bdd: 0.90, cookingYield: 0.90, category: 'Sayuran' },
+  'kol': { bdd: 0.85, cookingYield: 0.85, category: 'Sayuran' },
+  'brokoli': { bdd: 0.80, cookingYield: 0.85, category: 'Sayuran' },
+  'sawi': { bdd: 0.85, cookingYield: 0.70, category: 'Sayuran' },
+  'labu': { bdd: 0.80, cookingYield: 0.90, category: 'Sayuran' },
+  'pisang': { bdd: 0.65, cookingYield: 1.0, category: 'Buah' },
+  'jeruk': { bdd: 0.70, cookingYield: 1.0, category: 'Buah' },
+  'semangka': { bdd: 0.60, cookingYield: 1.0, category: 'Buah' },
+  'pepaya': { bdd: 0.70, cookingYield: 1.0, category: 'Buah' },
+  'melon': { bdd: 0.65, cookingYield: 1.0, category: 'Buah' }
+};
+
+function getYieldInfo(nama) {
+  const lowercaseNama = nama.toLowerCase();
+  for (const key in YIELD_DATABASE) {
+    if (lowercaseNama.includes(key)) {
+      return YIELD_DATABASE[key];
+    }
+  }
+  return { bdd: 1.0, cookingYield: 1.0, category: 'Lainnya' };
+}
+
 // ═══════════════════════════════════════════════════
 //  DATA MENU AWAL (TKPI KEMENKES + NEW MBG RECIPES)
 // ═══════════════════════════════════════════════════
@@ -466,6 +523,37 @@ export default function App() {
   const [spareVal, setSpareVal] = useState('15');
   const [budget, setBudget] = useState('10000');
   const [overhead, setOverhead] = useState(25); // percentage
+  const [jamMakanSiang, setJamMakanSiang] = useState('11:30'); // target lunchtime
+
+  // Dynamic Back-Scheduling helper
+  const calculateTimeline = (jamMakan) => {
+    try {
+      const [h, m] = jamMakan.split(':').map(Number);
+      if (isNaN(h) || isNaN(m)) throw new Error('Invalid time format');
+      
+      const makeTimeString = (hour, min) => {
+        let hr = (hour + 24) % 24;
+        let mn = (min + 60) % 60;
+        return `${String(hr).padStart(2, '0')}:${String(mn).padStart(2, '0')}`;
+      };
+
+      return {
+        makanSiang: makeTimeString(h, m),
+        distribusi: makeTimeString(h - 1, m),
+        pemorsian: makeTimeString(h - 2, m),
+        mulaiMasak: makeTimeString(h - 4, m),
+        batasAman: makeTimeString(h - 2 + 3, m)
+      };
+    } catch (e) {
+      return {
+        makanSiang: '11:30',
+        distribusi: '10:30',
+        pemorsian: '09:30',
+        mulaiMasak: '07:30',
+        batasAman: '12:30'
+      };
+    }
+  };
 
   // Selection state
   const [selected, setSelected] = useState({ karbo: null, protein: null, sayur: null, buah: null });
@@ -601,10 +689,14 @@ export default function App() {
     const price = info.price; // price per kg or per liter or per unit
     const priceUnit = info.unit; // 'kg', 'liter', 'butir', 'buah'
     
+    // Hitung berat kotor belanja (Gross) berdasarkan BDD
+    const yieldInfo = getYieldInfo(nama);
+    const grossQty = qtyPerPorsi / yieldInfo.bdd;
+    
     if (priceUnit === 'kg' || priceUnit === 'liter') {
-      return (qtyPerPorsi / 1000) * price;
+      return (grossQty / 1000) * price;
     }
-    return qtyPerPorsi * price;
+    return grossQty * price;
   };
 
   const getMenuCostPerPortion = (item) => {
@@ -1004,6 +1096,30 @@ export default function App() {
     return Object.values(consolidatedMap);
   };
 
+  const formatGrossTotal = (qtyPerPorsi, bdd, unit, totalPorsiVal) => {
+    const totalVal = (qtyPerPorsi / bdd) * totalPorsiVal;
+    if (unit === 'g') {
+      if (totalVal >= 1000) return `${(totalVal / 1000).toFixed(2).replace('.', ',')}`;
+      return `${Math.round(totalVal)}`;
+    }
+    if (unit === 'ml') {
+      if (totalVal >= 1000) return `${(totalVal / 1000).toFixed(2).replace('.', ',')}`;
+      return `${Math.round(totalVal)}`;
+    }
+    return `${Math.ceil(totalVal)}`;
+  };
+
+  const getGrossSatuan = (qtyPerPorsi, bdd, unit, totalPorsiVal) => {
+    const totalVal = (qtyPerPorsi / bdd) * totalPorsiVal;
+    if (unit === 'g') {
+      return totalVal >= 1000 ? 'kg' : 'g';
+    }
+    if (unit === 'ml') {
+      return totalVal >= 1000 ? 'liter' : 'ml';
+    }
+    return unit;
+  };
+
   const formatIngredientTotal = (qtyPerPorsi, unit, totalPorsiVal) => {
     const totalVal = qtyPerPorsi * totalPorsiVal;
     if (unit === 'g') {
@@ -1095,7 +1211,8 @@ export default function App() {
       qcRasa, qcAroma, qcTekstur, qcPenampilan,
       qcHigienitas, qcSuhu, qcWaktu,
       qcTesterName, qcNotes, qcStatus,
-      consolidatedIngredients: consolidated
+      consolidatedIngredients: consolidated,
+      jamMakanSiang
     });
 
     if (Platform.OS === 'web') {
@@ -1336,7 +1453,7 @@ export default function App() {
               <View style={styles.menuGrid}>
                 {combined.map(item => {
                   const isSel = selected[cat.key] === item.id;
-                  const priceVal = menuPrices[item.id] !== undefined ? menuPrices[item.id] : item.harga;
+                  const priceVal = getMenuCostPerPortion(item);
                   
                   return (
                     <TouchableOpacity
@@ -2076,41 +2193,131 @@ export default function App() {
             {/* Bahan Pelengkap Goreng/Katsu dkk */}
             {renderPelengkapCards(selectedProtein, totalPorsi)}
 
+            {/* INTERACTIVE KITCHEN TIMELINE CARD */}
+            <Text style={styles.sectionTitle}>🕒 TIMELINE OPERASIONAL DAPUR & DISTRIBUSI (BGN)</Text>
+            <View style={[styles.card, { padding: 15, marginBottom: 15 }]}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <Text style={{ color: '#F1F3F9', fontSize: 12.5, fontWeight: '700' }}>Jam Target Makan Siang Siswa:</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E293B', borderRadius: 6, borderWidth: 1, borderColor: '#334155', paddingHorizontal: 8, paddingVertical: 4 }}>
+                  <TextInput
+                    style={{ color: '#FFF', width: 50, fontSize: 13, fontWeight: 'bold', textAlign: 'center', padding: 0 }}
+                    value={jamMakanSiang}
+                    onChangeText={setJamMakanSiang}
+                    placeholder="11:30"
+                    placeholderTextColor="#475569"
+                  />
+                  <MaterialCommunityIcons name="clock-outline" size={14} color="#3B82F6" style={{ marginLeft: 4 }} />
+                </View>
+              </View>
+
+              {(() => {
+                const times = calculateTimeline(jamMakanSiang);
+                return (
+                  <View style={{ position: 'relative' }}>
+                    <View style={{ position: 'absolute', left: 16, top: 12, bottom: 12, width: 2, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+                    
+                    {/* Step 1: Mulai Masak */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                      <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#475569', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+                        <MaterialCommunityIcons name="fire" size={16} color="#FB923C" />
+                      </View>
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>Mulai Masak & Persiapan Bahan</Text>
+                        <Text style={{ color: '#A5ACCC', fontSize: 11 }}>Jam {times.mulaiMasak} WIB (Estimasi durasi memasak 2 jam)</Text>
+                      </View>
+                    </View>
+
+                    {/* Step 2: Selesai Masak / Plating */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                      <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#3B82F6', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+                        <MaterialCommunityIcons name="silverware-clean" size={16} color="#3B82F6" />
+                      </View>
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>Selesai Masak & Mulai Pemorsian (Plating/QC)</Text>
+                        <Text style={{ color: '#A5ACCC', fontSize: 11 }}>Jam {times.pemorsian} WIB (QC organoleptik wajib selesai)</Text>
+                      </View>
+                    </View>
+
+                    {/* Step 3: Distribusi */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                      <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#A855F7', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+                        <MaterialCommunityIcons name="truck-delivery" size={16} color="#A855F7" />
+                      </View>
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>Distribusi & Pengiriman Makanan</Text>
+                        <Text style={{ color: '#A5ACCC', fontSize: 11 }}>Jam {times.distribusi} WIB (Kurir berangkat ke sekolah)</Text>
+                      </View>
+                    </View>
+
+                    {/* Step 4: Makan Siang */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                      <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#1E293B', borderWidth: 1, borderColor: '#4ADE80', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+                        <MaterialCommunityIcons name="emoticon-happy-outline" size={16} color="#4ADE80" />
+                      </View>
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>Konsumsi Makan Siang Siswa</Text>
+                        <Text style={{ color: '#A5ACCC', fontSize: 11 }}>Jam {times.makanSiang} WIB (Target konsumsi utama)</Text>
+                      </View>
+                    </View>
+
+                    {/* Step 5: Batas Aman */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#EF4444', justifyContent: 'center', alignItems: 'center', zIndex: 1 }}>
+                        <MaterialCommunityIcons name="alert-decagram-outline" size={16} color="#EF4444" />
+                      </View>
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: 'bold' }}>Batas Aman Konsumsi (Expiry Golden Hour)</Text>
+                        <Text style={{ color: '#FCA5A5', fontSize: 11 }}>Jam {times.batasAman} WIB (Maksimal 3 jam setelah pemorsian)</Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })()}
+            </View>
+
             {/* Tabel Bahan Baku Lengkap */}
             <Text style={styles.sectionTitle}>📋 ESTIMASI BAHAN BAKU LENGKAP (PER PORSI & TOTAL)</Text>
             <View style={styles.card}>
               <View style={styles.tableHeaderRow}>
-                <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Bahan baku</Text>
-                <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Porsi/orang</Text>
-                <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'center' }]}>Total kebutuhan</Text>
-                <Text style={[styles.tableHeaderCell, { flex: 0.8, textAlign: 'center' }]}>Satuan</Text>
-                <Text style={[styles.tableHeaderCell, { flex: 2.2, textAlign: 'right' }]}>Catatan</Text>
+                <Text style={[styles.tableHeaderCell, { flex: 1.8 }]}>Bahan baku</Text>
+                <Text style={[styles.tableHeaderCell, { flex: 0.9, textAlign: 'center' }]}>Net/Orang</Text>
+                <Text style={[styles.tableHeaderCell, { flex: 0.6, textAlign: 'center' }]}>BDD</Text>
+                <Text style={[styles.tableHeaderCell, { flex: 1.2, textAlign: 'center' }]}>Belanja (Gross)</Text>
+                <Text style={[styles.tableHeaderCell, { flex: 0.7, textAlign: 'center' }]}>Satuan</Text>
+                <Text style={[styles.tableHeaderCell, { flex: 1.8, textAlign: 'right' }]}>Catatan</Text>
               </View>
 
-              {getConsolidatedIngredients(selectedItems, totalPorsi).map((ing, idx) => (
-                <View key={idx} style={[styles.tableRow, ing.isUtama && { backgroundColor: 'rgba(59, 130, 246, 0.15)', borderRadius: 4, paddingHorizontal: 4 }]}>
-                  <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={[styles.tableCellName, { color: '#FFF' }]}>{ing.nama}</Text>
-                    {ing.isUtama && (
-                      <View style={styles.utamaBadge}>
-                        <Text style={styles.utamaBadgeText}>utama</Text>
-                      </View>
-                    )}
+              {getConsolidatedIngredients(selectedItems, totalPorsi).map((ing, idx) => {
+                const yieldInfo = getYieldInfo(ing.nama);
+                const bddPct = Math.round(yieldInfo.bdd * 100);
+                return (
+                  <View key={idx} style={[styles.tableRow, ing.isUtama && { backgroundColor: 'rgba(59, 130, 246, 0.15)', borderRadius: 4, paddingHorizontal: 4 }]}>
+                    <View style={{ flex: 1.8, flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={[styles.tableCellName, { color: '#FFF', fontSize: 11.5 }]} numberOfLines={1}>{ing.nama}</Text>
+                      {ing.isUtama && (
+                        <View style={styles.utamaBadge}>
+                          <Text style={styles.utamaBadgeText}>utama</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.tableCellPortion, { flex: 0.9, textAlign: 'center', color: '#A5ACCC' }]}>
+                      {ing.qtyPerPorsi} {ing.unit}
+                    </Text>
+                    <Text style={[styles.tableCellPortion, { flex: 0.6, textAlign: 'center', color: '#60A5FA', fontWeight: 'bold' }]}>
+                      {bddPct}%
+                    </Text>
+                    <Text style={[styles.tableCellTotal, { flex: 1.2, textAlign: 'center', color: '#4ADE80', fontWeight: '800' }]}>
+                      {formatGrossTotal(ing.qtyPerPorsi, yieldInfo.bdd, ing.unit, totalPorsi)}
+                    </Text>
+                    <Text style={[styles.tableCellPortion, { flex: 0.7, textAlign: 'center', color: '#A5ACCC' }]}>
+                      {getGrossSatuan(ing.qtyPerPorsi, yieldInfo.bdd, ing.unit, totalPorsi)}
+                    </Text>
+                    <Text style={[styles.tableCellPortion, { flex: 1.8, textAlign: 'right', fontSize: 10, color: '#94A3B8' }]} numberOfLines={1}>
+                      {ing.catatan}
+                    </Text>
                   </View>
-                  <Text style={[styles.tableCellPortion, { flex: 1, textAlign: 'center', color: '#A5ACCC' }]}>
-                    {ing.qtyPerPorsi} {ing.unit}
-                  </Text>
-                  <Text style={[styles.tableCellTotal, { flex: 1, textAlign: 'center', color: '#FFF', fontWeight: '800' }]}>
-                    {formatIngredientTotal(ing.qtyPerPorsi, ing.unit, totalPorsi)}
-                  </Text>
-                  <Text style={[styles.tableCellPortion, { flex: 0.8, textAlign: 'center', color: '#A5ACCC' }]}>
-                    {getIngredientSatuan(ing.qtyPerPorsi, ing.unit, totalPorsi)}
-                  </Text>
-                  <Text style={[styles.tableCellPortion, { flex: 2.2, textAlign: 'right', fontSize: 10, color: '#94A3B8' }]}>
-                    {ing.catatan}
-                  </Text>
-                </View>
-              ))}
+                );
+              })}
             </View>
           </View>
         );
@@ -2267,6 +2474,53 @@ export default function App() {
       };
     });
     setIngredientPrices(newPrices);
+
+    // Calculate new price based on updated ingredients and prices
+    const getCalculatedPrice = () => {
+      let cost = 0;
+      if (parsedUtama.nama.trim() !== '') {
+        const getPrice = (name) => {
+          if (editIngredientPrices[name]) {
+            return parseFloat(editIngredientPrices[name].price) || 0;
+          }
+          const info = ingredientPrices[name] || DEFAULT_INGREDIENT_PRICES[name];
+          return info ? info.price : 0;
+        };
+        const getPriceUnit = (name) => {
+          if (editIngredientPrices[name]) {
+            return editIngredientPrices[name].unit;
+          }
+          const info = ingredientPrices[name] || DEFAULT_INGREDIENT_PRICES[name];
+          return info ? info.unit : 'kg';
+        };
+
+        const getSingleCost = (name, qty) => {
+          const price = getPrice(name);
+          const priceUnit = getPriceUnit(name);
+          const yieldInfo = getYieldInfo(name);
+          const grossQty = qty / yieldInfo.bdd;
+          
+          if (priceUnit === 'kg' || priceUnit === 'liter') {
+            return (grossQty / 1000) * price;
+          }
+          return grossQty * price;
+        };
+
+        cost += getSingleCost(parsedUtama.nama, parsedUtama.qty);
+        parsedPelengkap.forEach(p => {
+          if (p.nama.trim() !== '') {
+            cost += getSingleCost(p.nama, p.qty);
+          }
+        });
+      }
+      return Math.round(cost);
+    };
+
+    const newPrice = getCalculatedPrice();
+    setMenuPrices(prev => ({
+      ...prev,
+      [editingItem.id]: newPrice
+    }));
     
     setEditingItem(null);
     Alert.alert('Sukses', `Resep dan harga bahan untuk ${editingItem.nama} berhasil diperbarui!`);
