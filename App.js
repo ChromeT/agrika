@@ -748,6 +748,25 @@ export default function App() {
     return Math.round(cost);
   };
 
+  const getMenuPortion = (item) => {
+    const recipe = recipeDetails[item.id] || customRecipeDetails[item.id];
+    if (recipe && recipe.utama && recipe.utama.nama) {
+      const origPorsi = item.porsi || '';
+      const match = origPorsi.match(/^[\d.]+\s*(?:g|kg|butir|pcs|buah|potong)?\s*(.*)$/i);
+      if (match && match[1] && match[1].trim() !== '') {
+        let suffix = match[1].trim();
+        const unit = recipe.utama.unit || 'g';
+        if (suffix.toLowerCase().startsWith(unit.toLowerCase())) {
+          suffix = suffix.substring(unit.length).trim();
+        }
+        const space = (unit === 'g' || unit === 'kg') ? '' : ' ';
+        return `${recipe.utama.qty}${space}${unit} ${suffix}`;
+      }
+      return `${recipe.utama.qty}${recipe.utama.unit} ${recipe.utama.nama}`;
+    }
+    return item.porsi;
+  };
+
   const getMenuGizi = (item) => {
     const recipe = recipeDetails[item.id] || customRecipeDetails[item.id];
     if (!recipe) {
@@ -851,6 +870,7 @@ export default function App() {
         list.push({ 
           ...found, 
           harga: price, 
+          porsi: getMenuPortion(found),
           kalori: gizi.kalori,
           protein: gizi.protein,
           karbo: gizi.karbo,
@@ -1554,7 +1574,7 @@ export default function App() {
                         {getFoodIcon(item.icon)}
                       </Text>
                       <Text style={styles.itemName} numberOfLines={1}>{item.nama}</Text>
-                      <Text style={styles.itemPortion} numberOfLines={1}>{item.porsi}</Text>
+                      <Text style={styles.itemPortion} numberOfLines={1}>{getMenuPortion(item)}</Text>
                       
                       {/* MBG Compliance Badge */}
                       {item.mbgStatus && (
