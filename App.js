@@ -740,6 +740,50 @@ export default function App() {
     return Math.round(cost);
   };
 
+  // Helper to map food icon name/string/emoji into rendering icon
+  const getFoodIcon = (icon) => {
+    if (!icon) return '🍽️';
+    // If it's already an emoji (not alphanumeric and short length), return it
+    if (icon.trim().length <= 2) return icon.trim();
+    
+    const iconMap = {
+      'rice': '🍚',
+      'bowl-rice': '🍙',
+      'corn': '🌽',
+      'potato': '🥔',
+      'food-potato': '🥔',
+      'ellipse': '🟡',
+      'food-chicken': '🍗',
+      'poultry-leg': '🍖',
+      'egg-fried': '🍳',
+      'square': '🟫',
+      'square-outline': '🟨',
+      'fish': '🐟',
+      'food-steak': '🥩',
+      'egg': '🥚',
+      'carrot': '🥕',
+      'leaf': '🥬',
+      'silverware-clean': '🥦',
+      'pot-steam': '🍲',
+      'sprout': '🌿',
+      'shaker-outline': '🫑',
+      'food-apple': '🍎',
+      'fruit-citrus': '🍊',
+      'fruit-watermelon': '🍉',
+      'fruit-pear': '🥭',
+      'fruit-grapes': '🍈',
+      'food-variant': '🌾',
+      'seed': '🌾',
+      'cow': '🥛',
+      'glass-water': '🥛',
+      'cheese': '🧀',
+      'bread': '🍞',
+      'noodles': '🍝',
+      'chili': '🌶️'
+    };
+    return iconMap[icon.trim()] || '🍽️';
+  };
+
   // Selected items calculation
   const getSelectedItems = () => {
     const list = [];
@@ -1421,31 +1465,7 @@ export default function App() {
                         </View>
                       )}
                       <Text style={styles.itemEmoji}>
-                        {item.icon === 'rice' ? '🍚' :
-                         item.icon === 'bowl-rice' ? '🍙' :
-                         item.icon === 'corn' ? '🌽' :
-                         item.icon === 'potato' ? '🥔' :
-                         item.icon === 'food-potato' ? '🥔' :
-                         item.icon === 'ellipse' ? '🟡' :
-                         item.icon === 'food-chicken' ? '🍗' :
-                         item.icon === 'poultry-leg' ? '🍖' :
-                         item.icon === 'egg-fried' ? '🍳' :
-                         item.icon === 'square' ? '🟫' :
-                         item.icon === 'square-outline' ? '🟨' :
-                         item.icon === 'fish' ? '🐟' :
-                         item.icon === 'food-steak' ? '🥩' :
-                         item.icon === 'egg' ? '🥚' :
-                         item.icon === 'carrot' ? '🥕' :
-                         item.icon === 'leaf' ? '🥬' :
-                         item.icon === 'silverware-clean' ? '🥦' :
-                         item.icon === 'pot-steam' ? '🍲' :
-                         item.icon === 'sprout' ? '🌿' :
-                         item.icon === 'shaker-outline' ? '🫑' :
-                         item.icon === 'food-apple' ? '🍌' :
-                         item.icon === 'fruit-citrus' ? '🍊' :
-                         item.icon === 'fruit-watermelon' ? '🍉' :
-                         item.icon === 'fruit-pear' ? '🥭' :
-                         item.icon === 'fruit-grapes' ? '🍈' : '🍽️'}
+                        {getFoodIcon(item.icon)}
                       </Text>
                       <Text style={styles.itemName} numberOfLines={1}>{item.nama}</Text>
                       <Text style={styles.itemPortion} numberOfLines={1}>{item.porsi}</Text>
@@ -2761,7 +2781,7 @@ export default function App() {
                         setTkpiPortionInput('100'); // reset portion to 100g
                       }}
                     >
-                      <Text style={styles.tkpiIcon}>{item.icon}</Text>
+                      <Text style={styles.tkpiIcon}>{getFoodIcon(item.icon)}</Text>
                       <View style={{ flex: 1, marginLeft: 10 }}>
                         <Text style={styles.tkpiNameText}>{item.nama}</Text>
                         <Text style={styles.tkpiNutrientDesc}>
@@ -2800,7 +2820,7 @@ export default function App() {
 
                 {/* Selected Item Info Card */}
                 <View style={styles.selectedHeaderCard}>
-                  <Text style={styles.selectedIcon}>{selectedTkpiItem.icon}</Text>
+                  <Text style={styles.selectedIcon}>{getFoodIcon(selectedTkpiItem.icon)}</Text>
                   <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text style={styles.selectedName}>{selectedTkpiItem.nama}</Text>
                     <Text style={styles.selectedCategory}>Kategori: {selectedTkpiItem.kat.toUpperCase()}</Text>
