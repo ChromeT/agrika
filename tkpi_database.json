@@ -8,8 +8,8 @@
     "karbo": 21.3,
     "lemak": 37,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Ikan/Kerang/Udang dll)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Abon ikan",
@@ -20,8 +20,8 @@
     "karbo": 36.1,
     "lemak": 20.2,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Ikan/Kerang/Udang dll)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Akar tonjong, segar (Lotus root, fresh)",
@@ -393,7 +393,7 @@
     "lemak": 2.6,
     "serat": 0.5,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Ayam  goreng Kentucky,sayap",
@@ -693,7 +693,7 @@
     "lemak": 13.9,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Bagea kelapa manis",
@@ -717,7 +717,7 @@
     "lemak": 29.1,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Bagea kenari manis",
@@ -1136,8 +1136,8 @@
     "karbo": 15.8,
     "lemak": 20.3,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Ikan/Kerang/Udang dll)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Belibis, daging, segar (Whistling duck, meat, fresh)",
@@ -1473,7 +1473,7 @@
     "lemak": 3.9,
     "serat": 0,
     "mbgStatus": "dilarang",
-    "mbgNotes": "Ultra-Processed Food (UPF) komersial dilarang oleh regulasi BGN."
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Bihun Jagung, mentah",
@@ -1856,8 +1856,8 @@
     "karbo": 30.8,
     "lemak": 4.8,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Bubur sagu",
@@ -2240,8 +2240,8 @@
     "karbo": 48.9,
     "lemak": 4,
     "serat": 32.6,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Coklat manis, batang (Chocolate, bar)",
@@ -2252,8 +2252,8 @@
     "karbo": 62.7,
     "lemak": 29.8,
     "serat": 6.5,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Coklat pahit,batang (Chocolate,dark, bar)",
@@ -2264,8 +2264,8 @@
     "karbo": 29.2,
     "lemak": 42.6,
     "serat": 10.8,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Coklat susu, batang (Chocolate, dairy milk, bar)",
@@ -2276,8 +2276,8 @@
     "karbo": 53.6,
     "lemak": 35,
     "serat": 3.4,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Coto mangkasara, kuda, masakan",
@@ -3236,8 +3236,8 @@
     "karbo": 8,
     "lemak": 14.1,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Ikan/Kerang/Udang dll)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Dendeng mujahir, goreng, masakan",
@@ -3248,8 +3248,8 @@
     "karbo": 9.2,
     "lemak": 26.9,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Ikan/Kerang/Udang dll)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Djibokum, masakan",
@@ -3285,7 +3285,7 @@
     "lemak": 8.6,
     "serat": 0.5,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Dodol galamai",
@@ -3836,8 +3836,8 @@
     "karbo": 92,
     "lemak": 0,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Gula kelapa",
@@ -3848,8 +3848,8 @@
     "karbo": 76,
     "lemak": 10,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Gula putih (Sugar cane)",
@@ -3860,8 +3860,8 @@
     "karbo": 94,
     "lemak": 0,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Gulai asam keueung, masakan",
@@ -4041,7 +4041,7 @@
     "lemak": 1.5,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Ikan bader, segar (Silver barb, fresh)",
@@ -4281,7 +4281,7 @@
     "lemak": 2.2,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Ikan cakalang, hati, segar (Scipjack tuna, fresh)",
@@ -4545,7 +4545,7 @@
     "lemak": 2.8,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Ikan kawalinya, segar (Indian mackerel, fresh)",
@@ -4689,7 +4689,7 @@
     "lemak": 2.3,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Ikan malalugis, segar",
@@ -4784,8 +4784,8 @@
     "karbo": 37.2,
     "lemak": 15.2,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Ikan/Kerang/Udang dll)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Ikan mujahir, segar (Mozambique tilapia, fresh)",
@@ -5133,7 +5133,7 @@
     "lemak": 3.8,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Ikan sunu, segar (Leopard coralgrouper, fresh)",
@@ -5337,7 +5337,7 @@
     "lemak": 26.4,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Ikan, tepung, mentah",
@@ -5372,8 +5372,8 @@
     "karbo": 18.4,
     "lemak": 33.5,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Jagung gerontol",
@@ -5528,8 +5528,8 @@
     "karbo": 64.5,
     "lemak": 0.6,
     "serat": 1,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Jambal goreng, masakan",
@@ -6884,8 +6884,8 @@
     "karbo": 9,
     "lemak": 1.3,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Bumbu)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Kecimpring singkong goreng",
@@ -7004,8 +7004,8 @@
     "karbo": 3.8,
     "lemak": 0.1,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Minuman Non Alkohol)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Kelapa muda, daging, segar (Coconut, flesh, Young, fresh )",
@@ -7244,8 +7244,8 @@
     "karbo": 25.6,
     "lemak": 10,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Ikan/Kerang/Udang dll)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Kerang, segar",
@@ -7809,7 +7809,7 @@
     "lemak": 0.5,
     "serat": 0,
     "mbgStatus": "dilarang",
-    "mbgNotes": "Ultra-Processed Food (UPF) komersial dilarang oleh regulasi BGN."
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Koro andong, kering (Jack bean, dried)",
@@ -8660,8 +8660,8 @@
     "karbo": 79.5,
     "lemak": 0,
     "serat": 0.2,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Maizena, tepung",
@@ -8840,8 +8840,8 @@
     "karbo": 0.4,
     "lemak": 81,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Minyak/Lemak)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Markisa squash",
@@ -8852,8 +8852,8 @@
     "karbo": 49.6,
     "lemak": 1,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Markisa squash, BD (Squash, markisa)",
@@ -8864,8 +8864,8 @@
     "karbo": 23.7,
     "lemak": 0.5,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Markisa, segar (Giant Granadilla, fresh)",
@@ -8936,8 +8936,8 @@
     "karbo": 71,
     "lemak": 0.1,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Melinjo emping tebal goreng manis",
@@ -8961,7 +8961,7 @@
     "lemak": 16.2,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Melinjo emping tipis goreng",
@@ -9008,8 +9008,8 @@
     "karbo": 22.7,
     "lemak": 2,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Mentega (Margarine)",
@@ -9020,8 +9020,8 @@
     "karbo": 1.4,
     "lemak": 81.6,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Minyak/Lemak)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Menteng, segar (Kepundung, fresh)",
@@ -10652,8 +10652,8 @@
     "karbo": 0,
     "lemak": 41.5,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Rusip",
@@ -10988,8 +10988,8 @@
     "karbo": 59.3,
     "lemak": 10.6,
     "serat": 7.5,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Sapi, abon, asli",
@@ -11000,8 +11000,8 @@
     "karbo": 38.6,
     "lemak": 16.1,
     "serat": 2.5,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Sapi, babat, segar (Tripe, fresh)",
@@ -11036,8 +11036,8 @@
     "karbo": 0,
     "lemak": 9,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Sapi, daging, gemuk, segar (Beef, high fat, fresh)",
@@ -11060,8 +11060,8 @@
     "karbo": 0,
     "lemak": 25,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Sapi, daging, kurus, segar (Beef, low fat, fresh)",
@@ -11097,7 +11097,7 @@
     "lemak": 42.3,
     "serat": 0,
     "mbgStatus": "dilarang",
-    "mbgNotes": "Ultra-Processed Food (UPF) komersial dilarang oleh regulasi BGN."
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Sapi, daleman, segar (Offal, beef, fresh)",
@@ -11145,7 +11145,7 @@
     "lemak": 22,
     "serat": 2.3,
     "mbgStatus": "dilarang",
-    "mbgNotes": "Ultra-Processed Food (UPF) komersial dilarang oleh regulasi BGN."
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Sapi, keleponan, segar (Tripe, beef, fresh)",
@@ -11192,8 +11192,8 @@
     "karbo": 19.2,
     "lemak": 6,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Daging)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Sapi, paru, goreng",
@@ -11229,7 +11229,7 @@
     "lemak": 27,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Saridele, bubuk",
@@ -11648,8 +11648,8 @@
     "karbo": 55,
     "lemak": 0,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Sirup pirous (syrup, pirous)",
@@ -11660,8 +11660,8 @@
     "karbo": 55.9,
     "lemak": 0.4,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Sop buntut, masakan",
@@ -12416,8 +12416,8 @@
     "karbo": 53.6,
     "lemak": 4.8,
     "serat": 9.6,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Teh hitam daun kering (tea, leaf, black, dried)",
@@ -12428,8 +12428,8 @@
     "karbo": 58.8,
     "lemak": 2.8,
     "serat": 8.7,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Teh melati daun kering (Tea, jasmine, black, dried)",
@@ -12440,8 +12440,8 @@
     "karbo": 59,
     "lemak": 3.5,
     "serat": 9.7,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Konfeksioneri)."
+    "mbgStatus": "dilarang",
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Tekokak, kering (Devil�s fig, dried)",
@@ -12573,7 +12573,7 @@
     "lemak": 13.3,
     "serat": 0,
     "mbgStatus": "dibatasi",
-    "mbgNotes": "Mengandung pengawet atau kadar garam/gula tinggi. Batasi penggunaan."
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Telur bebek, bagian kuning, segar (Duck, egg, yolk, fresh)",
@@ -13088,8 +13088,8 @@
     "karbo": 3.5,
     "lemak": 32.4,
     "serat": 0,
-    "mbgStatus": "aman",
-    "mbgNotes": "Bahan pangan segar Kemenkes TKPI (Ikan/Kerang/Udang dll)."
+    "mbgStatus": "dibatasi",
+    "mbgNotes": "Bahan olahan/pengawet dengan kadar natrium, gula, atau lemak tambahan tinggi. Batasi porsi harian."
   },
   {
     "nama": "Terong asam, segar",
@@ -13245,7 +13245,7 @@
     "lemak": 8.5,
     "serat": 4.2,
     "mbgStatus": "dilarang",
-    "mbgNotes": "Ultra-Processed Food (UPF) komersial dilarang oleh regulasi BGN."
+    "mbgNotes": "Ultra-Processed Food (UPF) pabrikan dilarang keras oleh regulasi BGN untuk menu utama sekolah."
   },
   {
     "nama": "Tomat merah, segar (Tomato, red, fresh)",
