@@ -586,6 +586,12 @@ export default function App() {
   const [selected, setSelected] = useState({ karbo: null, protein: null, sayur: null, buah: null });
   const [customMenus, setCustomMenus] = useState([]);
   const [menuPrices, setMenuPrices] = useState({});
+  const [categoriesList, setCategoriesList] = useState(['karbo', 'protein', 'sayur', 'buah']);
+
+  // Dropdown & Kategori Baru States
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [newCategoryInput, setNewCategoryInput] = useState('');
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
 
   // Input states for new custom menu
   const [customIcon, setCustomIcon] = useState('');
@@ -648,6 +654,7 @@ export default function App() {
           if (parsed.selected) setSelected(parsed.selected);
           if (parsed.customMenus) setCustomMenus(parsed.customMenus);
           if (parsed.menuPrices) setMenuPrices(parsed.menuPrices);
+          if (parsed.categoriesList) setCategoriesList(parsed.categoriesList);
           if (parsed.customRecipeDetails) setCustomRecipeDetails(parsed.customRecipeDetails);
           
           if (parsed.recipeDetails) setRecipeDetails(parsed.recipeDetails);
@@ -677,7 +684,7 @@ export default function App() {
       try {
         const cacheObj = {
           usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, menuPrices, customRecipeDetails,
-          recipeDetails, ingredientPrices,
+          recipeDetails, ingredientPrices, categoriesList,
           qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus
         };
         await AsyncStorage.setItem('sppg_planner_cache', JSON.stringify(cacheObj));
@@ -687,7 +694,7 @@ export default function App() {
     }
     saveCache();
   }, [usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, menuPrices, customRecipeDetails,
-      recipeDetails, ingredientPrices,
+      recipeDetails, ingredientPrices, categoriesList,
       qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus]);
 
   // ═══════════════════════════════════════
@@ -736,11 +743,11 @@ export default function App() {
   // Selected items calculation
   const getSelectedItems = () => {
     const list = [];
-    const categories = ['karbo', 'protein', 'sayur', 'buah'];
-    categories.forEach(kat => {
+    categoriesList.forEach(kat => {
       const id = selected[kat];
       if (!id) return;
-      const combined = [...INITIAL_MENU_DATA[kat], ...customMenus.filter(x => x.kat === kat)];
+      const baseList = INITIAL_MENU_DATA[kat] || [];
+      const combined = [...baseList, ...customMenus.filter(x => x.kat === kat)];
       const found = combined.find(x => x.id === id);
       if (found) {
         // Price calculated dynamically from recipe ingredients, or fallback to menuPrices / found.harga
@@ -1367,12 +1374,14 @@ export default function App() {
   );
 
   const renderTab2 = () => {
-    const categories = [
-      { key: 'karbo', title: '🌾 Karbohidrat Utama' },
-      { key: 'protein', title: '🍗 Protein Hewani / Nabati' },
-      { key: 'sayur', title: '🥬 Sayuran Hijau' },
-      { key: 'buah', title: '🍎 Buah Pencuci Mulut' }
-    ];
+    const categories = categoriesList.map(katKey => {
+      if (katKey === 'karbo') return { key: 'karbo', title: '🌾 Karbohidrat Utama' };
+      if (katKey === 'protein') return { key: 'protein', title: '🍗 Protein Hewani / Nabati' };
+      if (katKey === 'sayur') return { key: 'sayur', title: '🥬 Sayuran Hijau' };
+      if (katKey === 'buah') return { key: 'buah', title: '🍎 Buah Pencuci Mulut' };
+      const displayTitle = katKey.charAt(0).toUpperCase() + katKey.slice(1);
+      return { key: katKey, title: `🍽️ ${displayTitle}` };
+    });
 
     return (
       <ScrollView style={styles.tabContent}>
@@ -1382,7 +1391,7 @@ export default function App() {
         </View>
 
         {categories.map(cat => {
-          const list = INITIAL_MENU_DATA[cat.key];
+          const list = INITIAL_MENU_DATA[cat.key] || [];
           const custom = customMenus.filter(x => x.kat === cat.key);
           const combined = [...list, ...custom];
 
@@ -1520,19 +1529,90 @@ export default function App() {
           </View>
 
           <Text style={styles.label}>Pilih Kelompok Gizi</Text>
-          <View style={styles.toggleGroup}>
-            {['karbo', 'protein', 'sayur', 'buah'].map(k => (
+          <TouchableOpacity 
+            style={styles.dropdownHeader} 
+            onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+          >
+            <Text style={styles.dropdownHeaderText}>
+              {customKat ? customKat.toUpperCase() : 'Pilih Kelompok Gizi'}
+            </Text>
+            <MaterialCommunityIcons 
+              name={showCategoryDropdown ? "chevron-up" : "chevron-down"} 
+              size={20} 
+              color="#60A5FA" 
+            />
+          </TouchableOpacity>
+
+          {showCategoryDropdown && (
+            <View style={styles.dropdownListContainer}>
+              {categoriesList.map(k => (
+                <TouchableOpacity
+                  key={k}
+                  style={styles.dropdownItem}
+                  onPress={() => {
+                    setCustomKat(k);
+                    setIsAddingNewCategory(false);
+                    setShowCategoryDropdown(false);
+                  }}
+                >
+                  <Text style={[styles.dropdownItemText, customKat === k && { color: '#60A5FA', fontWeight: 'bold' }]}>
+                    {k.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              ))}
               <TouchableOpacity
-                key={k}
-                style={[styles.toggleBtn, customKat === k && styles.toggleBtnActive]}
-                onPress={() => setCustomKat(k)}
+                style={[styles.dropdownItem, { borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.08)', flexDirection: 'row', alignItems: 'center', paddingTop: 8, marginTop: 4 }]}
+                onPress={() => {
+                  setIsAddingNewCategory(true);
+                  setShowCategoryDropdown(false);
+                }}
               >
-                <Text style={[styles.toggleBtnText, customKat === k && styles.toggleBtnTextActive]}>
-                  {k.toUpperCase()}
+                <MaterialCommunityIcons name="plus" size={16} color="#4ADE80" />
+                <Text style={[styles.dropdownItemText, { color: '#4ADE80', marginLeft: 4 }]}>
+                  TAMBAH KATEGORI BARU...
                 </Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            </View>
+          )}
+
+          {isAddingNewCategory && (
+            <View style={{ marginTop: 4, marginBottom: 12, padding: 12, backgroundColor: 'rgba(15, 18, 28, 0.6)', borderWidth: 1.5, borderColor: 'rgba(255, 255, 255, 0.1)', borderRadius: 8 }}>
+              <Text style={[styles.label, { marginTop: 0, marginBottom: 6 }]}>Nama Kategori Baru</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <TextInput
+                  style={[styles.input, { flex: 2, marginRight: 8, fontSize: 13, marginBottom: 0 }]}
+                  value={newCategoryInput}
+                  onChangeText={setNewCategoryInput}
+                  placeholder="Contoh: nabati, cemilan, dll"
+                  placeholderTextColor="#626C90"
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  style={[styles.smallBtn, { backgroundColor: '#4ADE80' }]}
+                  onPress={() => {
+                    const cleanKat = newCategoryInput.trim().toLowerCase();
+                    if (!cleanKat) {
+                      Alert.alert('Perhatian', 'Nama kategori tidak boleh kosong!');
+                      return;
+                    }
+                    if (categoriesList.includes(cleanKat)) {
+                      Alert.alert('Perhatian', 'Kategori sudah terdaftar!');
+                      setCustomKat(cleanKat);
+                      setIsAddingNewCategory(false);
+                      setNewCategoryInput('');
+                      return;
+                    }
+                    setCategoriesList(prev => [...prev, cleanKat]);
+                    setCustomKat(cleanKat);
+                    setIsAddingNewCategory(false);
+                    setNewCategoryInput('');
+                  }}
+                >
+                  <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 12 }}>Simpan</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
           <Text style={styles.label}>Nutrisi Makro &amp; Harga</Text>
           <View style={styles.grid3}>
@@ -1943,6 +2023,116 @@ export default function App() {
           );
         })}
       </View>
+
+      {/* ANALISIS NARATIF PEMENUHAN GIZI */}
+      <Text style={styles.sectionTitle}>📝 Analisis Naratif Pemenuhan Gizi</Text>
+      {(() => {
+        const selectedCategories = selectedItems.map(it => it.kat);
+        const hasKarbo = selectedCategories.includes('karbo');
+        const hasProtein = selectedCategories.includes('protein');
+        const hasSayur = selectedCategories.includes('sayur');
+        const hasBuah = selectedCategories.includes('buah');
+
+        const missingStandard = [];
+        if (!hasKarbo) missingStandard.push('Karbo harian');
+        if (!hasProtein) missingStandard.push('Protein');
+        if (!hasSayur) missingStandard.push('Sayuran');
+        if (!hasBuah) missingStandard.push('Buah');
+
+        const ageAkg = AKG_DATA[usia] || AKG_DATA['10-12L'];
+        const calPct = Math.round(totKal / ageAkg.kal * 100);
+        const protPct = Math.round(totProt / ageAkg.protein * 100);
+
+        let energyStatus = '';
+        let energyAdvice = '';
+        if (calPct < 85) {
+          energyStatus = 'Kurang (Defisit)';
+          energyAdvice = 'Energi makan siang berada di bawah 85% target BGN. Tambahkan porsi karbohidrat utama atau tambahkan komponen berminyak sehat.';
+        } else if (calPct > 120) {
+          energyStatus = 'Berlebih (Surplus)';
+          energyAdvice = 'Energi makan siang melebihi 120% target BGN. Disarankan mengurangi porsi karbohidrat utama untuk mencegah obesitas.';
+        } else {
+          energyStatus = 'Optimal (Sesuai Standar)';
+          energyAdvice = 'Kandungan energi sudah berada dalam rentang ideal (85% - 120%) sesuai regulasi Badan Gizi Nasional.';
+        }
+
+        let proteinStatus = '';
+        let proteinAdvice = '';
+        if (protPct < 85) {
+          proteinStatus = 'Kurang (Defisit)';
+          proteinAdvice = 'Kadar protein di bawah 85% target. Disarankan menambah lauk hewani atau ganti dengan menu bernutrisi protein tinggi.';
+        } else if (protPct > 120) {
+          proteinStatus = 'Tinggi (Surplus)';
+          proteinAdvice = 'Kadar protein melebihi 120% target. Sangat baik untuk pemulihan dan tumbuh kembang anak.';
+        } else {
+          proteinStatus = 'Optimal (Sesuai Standar)';
+          proteinAdvice = 'Kandungan protein memenuhi target kecukupan gizi harian (85% - 120%) secara seimbang.';
+        }
+
+        const fatCalPct = Math.round((totLem * 9) / (totKal || 1) * 100);
+        let fatAdvice = '';
+        if (fatCalPct > 35) {
+          fatAdvice = 'Proporsi lemak cukup tinggi (>35% kalori). Batasi gorengan, gunakan teknik masak kukus/panggang.';
+        } else {
+          fatAdvice = 'Keseimbangan lemak baik, aman untuk penyerapan vitamin larut lemak.';
+        }
+
+        const fiberAdvice = totSerat < 3 
+          ? 'Serat tergolong rendah (<3g). Disarankan menambah sayur berdaun hijau atau memilih buah kaya serat.'
+          : 'Kandungan serat baik untuk kesehatan pencernaan siswa.';
+
+        return (
+          <View style={styles.card}>
+            {/* Status Gizi Seimbang */}
+            <View style={{ marginBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.08)', paddingBottom: 10 }}>
+              <Text style={[styles.label, { marginTop: 0, marginBottom: 4 }]}>Kelengkapan Piring Gizi Seimbang:</Text>
+              {missingStandard.length > 0 ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <MaterialCommunityIcons name="alert-circle" size={16} color="#FB923C" />
+                  <Text style={{ color: '#FB923C', fontSize: 12, fontWeight: '700', marginLeft: 6 }}>
+                    Belum Lengkap (Kurang: {missingStandard.join(', ')})
+                  </Text>
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <MaterialCommunityIcons name="check-circle" size={16} color="#4ADE80" />
+                  <Text style={{ color: '#4ADE80', fontSize: 12, fontWeight: '700', marginLeft: 6 }}>
+                    Lengkap & Memenuhi Kriteria Porsi Seimbang
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Narasi Energi & Protein */}
+            <View style={{ marginBottom: 10 }}>
+              <Text style={{ color: '#A5ACCC', fontSize: 10, fontWeight: '800' }}>⚡ EVALUASI ENERGI ({calPct}%)</Text>
+              <Text style={{ color: calPct < 85 || calPct > 120 ? '#FB923C' : '#4ADE80', fontSize: 12, fontWeight: '700', marginVertical: 2 }}>
+                Status: {energyStatus}
+              </Text>
+              <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15 }}>{energyAdvice}</Text>
+            </View>
+
+            <View style={{ marginBottom: 10, marginTop: 4 }}>
+              <Text style={{ color: '#A5ACCC', fontSize: 10, fontWeight: '800' }}>🍗 EVALUASI PROTEIN ({protPct}%)</Text>
+              <Text style={{ color: protPct < 85 || protPct > 120 ? '#FB923C' : '#4ADE80', fontSize: 12, fontWeight: '700', marginVertical: 2 }}>
+                Status: {proteinStatus}
+              </Text>
+              <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15 }}>{proteinAdvice}</Text>
+            </View>
+
+            {/* Keseimbangan Zat Gizi Makro Lainnya */}
+            <View style={{ borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.08)', paddingTop: 10, marginTop: 6 }}>
+              <Text style={{ color: '#A5ACCC', fontSize: 10, fontWeight: '800', marginBottom: 4 }}>💡 REKOMENDASI DIETETIK LAINNYA:</Text>
+              <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15, marginBottom: 4 }}>
+                • <Text style={{ fontWeight: 'bold', color: '#F1F3F9' }}>Lemak:</Text> {fatAdvice}
+              </Text>
+              <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15 }}>
+                • <Text style={{ fontWeight: 'bold', color: '#F1F3F9' }}>Serat:</Text> {fiberAdvice}
+              </Text>
+            </View>
+          </View>
+        );
+      })()}
 
       {/* ═══════════════════════════════════════
           ESTIMASI BAHAN BAKU LENGKAP (PER PORSI & TOTAL)
@@ -3947,5 +4137,46 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontStyle: 'italic',
     paddingHorizontal: 2,
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(15, 18, 28, 0.8)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 8,
+  },
+  dropdownHeaderText: {
+    color: '#F1F3F9',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  dropdownListContainer: {
+    backgroundColor: 'rgba(15, 18, 28, 0.95)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 8,
+    padding: 4,
+    marginBottom: 12,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  dropdownItemText: {
+    color: '#A5ACCC',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  smallBtn: {
+    borderRadius: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
