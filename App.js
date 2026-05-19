@@ -79,6 +79,37 @@ function getYieldInfo(nama) {
   return { bdd: 1.0, cookingYield: 1.0, category: 'Lainnya' };
 }
 
+function getIngredientGizi(nama, qty) {
+  if (!nama) return { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
+  
+  const cleanName = nama.split('(')[0].trim().toLowerCase();
+  
+  let found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanName);
+  if (!found) {
+    found = TKPI_DATABASE.find(x => x.nama.toLowerCase().includes(cleanName) || cleanName.includes(x.nama.toLowerCase()));
+  }
+  
+  if (!found && cleanName.length > 2) {
+    const words = cleanName.split(/\s+/).slice(0, 2).join(' ');
+    if (words.length > 2) {
+      found = TKPI_DATABASE.find(x => x.nama.toLowerCase().includes(words));
+    }
+  }
+  
+  if (!found) {
+    return { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
+  }
+  
+  const factor = qty / 100;
+  return {
+    kalori: (found.kalori || 0) * factor,
+    protein: (found.protein || 0) * factor,
+    karbo: (found.karbo || 0) * factor,
+    lemak: (found.lemak || 0) * factor,
+    serat: (found.serat || 0) * factor
+  };
+}
+
 // ═══════════════════════════════════════════════════
 //  DATA MENU AWAL (TKPI KEMENKES + NEW MBG RECIPES)
 // ═══════════════════════════════════════════════════
@@ -717,6 +748,49 @@ export default function App() {
     return Math.round(cost);
   };
 
+  const getMenuGizi = (item) => {
+    const recipe = recipeDetails[item.id] || customRecipeDetails[item.id];
+    if (!recipe) {
+      return {
+        kalori: Math.round(parseFloat(item.kalori) || 0),
+        protein: parseFloat(item.protein) || 0,
+        karbo: parseFloat(item.karbo) || 0,
+        lemak: parseFloat(item.lemak) || 0,
+        serat: parseFloat(item.serat) || 0
+      };
+    }
+    
+    let total = { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
+    if (recipe.utama && recipe.utama.nama) {
+      const g = getIngredientGizi(recipe.utama.nama, recipe.utama.qty);
+      total.kalori += g.kalori;
+      total.protein += g.protein;
+      total.karbo += g.karbo;
+      total.lemak += g.lemak;
+      total.serat += g.serat;
+    }
+    if (recipe.pelengkap) {
+      recipe.pelengkap.forEach(ing => {
+        if (ing.nama) {
+          const g = getIngredientGizi(ing.nama, ing.qty);
+          total.kalori += g.kalori;
+          total.protein += g.protein;
+          total.karbo += g.karbo;
+          total.lemak += g.lemak;
+          total.serat += g.serat;
+        }
+      });
+    }
+    
+    return {
+      kalori: Math.round(total.kalori),
+      protein: parseFloat(total.protein.toFixed(1)),
+      karbo: parseFloat(total.karbo.toFixed(1)),
+      lemak: parseFloat(total.lemak.toFixed(1)),
+      serat: parseFloat(total.serat.toFixed(1))
+    };
+  };
+
   // Helper to map food icon name/string/emoji into rendering icon
   const getFoodIcon = (icon) => {
     if (!icon) return '🍽️';
@@ -773,7 +847,17 @@ export default function App() {
       if (found) {
         // Price calculated dynamically from recipe ingredients, or fallback to menuPrices / found.harga
         const price = getMenuCostPerPortion(found);
-        list.push({ ...found, harga: price, kat });
+        const gizi = getMenuGizi(found);
+        list.push({ 
+          ...found, 
+          harga: price, 
+          kalori: gizi.kalori,
+          protein: gizi.protein,
+          karbo: gizi.karbo,
+          lemak: gizi.lemak,
+          serat: gizi.serat,
+          kat 
+        });
       }
     });
     return list;
@@ -1490,7 +1574,10 @@ export default function App() {
                         </View>
                       )}
 
-                      <Text style={styles.itemGizi}>{item.kalori} kkal · P:{item.protein}g</Text>
+                      {(() => {
+                        const g = getMenuGizi(item);
+                        return <Text style={styles.itemGizi}>{g.kalori} kkal · P:{g.protein}g</Text>;
+                      })()}
                       
                       {getRecipeIngredientsListStr(item.id) !== '' && (
                         <Text style={styles.itemIngredientsText} numberOfLines={1}>
@@ -2368,6 +2455,59 @@ export default function App() {
         </View>
       </View>
 
+      {/* Rincian Kandungan Gizi Menu */}
+      <Text style={styles.sectionTitle}>📊 Rincian zat gizi per porsi</Text>
+      <View style={styles.card}>
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          <View style={{ width: 450 }}>
+            {/* Table Header */}
+            <View style={{ flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.1)', paddingBottom: 6, marginBottom: 6 }}>
+              <Text style={{ flex: 2, color: '#94A3B8', fontSize: 10, fontWeight: '700' }}>Menu</Text>
+              <Text style={{ flex: 1.2, color: '#94A3B8', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>Energi</Text>
+              <Text style={{ flex: 1, color: '#94A3B8', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>Prot</Text>
+              <Text style={{ flex: 1, color: '#94A3B8', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>Karbo</Text>
+              <Text style={{ flex: 1, color: '#94A3B8', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>Lemak</Text>
+              <Text style={{ flex: 1, color: '#94A3B8', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>Serat</Text>
+            </View>
+
+            {/* Menu Items Rows */}
+            {selectedItems.map(item => (
+              <View key={item.id} style={{ flexDirection: 'row', paddingVertical: 4 }}>
+                <Text style={{ flex: 2, color: '#FFF', fontSize: 11 }} numberOfLines={1}>{item.nama}</Text>
+                <Text style={{ flex: 1.2, color: '#A5ACCC', fontSize: 11, textAlign: 'right' }}>{item.kalori} kkal</Text>
+                <Text style={{ flex: 1, color: '#A5ACCC', fontSize: 11, textAlign: 'right' }}>{item.protein}g</Text>
+                <Text style={{ flex: 1, color: '#A5ACCC', fontSize: 11, textAlign: 'right' }}>{item.karbo}g</Text>
+                <Text style={{ flex: 1, color: '#A5ACCC', fontSize: 11, textAlign: 'right' }}>{item.lemak}g</Text>
+                <Text style={{ flex: 1, color: '#A5ACCC', fontSize: 11, textAlign: 'right' }}>{item.serat}g</Text>
+              </View>
+            ))}
+
+            {/* Divider */}
+            <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 6 }} />
+
+            {/* Total Row */}
+            <View style={{ flexDirection: 'row', paddingVertical: 2 }}>
+              <Text style={{ flex: 2, color: '#FFF', fontSize: 11, fontWeight: '700' }}>Total Aktual</Text>
+              <Text style={{ flex: 1.2, color: '#FFF', fontSize: 11, fontWeight: '700', textAlign: 'right' }}>{totKal} kkal</Text>
+              <Text style={{ flex: 1, color: '#FFF', fontSize: 11, fontWeight: '700', textAlign: 'right' }}>{totProt}g</Text>
+              <Text style={{ flex: 1, color: '#FFF', fontSize: 11, fontWeight: '700', textAlign: 'right' }}>{totKar}g</Text>
+              <Text style={{ flex: 1, color: '#FFF', fontSize: 11, fontWeight: '700', textAlign: 'right' }}>{totLem}g</Text>
+              <Text style={{ flex: 1, color: '#FFF', fontSize: 11, fontWeight: '700', textAlign: 'right' }}>{totSerat}g</Text>
+            </View>
+
+            {/* Target AKG Row */}
+            <View style={{ flexDirection: 'row', paddingVertical: 2 }}>
+              <Text style={{ flex: 2, color: '#60A5FA', fontSize: 10, fontWeight: '700' }}>Target AKG ({usia})</Text>
+              <Text style={{ flex: 1.2, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.kalori} kkal</Text>
+              <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.protein}g</Text>
+              <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.karbo}g</Text>
+              <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.lemak}g</Text>
+              <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.serat}g</Text>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+
       {/* Buttons */}
       <View style={styles.actionsContainer}>
         <TouchableOpacity style={styles.primaryButton} onPress={generatePDFReport}>
@@ -2815,6 +2955,69 @@ export default function App() {
                   </Text>
                 </View>
               </View>
+              
+              {/* LIVE CALCULATED GIZI PREVIEW */}
+              {(() => {
+                const getPreviewRecipeGizi = () => {
+                  let gizi = { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
+                  
+                  const addIngGizi = (name, qtyStr) => {
+                    const qty = parseFloat(qtyStr) || 0;
+                    const itemG = getIngredientGizi(name, qty);
+                    gizi.kalori += itemG.kalori;
+                    gizi.protein += itemG.protein;
+                    gizi.karbo += itemG.karbo;
+                    gizi.lemak += itemG.lemak;
+                    gizi.serat += itemG.serat;
+                  };
+
+                  if (editRecipeUtama.nama.trim() !== '') {
+                    addIngGizi(editRecipeUtama.nama, editRecipeUtama.qty);
+                  }
+                  editRecipePelengkap.forEach(p => {
+                    if (p.nama.trim() !== '') {
+                      addIngGizi(p.nama, p.qty);
+                    }
+                  });
+
+                  return {
+                    kalori: Math.round(gizi.kalori),
+                    protein: parseFloat(gizi.protein.toFixed(1)),
+                    karbo: parseFloat(gizi.karbo.toFixed(1)),
+                    lemak: parseFloat(gizi.lemak.toFixed(1)),
+                    serat: parseFloat(gizi.serat.toFixed(1))
+                  };
+                };
+
+                const previewGizi = getPreviewRecipeGizi();
+
+                return (
+                  <View style={[styles.card, { backgroundColor: '#1E293B', borderColor: '#60A5FA', borderWidth: 1, marginTop: 10 }]}>
+                    <Text style={{ color: '#94A3B8', fontSize: 11, fontWeight: '700' }}>Kandungan Gizi per Porsi (Preview)</Text>
+                    
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 }}>
+                      <Text style={{ color: '#FFF', fontSize: 12 }}>Energi (Kalori)</Text>
+                      <Text style={{ color: '#60A5FA', fontSize: 12, fontWeight: '700' }}>{previewGizi.kalori} kkal</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                      <Text style={{ color: '#FFF', fontSize: 12 }}>Protein</Text>
+                      <Text style={{ color: '#60A5FA', fontSize: 12, fontWeight: '700' }}>{previewGizi.protein} g</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                      <Text style={{ color: '#FFF', fontSize: 12 }}>Karbohidrat</Text>
+                      <Text style={{ color: '#60A5FA', fontSize: 12, fontWeight: '700' }}>{previewGizi.karbo} g</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                      <Text style={{ color: '#FFF', fontSize: 12 }}>Lemak</Text>
+                      <Text style={{ color: '#60A5FA', fontSize: 12, fontWeight: '700' }}>{previewGizi.lemak} g</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                      <Text style={{ color: '#FFF', fontSize: 12 }}>Serat</Text>
+                      <Text style={{ color: '#60A5FA', fontSize: 12, fontWeight: '700' }}>{previewGizi.serat} g</Text>
+                    </View>
+                  </View>
+                );
+              })()}
               
               {/* SAVE BUTTONS */}
               <TouchableOpacity
