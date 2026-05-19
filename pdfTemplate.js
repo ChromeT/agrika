@@ -1,10 +1,9 @@
-// pdfTemplate.js — Template Laporan Resmi BGN SP-MBG
-// Mengacu pada Juknis BGN 2025 & Format Formulir SPPG-MBG-QC
+// pdfTemplate.js — Template Laporan Premium SPPG-MBG
+// Mengutamakan estetika modern, keringkasan, dan visualisasi gizi harian
 
 // Database Yield & BDD (Bahan Dapat Dimakan) Kemenkes & Juknis BGN
 const YIELD_DATABASE = {
-  // Karbohidrat
-  'beras': { bdd: 1.0, cookingYield: 2.5, category: 'Karbohidrat' }, // Beras jadi Nasi 2.5x
+  'beras': { bdd: 1.0, cookingYield: 2.5, category: 'Karbohidrat' },
   'singkong': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
   'kentang': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
   'ubi': { bdd: 0.85, cookingYield: 0.95, category: 'Karbohidrat' },
@@ -12,10 +11,8 @@ const YIELD_DATABASE = {
   'jagung': { bdd: 0.60, cookingYield: 0.95, category: 'Karbohidrat' },
   'roti': { bdd: 1.0, cookingYield: 1.0, category: 'Karbohidrat' },
   'mie': { bdd: 1.0, cookingYield: 1.5, category: 'Karbohidrat' },
-  
-  // Protein
-  'ayam': { bdd: 0.80, cookingYield: 0.75, category: 'Protein Hewani' }, // susut masak 25%
-  'daging': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' }, // susut 30%
+  'ayam': { bdd: 0.80, cookingYield: 0.75, category: 'Protein Hewani' },
+  'daging': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' },
   'sapi': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' },
   'kambing': { bdd: 1.0, cookingYield: 0.70, category: 'Protein Hewani' },
   'ikan': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
@@ -26,7 +23,7 @@ const YIELD_DATABASE = {
   'patin': { bdd: 0.70, cookingYield: 0.80, category: 'Protein Hewani' },
   'tuna': { bdd: 1.0, cookingYield: 0.80, category: 'Protein Hewani' },
   'salmon': { bdd: 1.0, cookingYield: 0.80, category: 'Protein Hewani' },
-  'telur': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' }, // kulit 12%
+  'telur': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' },
   'puyuh': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' },
   'bebek': { bdd: 0.88, cookingYield: 1.0, category: 'Protein Hewani' },
   'udang': { bdd: 0.70, cookingYield: 0.85, category: 'Protein Hewani' },
@@ -36,9 +33,7 @@ const YIELD_DATABASE = {
   'tahu': { bdd: 1.0, cookingYield: 0.90, category: 'Protein Nabati' },
   'kacang': { bdd: 1.0, cookingYield: 1.0, category: 'Protein Nabati' },
   'oncom': { bdd: 1.0, cookingYield: 0.95, category: 'Protein Nabati' },
-  
-  // Sayuran
-  'bayam': { bdd: 0.65, cookingYield: 0.60, category: 'Sayuran' }, // susut penyiangan 35%, layu 40%
+  'bayam': { bdd: 0.65, cookingYield: 0.60, category: 'Sayuran' },
   'kangkung': { bdd: 0.65, cookingYield: 0.60, category: 'Sayuran' },
   'wortel': { bdd: 0.85, cookingYield: 0.90, category: 'Sayuran' },
   'buncis': { bdd: 0.90, cookingYield: 0.90, category: 'Sayuran' },
@@ -46,8 +41,6 @@ const YIELD_DATABASE = {
   'brokoli': { bdd: 0.80, cookingYield: 0.85, category: 'Sayuran' },
   'sawi': { bdd: 0.85, cookingYield: 0.70, category: 'Sayuran' },
   'labu': { bdd: 0.80, cookingYield: 0.90, category: 'Sayuran' },
-  
-  // Buah
   'pisang': { bdd: 0.65, cookingYield: 1.0, category: 'Buah' },
   'jeruk': { bdd: 0.70, cookingYield: 1.0, category: 'Buah' },
   'semangka': { bdd: 0.60, cookingYield: 1.0, category: 'Buah' },
@@ -67,39 +60,35 @@ function getYieldInfo(nama) {
 
 // Database Alergen Utama
 const ALLERGENS = {
-  'udang': 'Seafood (Udang) - Risiko Alergi Tinggi',
-  'cumi': 'Seafood (Cumi) - Risiko Alergi Tinggi',
-  'ikan': 'Seafood (Ikan) - Risiko Alergi Sedang',
-  'lele': 'Seafood (Ikan) - Risiko Alergi Sedang',
-  'kembung': 'Seafood (Ikan) - Risiko Alergi Sedang',
-  'bandeng': 'Seafood (Ikan) - Risiko Alergi Sedang',
-  'nila': 'Seafood (Ikan) - Risiko Alergi Sedang',
-  'patin': 'Seafood (Ikan) - Risiko Alergi Sedang',
-  'tuna': 'Seafood (Ikan) - Risiko Alergi Sedang',
-  'salmon': 'Seafood (Ikan) - Risiko Alergi Sedang',
-  'telur': 'Telur Unggas - Risiko Alergi Sedang',
-  'puyuh': 'Telur Unggas - Risiko Alergi Sedang',
-  'bebek': 'Telur Unggas - Risiko Alergi Sedang',
-  'roti': 'Gluten (Terigu) - Risiko Alergi Rendah/Sedang',
-  'terigu': 'Gluten (Terigu) - Risiko Alergi Rendah/Sedang'
+  'udang': 'Seafood (Udang)',
+  'cumi': 'Seafood (Cumi)',
+  'ikan': 'Seafood (Ikan)',
+  'lele': 'Seafood (Ikan)',
+  'kembung': 'Seafood (Ikan)',
+  'bandeng': 'Seafood (Ikan)',
+  'nila': 'Seafood (Ikan)',
+  'patin': 'Seafood (Ikan)',
+  'tuna': 'Seafood (Ikan)',
+  'salmon': 'Seafood (Ikan)',
+  'telur': 'Telur Unggas',
+  'puyuh': 'Telur Unggas',
+  'bebek': 'Telur Unggas',
+  'roti': 'Gluten (Terigu)',
+  'terigu': 'Gluten (Terigu)'
 };
 
 const ALTERNATIVES = {
-  'Seafood': 'Daging Ayam Fillet Dada / Tempe Kedelai Murni',
-  'Telur': 'Tahu Kuning Kediri / Tempe Kedelai Murni / Daging Ayam',
-  'Gluten': 'Bahan Karbohidrat Kentang Rebus / Ubi Jalar Merah'
+  'Seafood': 'Ayam Fillet / Tempe Kedelai',
+  'Telur': 'Tahu / Tempe / Daging Ayam',
+  'Gluten': 'Kentang / Ubi Jalar'
 };
 
 export function generateSPPGHtml({
-  // Data produksi
   totalPorsi, siswaNum, spareNum, budgetNum, overhead,
   totBiaya, budgetBB, isBudgetOk, totalAnggaran,
-  // Nutrisi
   totKal, totProt, totKar, totLem, totSerat,
   activeAkg, usia,
-  // Items & ingredients
   selectedItems, itemsHtml, akgRowsHtml,
-  // QC data
   qcRasa, qcAroma, qcTekstur, qcPenampilan,
   qcHigienitas, qcSuhu, qcWaktu,
   qcTesterName, qcNotes, qcStatus,
@@ -107,47 +96,57 @@ export function generateSPPGHtml({
 }) {
   const tgl = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   const jam = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const tglSingkat = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' }).replace(/\//g, '');
+  const refNo = `SPPG-GIZI/${tglSingkat}/${Math.floor(100 + Math.random() * 900)}`;
 
-  // 1. Build menu rows for organoleptik table
-  const katLabels = { karbo: 'Makanan Pokok', protein: 'Lauk Hewani/Nabati', sayur: 'Sayuran', buah: 'Buah-buahan' };
-  let organoRows = '';
-  let rowNum = 1;
-  selectedItems.forEach(item => {
-    const katLabel = katLabels[item.kat] || item.kat;
-    const isChecked = (param) => {
-      return param ? '<span style="color:#166534;font-weight:bold;">✓ Baik</span>' : '<span style="color:#991b1b;">— Belum</span>';
-    };
-    organoRows += `
-      <tr>
-        <td style="border:1px solid #333;padding:6px 8px;text-align:center;">${rowNum}</td>
-        <td style="border:1px solid #333;padding:6px 8px;">${katLabel}</td>
-        <td style="border:1px solid #333;padding:6px 8px;font-weight:bold;">${item.nama}</td>
-        <td style="border:1px solid #333;padding:6px 8px;text-align:center;">${isChecked(qcRasa)}</td>
-        <td style="border:1px solid #333;padding:6px 8px;text-align:center;">${isChecked(qcPenampilan)}</td>
-        <td style="border:1px solid #333;padding:6px 8px;text-align:center;">${isChecked(qcAroma)}</td>
-        <td style="border:1px solid #333;padding:6px 8px;text-align:center;">${isChecked(qcTekstur)}</td>
-        <td style="border:1px solid #333;padding:6px 8px;text-align:center;font-weight:bold;color:${qcStatus === 'layak' ? '#166534' : '#991b1b'};">
-          ${qcStatus === 'layak' ? 'LAYAK' : 'TIDAK LAYAK'}
-        </td>
-      </tr>
+  // Formatting floating points
+  const fKal = Number(totKal).toFixed(0);
+  const fProt = Number(totProt).toFixed(1);
+  const fKar = Number(totKar).toFixed(1);
+  const fLem = Number(totLem).toFixed(1);
+  const fSerat = Number(totSerat).toFixed(1);
+
+  // Buffer loss porsi (5%)
+  const lossPorsi = Math.ceil(totalPorsi * 0.05);
+
+  // Calculate Macro Calorie contributions for Donut Chart
+  const calKarbo = fKar * 4;
+  const calProt = fProt * 4;
+  const calLem = fLem * 9;
+  const totalCal = calKarbo + calProt + calLem || 1;
+  const pctKar = Math.round(calKarbo / totalCal * 100);
+  const pctProt = Math.round(calProt / totalCal * 100);
+  const pctLem = 100 - pctKar - pctProt;
+
+  // Donut SVG offsets
+  const protOffset = 100;
+  const lemOffset = 100 - pctProt;
+  const karOffset = 100 - pctProt - pctLem;
+
+  // 1. Menu Cards list
+  const menuCards = selectedItems.map(item => {
+    let catLabel = 'Piring Gizi';
+    if (item.kat === 'karbo') catLabel = 'Makanan Pokok';
+    else if (item.kat === 'protein') catLabel = 'Lauk Gizi';
+    else if (item.kat === 'sayur') catLabel = 'Sayuran';
+    else if (item.kat === 'buah') catLabel = 'Buah Segar';
+    return `
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;flex:1;min-width:110px;text-align:center;">
+        <span style="font-size:16px;display:block;margin-bottom:2px;">${item.icon || '🍛'}</span>
+        <span style="font-size:8.5px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;display:block;">${catLabel}</span>
+        <span style="font-size:11px;font-weight:bold;color:#1e293b;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.nama}</span>
+      </div>
     `;
-    rowNum++;
-  });
+  }).join('');
 
-  const statusBadge = qcStatus === 'layak'
-    ? '<span style="background:#166534;color:#fff;padding:4px 14px;border-radius:3px;font-weight:bold;font-size:13px;letter-spacing:0.5px;">✅ LAYAK DISTRIBUSI</span>'
-    : '<span style="background:#991b1b;color:#fff;padding:4px 14px;border-radius:3px;font-weight:bold;font-size:13px;letter-spacing:0.5px;">⚠️ TUNDA / RE-COOK</span>';
-
-  // 2. Yield & Waste Factor calculations
+  // 2. Ingredients Table builder
   let itemsTableHtml = '';
   let rowIdx = 1;
-  
   if (consolidatedIngredients && consolidatedIngredients.length > 0) {
     consolidatedIngredients.forEach(ing => {
       const yieldInfo = getYieldInfo(ing.nama);
       const bddPct = yieldInfo.bdd * 100;
       const cookingYieldPct = yieldInfo.cookingYield * 100;
-      
       const qtyPerPorsi = ing.qtyPerPorsi;
       const unit = ing.unit.toLowerCase();
       
@@ -170,343 +169,306 @@ export function generateSPPGHtml({
         cookedStr = `${(qtyPerPorsi * yieldInfo.bdd * yieldInfo.cookingYield).toFixed(1)} ${ing.unit}`;
       }
       
-      const boldStyle = ing.isUtama ? 'font-weight:bold;' : '';
-      const badge = ing.isUtama ? ' <span style="font-size:7px;background:#1e3a8a;color:#93c5fd;padding:1px 4px;border-radius:2px;text-transform:uppercase;font-weight:800;">UTAMA</span>' : '';
+      const isUtamaBadge = ing.isUtama ? ' <span style="font-size:6px;background:#e0f2fe;color:#0369a1;padding:1px 3px;border-radius:2px;font-weight:bold;text-transform:uppercase;">UTAMA</span>' : '';
       
       itemsTableHtml += `
-        <tr style="${boldStyle}">
-          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${rowIdx}</td>
-          <td style="border:1px solid #333;padding:5px 6px;">${ing.nama}${badge}</td>
-          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${bddPct}%</td>
-          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${grossStr}</td>
-          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${netStr}</td>
-          <td style="border:1px solid #333;padding:5px 6px;text-align:center;">${cookingYieldPct === 100 ? '—' : cookingYieldPct + '%'}</td>
-          <td style="border:1px solid #333;padding:5px 6px;text-align:center;font-weight:bold;">${cookedStr}</td>
-          <td style="border:1px solid #333;padding:5px 6px;font-size:9.5px;color:#555;">${ing.catatan || '—'}</td>
+        <tr>
+          <td style="padding:4px 6px;text-align:center;color:#64748b;">${rowIdx}</td>
+          <td style="padding:4px 6px;font-weight:500;color:#1e293b;">${ing.nama}${isUtamaBadge}</td>
+          <td style="padding:4px 6px;text-align:center;color:#475569;">${bddPct}%</td>
+          <td style="padding:4px 6px;text-align:center;font-weight:bold;color:#1e293b;">${grossStr}</td>
+          <td style="padding:4px 6px;text-align:center;color:#475569;">${netStr}</td>
+          <td style="padding:4px 6px;text-align:center;color:#64748b;">${cookingYieldPct === 100 ? '—' : cookingYieldPct + '%'}</td>
+          <td style="padding:4px 6px;text-align:center;font-weight:bold;color:#0f766e;">${cookedStr}</td>
         </tr>
       `;
       rowIdx++;
     });
-  } else {
-    itemsTableHtml = itemsHtml; // fallback
   }
 
-  // 3. Allergen Screening
-  const allergenNotes = [];
+  // 3. Allergen Mitigation alert
+  const allergenDetected = [];
   selectedItems.forEach(item => {
-    const lowercaseName = item.nama.toLowerCase();
+    const nameLower = item.nama.toLowerCase();
     for (const key in ALLERGENS) {
-      if (lowercaseName.includes(key)) {
-        const allergenType = ALLERGENS[key];
-        let altSuggest = '';
-        if (allergenType.includes('Seafood')) altSuggest = ALTERNATIVES.Seafood;
-        else if (allergenType.includes('Telur')) altSuggest = ALTERNATIVES.Telur;
-        else if (allergenType.includes('Gluten')) altSuggest = ALTERNATIVES.Gluten;
+      if (nameLower.includes(key)) {
+        const allergen = ALLERGENS[key];
+        let type = 'Seafood';
+        if (allergen.includes('Telur')) type = 'Telur';
+        else if (allergen.includes('Gluten')) type = 'Gluten';
         
-        const note = `<strong>${allergenType}</strong>: Rekomendasi alternatif menu penyeimbang gizi: <strong>${altSuggest}</strong>.`;
-        if (!allergenNotes.includes(note)) {
-          allergenNotes.push(note);
+        if (!allergenDetected.some(x => x.allergen === allergen)) {
+          allergenDetected.push({ allergen, alt: ALTERNATIVES[type] });
         }
       }
     }
   });
 
-  const allergenSectionHtml = allergenNotes.length > 0
+  const allergenBlockHtml = allergenDetected.length > 0
     ? `
-      <div style="background:#fffbeb;border:1.5px solid #d97706;border-radius:4px;padding:8px 12px;margin-bottom:14px;font-size:11px;">
-        <span style="font-weight:bold;color:#b45309;font-size:11.5px;">⚠️ PROTOKOL MITIGASI ALERGI SISWA (Deteksi Bahan Baku):</span>
-        <ul style="margin:4px 0 0 16px;padding:0;color:#92400e;">
-          ${allergenNotes.map(n => `<li style="margin-bottom:3px;">${n}</li>`).join('')}
-        </ul>
+      <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:10px;color:#92400e;">
+        <span style="font-weight:bold;display:block;margin-bottom:2px;">⚠️ ALERGEN TERDETEKSI:</span>
+        ${allergenDetected.map(a => `• <strong>${a.allergen}</strong> (Alternatif: <strong>${a.alt}</strong>)`).join('<br>')}
       </div>
     `
     : `
-      <div style="background:#f0fdf4;border:1.5px solid #16a34a;border-radius:4px;padding:8px 12px;margin-bottom:14px;font-size:11px;color:#15803d;font-weight:bold;">
-        ✓ Bebas Alergen Utama: Tidak terdeteksi seafood, telur unggas, atau gluten dalam bahan menu terpilih.
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:10px;color:#166534;font-weight:bold;">
+        ✓ Aman Alergen: Menu bersih dari potensi seafood, telur unggas, dan terigu gluten.
       </div>
     `;
 
-  // 4. Food Costing & Waste analysis
-  const lossPorsi = (totalPorsi * 0.05).toFixed(1);
-  const costActualPortion = totBiaya + Math.round(budgetNum * overhead / 100);
-  const costDiff = budgetNum - costActualPortion;
-  const isCostOk = costDiff >= 0;
+  // 4. Budget Efficiency Badge
+  const costActual = totBiaya + Math.round(budgetNum * overhead / 100);
+  const costDiffVal = budgetNum - costActual;
+  const isBudgetSafe = costDiffVal >= 0;
+  const budgetBadge = isBudgetSafe
+    ? `<span style="background:#dcfce7;color:#15803d;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;">✓ EFISIEN (Sisa Rp ${costDiffVal})</span>`
+    : `<span style="background:#fef2f2;color:#b91c1c;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:bold;">⚠️ MELEBIHI (Defisit Rp ${Math.abs(costDiffVal)})</span>`;
 
-  // 5. Timeline Logistik & Golden Hour
-  const timelineHtml = `
-    <table class="data" style="margin-bottom:14px;">
-      <thead>
-        <tr>
-          <th style="width:25%;">Tahapan Distribusi</th>
-          <th style="width:25%;">Estimasi Jam</th>
-          <th style="width:50%;">Prosedur Keamanan & Kualitas Pangan</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="font-weight:bold;">Selesai Masak & Uji QC</td>
-          <td style="text-align:center;">09:30 WIB</td>
-          <td>Makanan matang selesai diproduksi, dilakukan pengetesan organoleptik dan pengukuran suhu inti matang (&ge;60&deg;C).</td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Loading & Distribusi</td>
-          <td style="text-align:center;">10:15 WIB</td>
-          <td>Makanan dipacking dalam wadah mika/steril rapat, dimuat ke armada logistik yang bersih dan tertutup.</td>
-        </tr>
-        <tr>
-          <td style="font-weight:bold;">Tiba & Pembagian</td>
-          <td style="text-align:center;">11:00 WIB</td>
-          <td>Serah terima di sekolah dengan panitia/relawan, pembagian porsi makan siang ke piring/wadah siswa.</td>
-        </tr>
-        <tr style="background:#fef2f2;color:#991b1b;font-weight:bold;">
-          <td>Batas Konsumsi (Golden Hour)</td>
-          <td style="text-align:center;">12:30 WIB</td>
-          <td>Maksimal 3 jam setelah selesai masak. Sisa makanan setelah jam ini WAJIB dibuang / dilarang dikonsumsi demi keselamatan siswa.</td>
-        </tr>
-      </tbody>
-    </table>
-  `;
+
 
   return `
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Formulir QC SPPG-MBG</title>
+  <title>Laporan Perencanaan Gizi & QC</title>
   <style>
-    @page { margin: 18mm 15mm 15mm 15mm; }
-    body { font-family: 'Times New Roman', Times, serif; color: #111; padding: 0; margin: 0; line-height: 1.45; font-size: 11.5px; }
-    .kop { width: 100%; border-bottom: 3px double #111; margin-bottom: 6px; padding-bottom: 6px; }
-    .kop td { vertical-align: middle; padding: 0; }
-    .kop .logo { width: 60px; text-align: center; font-size: 32px; }
-    .kop .inst { text-align: center; padding: 0 10px; }
-    .kop .inst .line1 { font-size: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; }
-    .kop .inst .line2 { font-size: 14px; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
-    .kop .inst .line3 { font-size: 9px; color: #444; margin-top: 2px; }
-    .doc-ctrl { width: 100%; font-size: 9.5px; margin-bottom: 12px; border-collapse: collapse; }
-    .doc-ctrl td { padding: 2px 6px; }
-    .doc-ctrl .lbl { font-weight: bold; width: 120px; }
-    .judul { text-align: center; font-size: 13px; font-weight: bold; text-decoration: underline; text-transform: uppercase; margin: 14px 0 10px; letter-spacing: 0.8px; }
-    .sub-judul { text-align: center; font-size: 10.5px; color: #333; margin-bottom: 16px; }
-    .section { font-size: 11.5px; font-weight: bold; text-transform: uppercase; margin: 16px 0 6px; padding: 4px 0; border-bottom: 1.5px solid #111; }
-    .section .num { display: inline-block; background: #111; color: #fff; padding: 1px 6px; border-radius: 2px; margin-right: 6px; font-size: 10px; }
-    table.data { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 11px; }
-    table.data th { background: #e5e7eb; border: 1px solid #333; padding: 6px 8px; font-weight: bold; text-align: center; font-size: 10.5px; }
-    table.data td { border: 1px solid #333; padding: 5px 8px; }
-    .info-grid { width: 100%; margin-bottom: 14px; font-size: 11px; }
-    .info-grid td { padding: 3px 8px; vertical-align: top; }
-    .info-grid .lbl { font-weight: bold; width: 180px; }
-    .ttd-table { width: 100%; margin-top: 30px; font-size: 11px; }
-    .ttd-table td { text-align: center; vertical-align: top; padding: 5px 15px; width: 33%; }
-    .ttd-line { border-bottom: 1px solid #111; width: 160px; margin: 40px auto 4px; }
-    .footer-note { font-size: 8.5px; color: #666; text-align: center; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 6px; }
-    .badge-layak { background: #dcfce7; border: 1.5px solid #166534; border-radius: 4px; padding: 8px; text-align: center; margin: 10px 0; }
-    .badge-tunda { background: #fef2f2; border: 1.5px solid #991b1b; border-radius: 4px; padding: 8px; text-align: center; margin: 10px 0; }
-    .total-row td { font-weight: bold; background: #f3f4f6; }
+    @page { size: A4; margin: 12mm; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; line-height: 1.35; font-size: 11px; margin: 0; padding: 0; }
+    
+    /* Header styling */
+    .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 12px; }
+    .header-logo { display: flex; align-items: center; gap: 8px; }
+    .header-logo-icon { background: linear-gradient(135deg, #f43f5e, #fb7185); color: #fff; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; }
+    .header-title-text { font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; }
+    .header-ref { font-family: monospace; font-size: 9.5px; color: #64748b; text-align: right; }
+
+    /* Dashboard Layout */
+    .grid-2 { display: flex; gap: 12px; margin-bottom: 12px; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; flex: 1; }
+    .card-title { font-size: 10.5px; font-weight: bold; color: #475569; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    /* Nutri list */
+    .nutri-list { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .nutri-box { flex: 1; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px; text-align: center; }
+    .nutri-val { font-size: 12px; font-weight: bold; color: #0f172a; display: block; }
+    .nutri-lbl { font-size: 8px; color: #64748b; text-transform: uppercase; display: block; margin-top: 1px; }
+
+    /* Donut chart */
+    .donut-container { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; }
+    .donut-legend { font-size: 9.5px; }
+    .legend-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; }
+
+    /* Table styling */
+    table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 10px; }
+    table.data-table th { background: #f1f5f9; color: #475569; font-weight: bold; padding: 6px; border-bottom: 2px solid #cbd5e1; text-align: center; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.5px; }
+    table.data-table td { border-bottom: 1px solid #e2e8f0; padding: 5px 6px; vertical-align: middle; }
+    table.data-table tr:hover { background: #f8fafc; }
+
+    /* Timeline horizontal stepper */
+    .timeline { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 12px; font-size: 9.5px; margin-bottom: 12px; }
+    .time-step { text-align: center; flex: 1; position: relative; }
+    .time-val { font-weight: bold; color: #0f172a; display: block; font-size: 10px; }
+    .time-lbl { color: #64748b; display: block; font-size: 8px; margin-top: 2px; }
+
+    /* Signatures Minimalist */
+    .footer-section { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 25px; font-size: 10.5px; border-top: 1px dashed #cbd5e1; padding-top: 12px; }
+    .sig-block { text-align: center; width: 220px; }
+    .sig-line { border-bottom: 1px solid #475569; margin: 35px auto 4px; width: 160px; }
+
+    .romantic-touch { font-size: 7px; color: #f472b6; font-style: italic; display: inline-block; margin-left: 5px; }
   </style>
 </head>
 <body>
 
-<!-- ═══ KOP SURAT RESMI ═══ -->
-<table class="kop">
-  <tr>
-    <td class="logo">🇮🇩</td>
-    <td class="inst">
-      <div class="line1">Badan Gizi Nasional Republik Indonesia</div>
-      <div class="line2">Satuan Pelayanan Pemenuhan Gizi (SPPG)</div>
-      <div class="line3">Program Makan Bergizi Gratis — Standardisasi Operasional Dapur</div>
-    </td>
-    <td class="logo" style="font-size:24px;">🍽️</td>
-  </tr>
-</table>
+  <!-- ═══ HEADER BAR ═══ -->
+  <div class="header-container">
+    <div class="header-logo">
+      <div class="header-logo-icon">🌿</div>
+      <div>
+        <div class="header-title-text">Laporan Perencanaan Gizi & QC Harian</div>
+        <div style="font-size:9px;color:#64748b;font-weight:500;">Satuan Pelayanan Pemenuhan Gizi (SPPG) • BGN RI</div>
+      </div>
+    </div>
+    <div class="header-ref">
+      <strong>Dokumen No:</strong> ${refNo}<br>
+      Tanggal: ${tgl} (${jam} WIB)
+    </div>
+  </div>
 
-<!-- ═══ DOCUMENT CONTROL ═══ -->
-<table class="doc-ctrl">
-  <tr>
-    <td class="lbl">No. Formulir</td><td>: SPPG-MBG/QC/01</td>
-    <td class="lbl">Tanggal</td><td>: ${tgl}</td>
-  </tr>
-  <tr>
-    <td class="lbl">Revisi</td><td>: 01 (Ahli Gizi Yield & Alergen)</td>
-    <td class="lbl">Waktu Cetak</td><td>: ${jam} WIB</td>
-  </tr>
-  <tr>
-    <td class="lbl">Status Dokumen</td><td colspan="3">: DOKUMEN TERKENDALI</td>
-  </tr>
-</table>
+  <!-- ═══ MENU GRID ROW ═══ -->
+  <div style="display:flex; gap:10px; margin-bottom:12px;">
+    ${menuCards}
+  </div>
 
-<div class="judul">Formulir Pemeriksaan & Kelayakan Konsumsi Harian</div>
-<div class="sub-judul">Checklist Uji Organoleptik, Monitoring Keamanan Pangan & Rencana Belanja Bahan</div>
+  <!-- ═══ MAIN DASHBOARD GRID ═══ -->
+  <div class="grid-2">
+    
+    <!-- CARD 1: BUDGET & OPERASIONAL -->
+    <div class="card">
+      <div class="card-title">💵 Rencana Biaya & Operasional</div>
+      <table style="width:100%;font-size:10px;border-collapse:collapse;">
+        <tr style="height:20px;">
+          <td style="color:#64748b;">Target Porsi Produksi</td>
+          <td style="font-weight:bold;text-align:right;">${totalPorsi} porsi <span style="font-weight:normal;color:#64748b;font-size:9px;">(${siswaNum} + ${spareNum} cadangan)</span></td>
+        </tr>
+        <tr style="height:20px;">
+          <td style="color:#64748b;">Pagu Anggaran per Porsi</td>
+          <td style="font-weight:bold;text-align:right;">Rp ${budgetNum.toLocaleString('id')}</td>
+        </tr>
+        <tr style="height:20px;">
+          <td style="color:#64748b;">Realisasi Belanja Bahan Baku</td>
+          <td style="font-weight:bold;text-align:right;">Rp ${totBiaya.toLocaleString('id')} / porsi</td>
+        </tr>
+        <tr style="height:20px;border-bottom:1px solid #e2e8f0;">
+          <td style="color:#64748b;">Overhead Operasional Dapur</td>
+          <td style="font-weight:bold;text-align:right;">Rp ${Math.round(budgetNum * overhead / 100).toLocaleString('id')} (${overhead}%)</td>
+        </tr>
+        <tr style="height:26px;">
+          <td style="font-weight:bold;color:#0f172a;">Evaluasi Biaya per Porsi</td>
+          <td style="text-align:right;">${budgetBadge}</td>
+        </tr>
+        <tr style="height:22px;">
+          <td style="color:#64748b;">Total Pagu Harian SPPG</td>
+          <td style="font-weight:bold;text-align:right;color:#0f172a;font-size:11px;">Rp ${totalAnggaran.toLocaleString('id')}</td>
+        </tr>
+      </table>
+    </div>
 
-<!-- ═══ INFORMASI UMUM ═══ -->
-<div class="section"><span class="num">I</span> Informasi Umum & Evaluasi Anggaran</div>
-<table class="info-grid">
-  <tr>
-    <td class="lbl">Kelompok Usia Target</td><td>: ${activeAkg.name}</td>
-  </tr>
-  <tr>
-    <td class="lbl">Total Produksi</td><td>: <strong>${totalPorsi} porsi</strong> (${siswaNum} siswa + ${spareNum} cadangan)</td>
-  </tr>
-  <tr>
-    <td class="lbl">Anggaran Pagu / Porsi</td><td>: Rp ${budgetNum.toLocaleString('id')} (Bahan Baku: Rp ${budgetBB.toLocaleString('id')} + Overhead ${overhead}%)</td>
-  </tr>
-  <tr>
-    <td class="lbl">Realisasi Biaya Aktual</td><td>: Rp ${costActualPortion.toLocaleString('id')} / porsi (Bahan Baku: Rp ${totBiaya.toLocaleString('id')} + Overhead Operasional)</td>
-  </tr>
-  <tr>
-    <td class="lbl">Total Anggaran Harian</td><td>: <strong>Rp ${totalAnggaran.toLocaleString('id')}</strong></td>
-  </tr>
-</table>
+    <!-- CARD 2: KANDUNGAN GIZI & MAKRONUTRISI CHART -->
+    <div class="card">
+      <div class="card-title">📊 Evaluasi Kandungan Gizi (AKG)</div>
+      
+      <!-- Nutri box row -->
+      <div class="nutri-list">
+        <div class="nutri-box">
+          <span class="nutri-val">${fKal}</span>
+          <span class="nutri-lbl">Energi (kkal)</span>
+        </div>
+        <div class="nutri-box">
+          <span class="nutri-val">${fProt}g</span>
+          <span class="nutri-lbl">Protein</span>
+        </div>
+        <div class="nutri-box">
+          <span class="nutri-val">${fKar}g</span>
+          <span class="nutri-lbl">Karbohidrat</span>
+        </div>
+        <div class="nutri-box">
+          <span class="nutri-val">${fSerat}g</span>
+          <span class="nutri-lbl">Serat</span>
+        </div>
+      </div>
 
-<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:8px 12px;margin-bottom:14px;font-size:11px;">
-  <strong>ANALISIS FOOD COSTING & TOLERANSI SUSUT:</strong><br>
-  • Sisa Anggaran Per Porsi: <span style="font-weight:bold;color:${isCostOk ? '#15803d' : '#b91c1c'};">Rp ${costDiff.toLocaleString('id')} (${isCostOk ? '✓ Hemat / Dalam Batas' : '⚠️ Defisit'})</span><br>
-  • Toleransi Kehilangan / Waste Dapur (5%): <strong>${lossPorsi} porsi</strong> dari total produksi untuk buffer susut penyimpanan/pembagian.<br>
-  • Estimasi Total Biaya Belanja Bahan Baku (dengan 5% Buffer Loss): <strong>Rp ${Math.round(totBiaya * totalPorsi * 1.05).toLocaleString('id')}</strong>
-</div>
+      <!-- Donut Chart & Legend -->
+      <div class="donut-container">
+        <!-- SVG Donut Chart -->
+        <svg width="60" height="60" viewBox="0 0 42 42" style="transform: rotate(-90deg);">
+          <circle cx="21" cy="21" r="15.915" fill="#fff"></circle>
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f1f5f9" stroke-width="5.5"></circle>
+          
+          <!-- Protein Segment -->
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#10b981" stroke-width="5.5" 
+            stroke-dasharray="${pctProt} ${100 - pctProt}" stroke-dashoffset="${protOffset}"></circle>
+          
+          <!-- Lemak Segment -->
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f59e0b" stroke-width="5.5" 
+            stroke-dasharray="${pctLem} ${100 - pctLem}" stroke-dashoffset="${lemOffset}"></circle>
+          
+          <!-- Karbo Segment -->
+          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#3b82f6" stroke-width="5.5" 
+            stroke-dasharray="${pctKar} ${100 - pctKar}" stroke-dashoffset="${karOffset}"></circle>
+        </svg>
 
-<!-- ═══ MITIGASI ALERGI ═══ -->
-${allergenSectionHtml}
+        <!-- Legend text -->
+        <div class="donut-legend">
+          <span style="font-weight:bold;display:block;margin-bottom:3px;font-size:8.5px;color:#64748b;text-transform:uppercase;">Kontribusi Kalori Makro:</span>
+          <div><span class="legend-dot" style="background:#3b82f6;"></span>Karbohidrat: <strong>${pctKar}%</strong></div>
+          <div style="margin:2px 0;"><span class="legend-dot" style="background:#10b981;"></span>Protein: <strong>${pctProt}%</strong></div>
+          <div><span class="legend-dot" style="background:#f59e0b;"></span>Lemak: <strong>${pctLem}%</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- ═══ MENU & BAHAN BAKU ═══ -->
-<div class="section"><span class="num">II</span> Kebutuhan Bahan Baku & Faktor Susut Gizi (Yield Factor)</div>
-<table class="data">
-  <thead>
-    <tr>
-      <th style="width:4%;">No</th>
-      <th>Bahan Baku</th>
-      <th style="width:10%;">BDD %</th>
-      <th style="width:18%;">Keb. Kotor (Gross)</th>
-      <th style="width:18%;">Keb. Bersih (Net)</th>
-      <th style="width:10%;">Yield Matang</th>
-      <th style="width:14%;">Est. Berat Matang/p</th>
-      <th>Catatan Belanja & Logistik</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${itemsTableHtml}
-    <tr class="total-row">
-      <td colspan="3" style="text-align:right;border:1px solid #333;padding:6px 8px;">Subtotal Biaya Bahan Baku per Porsi</td>
-      <td colspan="5" style="border:1px solid #333;padding:6px 8px;font-weight:bold;">Rp ${totBiaya.toLocaleString('id')}</td>
-    </tr>
-  </tbody>
-</table>
+  <!-- ═══ DETEKSI ALERGEN ═══ -->
+  ${allergenBlockHtml}
 
-<!-- ═══ KESESUAIAN AKG ═══ -->
-<div class="section"><span class="num">III</span> Kesesuaian Gizi Terhadap AKG Makan Siang</div>
-<table class="data">
-  <thead>
-    <tr>
-      <th>Kelompok Usia</th>
-      <th>Kecukupan Energi (30% AKG)</th>
-      <th>Kecukupan Protein (30% AKG)</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${akgRowsHtml}
-  </tbody>
-</table>
+  <!-- ═══ INGREDIENTS TABLE ═══ -->
+  <div style="font-size:9.5px;font-weight:bold;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">📋 Tabel Detail Bahan Baku & Hasil Konversi Yield</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width:5%;">No</th>
+        <th style="text-align:left;">Nama Bahan Makanan</th>
+        <th style="width:10%;">BDD %</th>
+        <th style="width:20%;">Mentah Kotor (Gross)</th>
+        <th style="width:20%;">Mentah Bersih (Net)</th>
+        <th style="width:12%;">Yield Matang</th>
+        <th style="width:18%;">Est. Matang / Porsi</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${itemsTableHtml}
+    </tbody>
+  </table>
 
-<!-- ═══ UJI ORGANOLEPTIK ═══ -->
-<div class="section"><span class="num">IV</span> Hasil Uji Organoleptik (Sensoris)</div>
-<table class="data">
-  <thead>
-    <tr>
-      <th style="width:5%;">No</th>
-      <th style="width:14%;">Kelompok</th>
-      <th>Jenis Makanan</th>
-      <th style="width:10%;">Rasa</th>
-      <th style="width:10%;">Warna</th>
-      <th style="width:10%;">Aroma</th>
-      <th style="width:10%;">Tekstur</th>
-      <th style="width:12%;">Kesimpulan</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${organoRows}
-  </tbody>
-</table>
+  <!-- ═══ TIMELINE LOGISTIK ═══ -->
+  <div style="font-size:9.5px;font-weight:bold;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">🕒 Jadwal Distribusi & Golden Hour Keamanan Pangan</div>
+  <div class="timeline">
+    <div class="time-step">
+      <span class="time-val">09:30 WIB</span>
+      <span class="time-lbl">Selesai Masak & QC</span>
+    </div>
+    <div style="color:#cbd5e1;font-weight:bold;">➔</div>
+    <div class="time-step">
+      <span class="time-val">10:15 WIB</span>
+      <span class="time-lbl">Loading Armada</span>
+    </div>
+    <div style="color:#cbd5e1;font-weight:bold;">➔</div>
+    <div class="time-step">
+      <span class="time-val">11:00 WIB</span>
+      <span class="time-lbl">Saji di Sekolah</span>
+    </div>
+    <div style="color:#cbd5e1;font-weight:bold;">➔</div>
+    <div class="time-step" style="background:#fef2f2;border-radius:4px;padding:2px 6px;">
+      <span class="time-val" style="color:#b91c1c;">12:30 WIB</span>
+      <span class="time-lbl" style="color:#991b1b;font-weight:bold;">Batas Aman Konsumsi</span>
+    </div>
+  </div>
 
-<!-- ═══ MONITORING KEAMANAN PANGAN ═══ -->
-<div class="section"><span class="num">V</span> Monitoring Keamanan Pangan & Higienitas</div>
-<table class="data">
-  <thead>
-    <tr>
-      <th style="width:5%;">No</th>
-      <th>Parameter Pemeriksaan</th>
-      <th style="width:15%;">Standar</th>
-      <th style="width:15%;">Hasil</th>
-      <th style="width:18%;">Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align:center;">1</td>
-      <td>Higienitas Penjamah Makanan (APD lengkap: masker, sarung tangan, penutup kepala)</td>
-      <td style="text-align:center;">Wajib APD</td>
-      <td style="text-align:center;">${qcHigienitas ? 'Lengkap' : 'Belum Lengkap'}</td>
-      <td style="text-align:center;font-weight:bold;color:${qcHigienitas ? '#166534' : '#991b1b'};">${qcHigienitas ? '✓ MEMENUHI' : '✗ BELUM'}</td>
-    </tr>
-    <tr>
-      <td style="text-align:center;">2</td>
-      <td>Suhu Inti Makanan Matang (Core Temperature)</td>
-      <td style="text-align:center;">&ge; 60&deg;C</td>
-      <td style="text-align:center;">${qcSuhu ? '&ge; 60&deg;C' : 'Belum Diukur'}</td>
-      <td style="text-align:center;font-weight:bold;color:${qcSuhu ? '#166534' : '#991b1b'};">${qcSuhu ? '✓ MEMENUHI' : '✗ BELUM'}</td>
-    </tr>
-    <tr>
-      <td style="text-align:center;">3</td>
-      <td>Jeda Waktu Masak — Konsumsi (Golden Hour)</td>
-      <td style="text-align:center;">&lt; 3 Jam</td>
-      <td style="text-align:center;">${qcWaktu ? '&lt; 3 Jam' : 'Belum Diverifikasi'}</td>
-      <td style="text-align:center;font-weight:bold;color:${qcWaktu ? '#166534' : '#991b1b'};">${qcWaktu ? '✓ MEMENUHI' : '✗ BELUM'}</td>
-    </tr>
-  </tbody>
-</table>
+  <!-- ═══ ESTIMASI LOGISTIK & CATATAN PERENCANAAN ═══ -->
+  <div style="display:flex;gap:15px;align-items:stretch;margin-top:12px;">
+    <div style="flex:1.2;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;font-size:9.5px;">
+      <span style="font-weight:bold;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px;letter-spacing:0.5px;">📝 Catatan Perencanaan Gizi:</span>
+      Menu makan siang harian ini direncanakan sesuai dengan Juknis Badan Gizi Nasional Republik Indonesia TA 2025. Porsi gizi disesuaikan dengan kebutuhan Angka Kecukupan Gizi (AKG) kelompok usia target utama.
+    </div>
+    <div style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;font-size:9.5px;">
+      <span style="font-weight:bold;color:#475569;text-transform:uppercase;display:block;margin-bottom:4px;letter-spacing:0.5px;">📦 Buffer Logistik & Toleransi:</span>
+      • Toleransi Penyusutan Logistik (5%): <strong>${lossPorsi} porsi</strong><br>
+      • Estimasi Belanja + Buffer Loss: <strong>Rp ${Math.round(totBiaya * totalPorsi * 1.05).toLocaleString('id')}</strong>
+    </div>
+  </div>
 
-<!-- ═══ TIMELINE LOGISTIK DISTRIBUSI ═══ -->
-<div class="section"><span class="num">VI</span> Timeline Logistik Distribusi & Golden Hour</div>
-${timelineHtml}
-
-<!-- ═══ KEPUTUSAN KELAYAKAN ═══ -->
-<div class="section"><span class="num">VII</span> Keputusan Kelayakan Distribusi</div>
-<div class="${qcStatus === 'layak' ? 'badge-layak' : 'badge-tunda'}">
-  ${statusBadge}
-</div>
-
-<table class="info-grid" style="margin-top:8px;">
-  <tr>
-    <td class="lbl">Catatan Lapangan Ahli Gizi</td>
-    <td>: ${qcNotes || 'Tidak ada catatan tambahan.'}</td>
-  </tr>
-</table>
-
-<!-- ═══ TANDA TANGAN ═══ -->
-<table class="ttd-table">
-  <tr>
-    <td>
-      Mengetahui,<br><strong>Kepala SPPG</strong>
-      <div class="ttd-line"></div>
-      <div style="font-size:10px;">NIP. _______________</div>
-    </td>
-    <td>
-      Pemeriksa,<br><strong>Ahli Gizi / Verifikator</strong>
-      <div class="ttd-line"></div>
-      <div style="font-size:10px;">${qcTesterName || '(............................)'}</div>
-    </td>
-    <td>
-      Pelaksana,<br><strong>Kepala Dapur</strong>
-      <div class="ttd-line"></div>
-      <div style="font-size:10px;">NIP. _______________</div>
-    </td>
-  </tr>
-</table>
-
-<!-- ═══ FOOTER ═══ -->
-<div class="footer-note">
-  Dokumen ini dicetak secara otomatis oleh Sistem Perencanaan Porsi Gizi (SPPG) berdasarkan data TKPI Kemenkes & PMK No. 28/2019.<br>
-  Mengacu pada Juknis Penyelenggaraan Bantuan Pemerintah untuk Program MBG TA 2025 — Badan Gizi Nasional RI.<br>
-  Formulir No. SPPG-MBG/QC/01 — Dicetak: ${tgl}, ${jam} WIB
-</div>
+  <!-- ═══ FOOTER DUAL SIGNATURE ═══ -->
+  <div class="footer-section">
+    <div class="sig-block">
+      Ahli Gizi / Perencana Menu
+      <div class="sig-line"></div>
+      <strong>( Ahli Gizi SPPG )</strong>
+      <div style="font-size:8px;color:#64748b;margin-top:1px;">Registrasi Ahli Gizi (STR)</div>
+    </div>
+    <div style="font-size:8px;color:#64748b;text-align:center;padding-bottom:10px;">
+      Mengacu pada Juknis Penyelenggaraan Bantuan Pemerintah untuk Program Makan Bergizi Gratis (MBG)<br>
+      Badan Gizi Nasional Republik Indonesia TA 2025/2026.
+      <span class="romantic-touch">Dibuat penuh cinta untuk Rika & Ayip 💕</span>
+    </div>
+    <div class="sig-block">
+      Penanggung Jawab SPPG
+      <div class="sig-line"></div>
+      <strong>( Kepala Satuan Pelayanan )</strong>
+      <div style="font-size:8px;color:#64748b;margin-top:1px;">NIP. ___________________</div>
+    </div>
+  </div>
 
 </body>
 </html>

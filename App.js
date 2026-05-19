@@ -756,12 +756,12 @@ export default function App() {
   let totKal = 0, totProt = 0, totKar = 0, totLem = 0, totSerat = 0, totBiaya = 0;
   let hasCooked = false;
   selectedItems.forEach(it => {
-    totKal += it.kalori;
-    totProt += it.protein;
-    totKar += it.karbo;
-    totLem += it.lemak;
-    totSerat += it.serat;
-    totBiaya += it.harga;
+    totKal += parseFloat(it.kalori) || 0;
+    totProt += parseFloat(it.protein) || 0;
+    totKar += parseFloat(it.karbo) || 0;
+    totLem += parseFloat(it.lemak) || 0;
+    totSerat += parseFloat(it.serat) || 0;
+    totBiaya += parseFloat(it.harga) || 0;
     if (it.kat !== 'buah') {
       hasCooked = true;
     }
@@ -1156,11 +1156,38 @@ export default function App() {
       consolidatedIngredients: consolidated
     });
 
-    try {
-      const { uri } = await Print.printToFileAsync({ html: htmlContent });
-      await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: 'Formulir QC SPPG-MBG (PDF)' });
-    } catch (e) {
-      Alert.alert('Gagal', 'Terjadi kesalahan saat memproses file cetak PDF.');
+    if (Platform.OS === 'web') {
+      try {
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.style.top = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '600px';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+        
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(htmlContent);
+        doc.close();
+        
+        iframe.contentWindow.focus();
+        setTimeout(() => {
+          iframe.contentWindow.print();
+          document.body.removeChild(iframe);
+        }, 500);
+      } catch (e) {
+        console.error(e);
+        alert('Terjadi kesalahan saat mencetak laporan di web.');
+      }
+    } else {
+      try {
+        const { uri } = await Print.printToFileAsync({ html: htmlContent });
+        await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: 'Formulir QC SPPG-MBG (PDF)' });
+      } catch (e) {
+        Alert.alert('Gagal', 'Terjadi kesalahan saat memproses file cetak PDF.');
+      }
     }
   };
 
@@ -1897,7 +1924,7 @@ export default function App() {
               <View style={styles.matrixColBars}>
                 {/* Energi */}
                 <View style={styles.matrixBarGroup}>
-                  <Text style={styles.matrixBarLabel}>E</Text>
+                  <Text style={styles.matrixBarLabel}>Energi</Text>
                   <View style={styles.matrixTrackSmall}>
                     <View style={[styles.matrixFillSmall, { width: `${Math.min(100, calPct)}%`, backgroundColor: statusColor }]} />
                   </View>
@@ -1905,7 +1932,7 @@ export default function App() {
                 </View>
                 {/* Protein */}
                 <View style={styles.matrixBarGroup}>
-                  <Text style={styles.matrixBarLabel}>P</Text>
+                  <Text style={styles.matrixBarLabel}>Protein</Text>
                   <View style={styles.matrixTrackSmall}>
                     <View style={[styles.matrixFillSmall, { width: `${Math.min(100, protPct)}%`, backgroundColor: statusColor }]} />
                   </View>
@@ -2050,191 +2077,7 @@ export default function App() {
     </ScrollView>
   );
 
-  const renderTab4 = () => {
-    return (
-      <ScrollView style={styles.tabContent}>
-        <View style={styles.infoAlert}>
-          <MaterialCommunityIcons name="shield-check" size={16} color="#60A5FA" />
-          <Text style={styles.infoText}>
-            Uji Kelayakan Harian sesuai regulasi Badan Gizi Nasional (BGN).
-          </Text>
-        </View>
 
-        <Text style={styles.sectionTitle}>👅 1. UJI ORGANOLEPTIK / SENSORIS</Text>
-        <View style={styles.card}>
-          <Text style={styles.hintText}>
-            Wajib dicicipi oleh Ahli Gizi / Kepala Dapur minimal 30 menit sebelum pengiriman.
-          </Text>
-
-          {/* Row 1: Rasa */}
-          <TouchableOpacity 
-            style={[styles.qcCheckRow, qcRasa && styles.qcCheckRowActive]}
-            onPress={() => setQcRasa(!qcRasa)}
-          >
-            <MaterialCommunityIcons 
-              name={qcRasa ? "checkbox-marked" : "checkbox-blank-outline"} 
-              size={20} 
-              color={qcRasa ? "#4ADE80" : "#626C90"} 
-            />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={[styles.qcLabel, qcRasa && styles.qcLabelActive]}>Uji Rasa (Taste)</Text>
-              <Text style={styles.qcDesc}>Gurih & asin seimbang, kadar garam &lt;0.9% per porsi (tidak keasinan).</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Row 2: Aroma */}
-          <TouchableOpacity 
-            style={[styles.qcCheckRow, qcAroma && styles.qcCheckRowActive]}
-            onPress={() => setQcAroma(!qcAroma)}
-          >
-            <MaterialCommunityIcons 
-              name={qcAroma ? "checkbox-marked" : "checkbox-blank-outline"} 
-              size={20} 
-              color={qcAroma ? "#4ADE80" : "#626C90"} 
-            />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={[styles.qcLabel, qcAroma && styles.qcLabelActive]}>Uji Aroma (Smell)</Text>
-              <Text style={styles.qcDesc}>Aroma segar khas masakan baru matang. Bebas aroma asam, basi, atau tengik.</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Row 3: Tekstur */}
-          <TouchableOpacity 
-            style={[styles.qcCheckRow, qcTekstur && styles.qcCheckRowActive]}
-            onPress={() => setQcTekstur(!qcTekstur)}
-          >
-            <MaterialCommunityIcons 
-              name={qcTekstur ? "checkbox-marked" : "checkbox-blank-outline"} 
-              size={20} 
-              color={qcTekstur ? "#4ADE80" : "#626C90"} 
-            />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={[styles.qcLabel, qcTekstur && styles.qcLabelActive]}>Uji Tekstur (Texture)</Text>
-              <Text style={styles.qcDesc}>Kematangan sempurna. Nasi pulen (tidak mentah/bubur), lauk empuk/renyah.</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Row 4: Penampilan */}
-          <TouchableOpacity 
-            style={[styles.qcCheckRow, qcPenampilan && styles.qcCheckRowActive]}
-            onPress={() => setQcPenampilan(!qcPenampilan)}
-          >
-            <MaterialCommunityIcons 
-              name={qcPenampilan ? "checkbox-marked" : "checkbox-blank-outline"} 
-              size={20} 
-              color={qcPenampilan ? "#4ADE80" : "#626C90"} 
-            />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={[styles.qcLabel, qcPenampilan && styles.qcLabelActive]}>Uji Visual / Penampilan</Text>
-              <Text style={styles.qcDesc}>Warna alami sayur tetap hijau segar (tidak layu/kecokelatan), kuah tidak keruh.</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.sectionTitle}>🛡️ 2. PARAMETER HIGIENITAS & FISIK</Text>
-        <View style={styles.card}>
-          {/* Row 5: Higienitas Penjamah */}
-          <TouchableOpacity 
-            style={[styles.qcCheckRow, qcHigienitas && styles.qcCheckRowActive]}
-            onPress={() => setQcHigienitas(!qcHigienitas)}
-          >
-            <MaterialCommunityIcons 
-              name={qcHigienitas ? "checkbox-marked" : "checkbox-blank-outline"} 
-              size={20} 
-              color={qcHigienitas ? "#4ADE80" : "#626C90"} 
-            />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={[styles.qcLabel, qcHigienitas && styles.qcLabelActive]}>Sanitasi Penjamah Makanan</Text>
-              <Text style={styles.qcDesc}>Pekerja memakai penutup kepala, masker, celemek, & sarung tangan bersih.</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Row 6: Suhu Masak Inti */}
-          <TouchableOpacity 
-            style={[styles.qcCheckRow, qcSuhu && styles.qcCheckRowActive]}
-            onPress={() => setQcSuhu(!qcSuhu)}
-          >
-            <MaterialCommunityIcons 
-              name={qcSuhu ? "checkbox-marked" : "checkbox-blank-outline"} 
-              size={20} 
-              color={qcSuhu ? "#4ADE80" : "#626C90"} 
-            />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={[styles.qcLabel, qcSuhu && styles.qcLabelActive]}>Suhu Masak Inti (Core Temp)</Text>
-              <Text style={styles.qcDesc}>Suhu makanan hangat matang terjaga &gt;60°C saat diporsi untuk mencegah bakteri.</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Row 7: Waktu Maksimal */}
-          <TouchableOpacity 
-            style={[styles.qcCheckRow, qcWaktu && styles.qcCheckRowActive]}
-            onPress={() => setQcWaktu(!qcWaktu)}
-          >
-            <MaterialCommunityIcons 
-              name={qcWaktu ? "checkbox-marked" : "checkbox-blank-outline"} 
-              size={20} 
-              color={qcWaktu ? "#4ADE80" : "#626C90"} 
-            />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={[styles.qcLabel, qcWaktu && styles.qcLabelActive]}>Golden Hour Distribusi</Text>
-              <Text style={styles.qcDesc}>Jeda waktu selesai masak hingga disantap siswa dipastikan kurang dari 3 jam.</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.sectionTitle}>✍️ 3. TANDA TANGAN & REKOMENDASI</Text>
-        <View style={styles.card}>
-          <Text style={styles.label}>Nama Ahli Gizi / Pemeriksa</Text>
-          <TextInput
-            style={[styles.input, { fontSize: 14 }]}
-            value={qcTesterName}
-            onChangeText={setQcTesterName}
-            placeholder="Ketik nama lengkap pemeriksa"
-            placeholderTextColor="#626C90"
-          />
-
-          <Text style={styles.label}>Catatan Tambahan Organoleptik</Text>
-          <TextInput
-            style={[styles.input, { fontSize: 13, height: 60, textAlignVertical: 'top', paddingTop: 8 }]}
-            value={qcNotes}
-            onChangeText={setQcNotes}
-            placeholder="Contoh: Tekstur katsu sangat garing, rasa kuah bening gurih seimbang..."
-            placeholderTextColor="#626C90"
-            multiline={true}
-          />
-
-          <Text style={styles.label}>Status Kelayakan Distribusi</Text>
-          <View style={styles.toggleGroup}>
-            <TouchableOpacity
-              style={[styles.toggleBtn, qcStatus === 'layak' && { backgroundColor: 'rgba(74, 222, 128, 0.1)', borderColor: '#4ADE80', borderWidth: 1 }]}
-              onPress={() => setQcStatus('layak')}
-            >
-              <Text style={[styles.toggleBtnText, qcStatus === 'layak' && { color: '#4ADE80' }]}>
-                ✅ LAYAK DISTRIBUSI
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.toggleBtn, qcStatus === 'tunda' && { backgroundColor: 'rgba(248, 113, 113, 0.1)', borderColor: '#F87171', borderWidth: 1 }]}
-              onPress={() => setQcStatus('tunda')}
-            >
-              <Text style={[styles.toggleBtnText, qcStatus === 'tunda' && { color: '#F87171' }]}>
-                ⚠️ TUNDA / RE-COOK
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Action Button: Print PDF include QC */}
-        <TouchableOpacity 
-          style={[styles.primaryButton, { marginBottom: 40 }]} 
-          onPress={generatePDFReport}
-        >
-          <MaterialCommunityIcons name="file-pdf-box" size={20} color="#07090e" />
-          <Text style={styles.primaryButtonText}>Cetak Laporan + Sertifikat QC</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    );
-  };
 
   const getRecipeIngredientsListStr = (itemId) => {
     const r = recipeDetails[itemId] || customRecipeDetails[itemId];
@@ -2890,19 +2733,12 @@ export default function App() {
         >
           <Text style={[styles.tabButtonText, activeTab === 3 && styles.tabButtonTextActive]}>3. Hasil</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.tabButton, activeTab === 4 && styles.tabButtonActive]}
-          onPress={() => setActiveTab(4)}
-        >
-          <Text style={[styles.tabButtonText, activeTab === 4 && styles.tabButtonTextActive]}>4. QC Gizi</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Tab Pages */}
       {activeTab === 1 && renderTab1()}
       {activeTab === 2 && renderTab2()}
       {activeTab === 3 && renderTab3()}
-      {activeTab === 4 && renderTab4()}
 
       {/* TKPI Database Modal */}
       {renderTkpiModal()}
@@ -3507,7 +3343,7 @@ const styles = StyleSheet.create({
   matrixBarLabel: {
     color: '#626C90',
     fontSize: 9,
-    width: 15,
+    width: 45,
     fontWeight: '700',
   },
   matrixTrackSmall: {
