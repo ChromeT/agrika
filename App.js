@@ -3207,8 +3207,27 @@ export default function App() {
         visible={!!deleteConfirmItem}
         onRequestClose={() => setDeleteConfirmItem(null)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxWidth: 360, padding: 22, borderColor: 'rgba(248, 113, 113, 0.3)', borderWidth: 1 }]}>
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(7, 9, 14, 0.85)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20
+        }}>
+          <View style={{
+            backgroundColor: '#101422',
+            borderRadius: 16,
+            width: '100%',
+            maxWidth: 340,
+            padding: 22,
+            borderColor: 'rgba(248, 113, 113, 0.3)',
+            borderWidth: 1,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 10 },
+            shadowOpacity: 0.5,
+            shadowRadius: 15,
+            elevation: 10
+          }}>
             <View style={{ alignItems: 'center', marginBottom: 15 }}>
               <View style={{
                 width: 50,
