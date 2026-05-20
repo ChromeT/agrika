@@ -658,6 +658,7 @@ export default function App() {
   // Selection state
   const [selected, setSelected] = useState({ karbo: [], protein: [], sayur: [], buah: [] });
   const [customMenus, setCustomMenus] = useState([]);
+  const [deletedMenuIds, setDeletedMenuIds] = useState([]);
   const [menuPrices, setMenuPrices] = useState({});
   const [categoriesList, setCategoriesList] = useState(['karbo', 'protein', 'sayur', 'buah']);
 
@@ -739,6 +740,7 @@ export default function App() {
             setSelected(migratedSelected);
           }
           if (parsed.customMenus) setCustomMenus(parsed.customMenus);
+          if (parsed.deletedMenuIds) setDeletedMenuIds(parsed.deletedMenuIds);
           if (parsed.menuPrices) setMenuPrices(parsed.menuPrices);
           if (parsed.categoriesList) setCategoriesList(parsed.categoriesList);
           if (parsed.customRecipeDetails) setCustomRecipeDetails(parsed.customRecipeDetails);
@@ -769,7 +771,7 @@ export default function App() {
     async function saveCache() {
       try {
         const cacheObj = {
-          usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, menuPrices, customRecipeDetails,
+          usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, deletedMenuIds, menuPrices, customRecipeDetails,
           recipeDetails, ingredientPrices, categoriesList,
           qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus
         };
@@ -779,7 +781,7 @@ export default function App() {
       }
     }
     saveCache();
-  }, [usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, menuPrices, customRecipeDetails,
+  }, [usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, deletedMenuIds, menuPrices, customRecipeDetails,
       recipeDetails, ingredientPrices, categoriesList,
       qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus]);
 
@@ -1007,6 +1009,35 @@ export default function App() {
         [kat]: newList
       };
     });
+  };
+
+  const handleDeleteMenu = (item) => {
+    Alert.alert(
+      'Hapus Menu',
+      `Apakah Anda yakin ingin menghapus menu "${item.nama}" dari daftar?`,
+      [
+        { text: 'Batal', style: 'cancel' },
+        { 
+          text: 'Hapus', 
+          style: 'destructive',
+          onPress: () => {
+            setSelected(prev => {
+              const currentList = Array.isArray(prev[item.kat]) ? prev[item.kat] : (prev[item.kat] ? [prev[item.kat]] : []);
+              return {
+                ...prev,
+                [item.kat]: currentList.filter(x => x !== item.id)
+              };
+            });
+            
+            if (item.id.startsWith('custom-')) {
+              setCustomMenus(prev => prev.filter(x => x.id !== item.id));
+            } else {
+              setDeletedMenuIds(prev => [...prev, item.id]);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const updateMenuPrice = (id, priceStr) => {
@@ -1629,8 +1660,8 @@ export default function App() {
         </View>
 
         {categories.map(cat => {
-          const list = INITIAL_MENU_DATA[cat.key] || [];
-          const custom = customMenus.filter(x => x.kat === cat.key);
+          const list = (INITIAL_MENU_DATA[cat.key] || []).filter(x => !deletedMenuIds.includes(x.id));
+          const custom = customMenus.filter(x => x.kat === cat.key && !deletedMenuIds.includes(x.id));
           const combined = [...list, ...custom];
 
           return (
@@ -1694,13 +1725,29 @@ export default function App() {
                         <Text style={styles.priceLabel}>/p</Text>
                       </View>
 
-                      <TouchableOpacity 
-                        style={styles.editRecipeBtn}
-                        onPress={() => openRecipeEditorModal(item, cat.key)}
-                      >
-                        <MaterialCommunityIcons name="pencil-box" size={12} color="#60A5FA" />
-                        <Text style={styles.editRecipeBtnText}>Resep &amp; Harga</Text>
-                      </TouchableOpacity>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 5 }}>
+                        <TouchableOpacity 
+                          style={[styles.editRecipeBtn, { flex: 1, marginTop: 0 }]}
+                          onPress={() => openRecipeEditorModal(item, cat.key)}
+                        >
+                          <MaterialCommunityIcons name="pencil-box" size={12} color="#60A5FA" />
+                          <Text style={styles.editRecipeBtnText}>Resep &amp; Harga</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={{
+                            padding: 6,
+                            backgroundColor: 'rgba(248, 113, 113, 0.08)',
+                            borderRadius: 4,
+                            borderWidth: 1,
+                            borderColor: 'rgba(248, 113, 113, 0.2)',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          onPress={() => handleDeleteMenu(item)}
+                        >
+                          <MaterialCommunityIcons name="trash-can-outline" size={12} color="#F87171" />
+                        </TouchableOpacity>
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
@@ -1708,6 +1755,36 @@ export default function App() {
             </View>
           );
         })}
+
+        {deletedMenuIds.length > 0 && (
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(255,255,255,0.03)',
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.08)',
+              borderRadius: 6,
+              paddingVertical: 8,
+              marginBottom: 15,
+              marginTop: 5
+            }}
+            onPress={() => {
+              Alert.alert(
+                'Pulihkan Menu',
+                'Apakah Anda yakin ingin mengembalikan semua menu bawaan yang telah dihapus?',
+                [
+                  { text: 'Batal', style: 'cancel' },
+                  { text: 'Pulihkan', onPress: () => setDeletedMenuIds([]) }
+                ]
+              );
+            }}
+          >
+            <MaterialCommunityIcons name="backup-restore" size={14} color="#A5ACCC" style={{ marginRight: 6 }} />
+            <Text style={{ color: '#A5ACCC', fontSize: 11.5, fontWeight: '700' }}>🔄 Pulihkan Semua Menu Bawaan</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Form Tambah Custom */}
         <Text style={styles.sectionTitle}>➕ Tambah Bahan Custom Lokal</Text>
