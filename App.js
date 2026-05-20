@@ -656,7 +656,7 @@ export default function App() {
   };
 
   // Selection state
-  const [selected, setSelected] = useState({ karbo: null, protein: null, sayur: null, buah: null });
+  const [selected, setSelected] = useState({ karbo: [], protein: [], sayur: [], buah: [] });
   const [customMenus, setCustomMenus] = useState([]);
   const [menuPrices, setMenuPrices] = useState({});
   const [categoriesList, setCategoriesList] = useState(['karbo', 'protein', 'sayur', 'buah']);
@@ -724,7 +724,20 @@ export default function App() {
           if (parsed.spareVal) setSpareVal(parsed.spareVal);
           if (parsed.budget) setBudget(parsed.budget);
           if (parsed.overhead !== undefined) setOverhead(Number(parsed.overhead));
-          if (parsed.selected) setSelected(parsed.selected);
+          if (parsed.selected) {
+            const migratedSelected = {};
+            ['karbo', 'protein', 'sayur', 'buah'].forEach(kat => {
+              const val = parsed.selected[kat];
+              if (Array.isArray(val)) {
+                migratedSelected[kat] = val;
+              } else if (val) {
+                migratedSelected[kat] = [val];
+              } else {
+                migratedSelected[kat] = [];
+              }
+            });
+            setSelected(migratedSelected);
+          }
           if (parsed.customMenus) setCustomMenus(parsed.customMenus);
           if (parsed.menuPrices) setMenuPrices(parsed.menuPrices);
           if (parsed.categoriesList) setCategoriesList(parsed.categoriesList);
@@ -917,27 +930,31 @@ export default function App() {
   const getSelectedItems = () => {
     const list = [];
     categoriesList.forEach(kat => {
-      const id = selected[kat];
-      if (!id) return;
+      const val = selected[kat];
+      if (!val) return;
+      const idsArray = Array.isArray(val) ? val : [val];
+      
       const baseList = INITIAL_MENU_DATA[kat] || [];
       const combined = [...baseList, ...customMenus.filter(x => x.kat === kat)];
-      const found = combined.find(x => x.id === id);
-      if (found) {
-        // Price calculated dynamically from recipe ingredients, or fallback to menuPrices / found.harga
-        const price = getMenuCostPerPortion(found);
-        const gizi = getMenuGizi(found);
-        list.push({ 
-          ...found, 
-          harga: price, 
-          porsi: getMenuPortion(found),
-          kalori: gizi.kalori,
-          protein: gizi.protein,
-          karbo: gizi.karbo,
-          lemak: gizi.lemak,
-          serat: gizi.serat,
-          kat 
-        });
-      }
+      
+      idsArray.forEach(id => {
+        const found = combined.find(x => x.id === id);
+        if (found) {
+          const price = getMenuCostPerPortion(found);
+          const gizi = getMenuGizi(found);
+          list.push({ 
+            ...found, 
+            harga: price, 
+            porsi: getMenuPortion(found),
+            kalori: gizi.kalori,
+            protein: gizi.protein,
+            karbo: gizi.karbo,
+            lemak: gizi.lemak,
+            serat: gizi.serat,
+            kat 
+          });
+        }
+      });
     });
     return list;
   };
@@ -980,10 +997,16 @@ export default function App() {
   //  UI INTERACTION ACTIONS
   // ═══════════════════════════════════════
   const toggleSelectMenu = (kat, id) => {
-    setSelected(prev => ({
-      ...prev,
-      [kat]: prev[kat] === id ? null : id
-    }));
+    setSelected(prev => {
+      const currentList = Array.isArray(prev[kat]) ? prev[kat] : (prev[kat] ? [prev[kat]] : []);
+      const newList = currentList.includes(id) 
+        ? currentList.filter(x => x !== id) 
+        : [...currentList, id];
+      return {
+        ...prev,
+        [kat]: newList
+      };
+    });
   };
 
   const updateMenuPrice = (id, priceStr) => {
@@ -1615,7 +1638,7 @@ export default function App() {
               <Text style={styles.menuHeader}>{cat.title}</Text>
               <View style={styles.menuGrid}>
                 {combined.map(item => {
-                  const isSel = selected[cat.key] === item.id;
+                  const isSel = Array.isArray(selected[cat.key]) ? selected[cat.key].includes(item.id) : selected[cat.key] === item.id;
                   const priceVal = getMenuCostPerPortion(item);
                   
                   return (
@@ -2332,32 +2355,48 @@ export default function App() {
           ESTIMASI BAHAN BAKU LENGKAP (PER PORSI & TOTAL)
           ═══════════════════════════════════════ */}
       {(() => {
-        const selectedProtein = selectedItems.find(it => it.kat === 'protein');
-        const protCard = getProteinCardInfo(selectedProtein, totalPorsi);
+        const selectedProteins = selectedItems.filter(it => it.kat === 'protein');
         
         return (
           <View style={{ marginTop: 15 }}>
             {/* Tiga Card Overview */}
             <View style={styles.topInfoGrid}>
-              <View style={[styles.topInfoCard, { backgroundColor: '#1E293B', borderColor: '#3B82F6', borderWidth: 1 }]}>
-                <Text style={[styles.topInfoLabel, { color: '#94A3B8' }]}>{protCard.title}</Text>
-                <Text style={[styles.topInfoValue, { color: '#3B82F6', fontSize: 16 }]}>{protCard.val}</Text>
-                <Text style={styles.topInfoSub}>{protCard.sub}</Text>
-              </View>
+              {selectedProteins.length > 0 ? (
+                selectedProteins.map(prot => {
+                  const cardInfo = getProteinCardInfo(prot, totalPorsi);
+                  return (
+                    <View key={prot.id} style={[styles.topInfoCard, { backgroundColor: '#1E293B', borderColor: '#3B82F6', borderWidth: 1 }]}>
+                      <Text style={[styles.topInfoLabel, { color: '#94A3B8' }]}>{cardInfo.title}</Text>
+                      <Text style={[styles.topInfoValue, { color: '#3B82F6', fontSize: 16 }]}>{cardInfo.val}</Text>
+                      <Text style={styles.topInfoSub}>{cardInfo.sub}</Text>
+                    </View>
+                  );
+                })
+              ) : (
+                <View style={[styles.topInfoCard, { backgroundColor: '#1E293B', borderColor: '#3B82F6', borderWidth: 1 }]}>
+                  <Text style={[styles.topInfoLabel, { color: '#94A3B8' }]}>Kebutuhan Protein</Text>
+                  <Text style={[styles.topInfoValue, { color: '#3B82F6', fontSize: 16 }]}>0 porsi</Text>
+                  <Text style={styles.topInfoSub}>Pilih protein</Text>
+                </View>
+              )}
               <View style={styles.topInfoCard}>
                 <Text style={styles.topInfoLabel}>Penerima manfaat</Text>
                 <Text style={[styles.topInfoValue, { fontSize: 16 }]}>{totalPorsi.toLocaleString('id')} orang</Text>
                 <Text style={styles.topInfoSub}>Siswa + Cadangan</Text>
               </View>
               <View style={styles.topInfoCard}>
-                <Text style={styles.topInfoLabel}>Menu</Text>
-                <Text style={[styles.topInfoValue, { fontSize: 14 }]}>{selectedProtein ? selectedProtein.nama : '—'}</Text>
-                <Text style={styles.topInfoSub}>Protein utama</Text>
+                <Text style={styles.topInfoLabel}>Menu Lauk</Text>
+                <Text style={[styles.topInfoValue, { fontSize: 13 }]}>{selectedProteins.map(it => it.nama).join(', ') || '—'}</Text>
+                <Text style={styles.topInfoSub}>Pilihan Protein</Text>
               </View>
             </View>
 
             {/* Bahan Pelengkap Goreng/Katsu dkk */}
-            {renderPelengkapCards(selectedProtein, totalPorsi)}
+            {selectedProteins.map(prot => (
+              <View key={prot.id}>
+                {renderPelengkapCards(prot, totalPorsi)}
+              </View>
+            ))}
 
             {/* INTERACTIVE KITCHEN TIMELINE CARD */}
             <Text style={styles.sectionTitle}>🕒 TIMELINE OPERASIONAL DAPUR & DISTRIBUSI (BGN)</Text>
