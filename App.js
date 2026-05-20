@@ -659,6 +659,7 @@ export default function App() {
   const [selected, setSelected] = useState({ karbo: [], protein: [], sayur: [], buah: [] });
   const [customMenus, setCustomMenus] = useState([]);
   const [deletedMenuIds, setDeletedMenuIds] = useState([]);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState(null);
   const [menuPrices, setMenuPrices] = useState({});
   const [categoriesList, setCategoriesList] = useState(['karbo', 'protein', 'sayur', 'buah']);
 
@@ -1012,32 +1013,7 @@ export default function App() {
   };
 
   const handleDeleteMenu = (item) => {
-    Alert.alert(
-      'Hapus Menu',
-      `Apakah Anda yakin ingin menghapus menu "${item.nama}" dari daftar?`,
-      [
-        { text: 'Batal', style: 'cancel' },
-        { 
-          text: 'Hapus', 
-          style: 'destructive',
-          onPress: () => {
-            setSelected(prev => {
-              const currentList = Array.isArray(prev[item.kat]) ? prev[item.kat] : (prev[item.kat] ? [prev[item.kat]] : []);
-              return {
-                ...prev,
-                [item.kat]: currentList.filter(x => x !== item.id)
-              };
-            });
-            
-            if (item.id.startsWith('custom-')) {
-              setCustomMenus(prev => prev.filter(x => x.id !== item.id));
-            } else {
-              setDeletedMenuIds(prev => [...prev, item.id]);
-            }
-          }
-        }
-      ]
-    );
+    setDeleteConfirmItem(item);
   };
 
   const updateMenuPrice = (id, priceStr) => {
@@ -3222,6 +3198,88 @@ export default function App() {
     );
   };
 
+  const renderDeleteConfirmModal = () => {
+    if (!deleteConfirmItem) return null;
+    return (
+      <Modal
+        transparent
+        animationType="fade"
+        visible={!!deleteConfirmItem}
+        onRequestClose={() => setDeleteConfirmItem(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxWidth: 360, padding: 22, borderColor: 'rgba(248, 113, 113, 0.3)', borderWidth: 1 }]}>
+            <View style={{ alignItems: 'center', marginBottom: 15 }}>
+              <View style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(248, 113, 113, 0.3)'
+              }}>
+                <MaterialCommunityIcons name="alert-circle-outline" size={28} color="#F87171" />
+              </View>
+              <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '700', textAlign: 'center' }}>Hapus Menu?</Text>
+              <Text style={{ color: '#8892B0', fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 18 }}>
+                Apakah Anda yakin ingin menghapus menu <Text style={{ color: '#FFF', fontWeight: 'bold' }}>"{deleteConfirmItem.nama}"</Text> dari daftar kategori?
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 5 }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  alignItems: 'center'
+                }}
+                onPress={() => setDeleteConfirmItem(null)}
+              >
+                <Text style={{ color: '#A5ACCC', fontSize: 13, fontWeight: '700' }}>Batal</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: '#EF4444',
+                  borderRadius: 8,
+                  paddingVertical: 10,
+                  alignItems: 'center'
+                }}
+                onPress={() => {
+                  const item = deleteConfirmItem;
+                  setSelected(prev => {
+                    const currentList = Array.isArray(prev[item.kat]) ? prev[item.kat] : (prev[item.kat] ? [prev[item.kat]] : []);
+                    return {
+                      ...prev,
+                      [item.kat]: currentList.filter(x => x !== item.id)
+                    };
+                  });
+                  
+                  if (item.id.startsWith('custom-')) {
+                    setCustomMenus(prev => prev.filter(x => x.id !== item.id));
+                  } else {
+                    setDeletedMenuIds(prev => [...prev, item.id]);
+                  }
+                  setDeleteConfirmItem(null);
+                }}
+              >
+                <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '800' }}>Ya, Hapus</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
+
   const renderTkpiModal = () => {
     // Filter items based on tkpiSearchQuery
     const filteredTkpi = TKPI_DATABASE.filter(item => 
@@ -3489,6 +3547,9 @@ export default function App() {
 
       {/* Recipe Editor Modal */}
       {renderRecipeEditorModal()}
+
+      {/* Delete Confirmation Modal */}
+      {renderDeleteConfirmModal()}
     </SafeAreaView>
   );
 }
