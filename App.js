@@ -184,7 +184,7 @@ function getIngredientGizi(nama, qty, unit) {
 // ═══════════════════════════════════════════════════
 const INITIAL_MENU_DATA = {
   karbo: [
-    { id: 'nasi-putih', icon: 'rice', nama: 'Nasi Putih', porsi: '100g beras mentah', kalori: 360, protein: 6.8, karbo: 78.9, lemak: 0.7, serat: 0.4, harga: 1200, mbgStatus: 'aman', mbgNotes: 'Karbohidrat utama segar lokal.' },
+    { id: 'nasi', icon: 'rice', nama: 'Nasi', porsi: '100g nasi matang', kalori: 180, protein: 3, karbo: 39.8, lemak: 0.3, serat: 0.2, harga: 600, mbgStatus: 'aman', mbgNotes: 'Bahan pangan segar Kemenkes TKPI (Serealia).' },
     { id: 'nasi-merah', icon: 'bowl-rice', nama: 'Nasi Merah', porsi: '100g beras merah', kalori: 352, protein: 7.5, karbo: 76.2, lemak: 1.7, serat: 3.2, harga: 1700, mbgStatus: 'aman', mbgNotes: 'Kaya serat dan vitamin B kompleks.' },
     { id: 'nasi-jagung', icon: 'corn', nama: 'Nasi Jagung Pipil', porsi: '90g beras + jagung', kalori: 345, protein: 8.0, karbo: 75.0, lemak: 1.3, serat: 2.6, harga: 1100, mbgStatus: 'aman', mbgNotes: 'Variasi karbohidrat lokal berserat.' },
     { id: 'singkong', icon: 'potato', nama: 'Singkong Kukus', porsi: '150g singkong mentah', kalori: 230, protein: 1.8, karbo: 56.0, lemak: 0.4, serat: 2.4, harga: 800, mbgStatus: 'aman', mbgNotes: 'Pemberdayaan pangan petani singkong lokal.' },
@@ -229,8 +229,8 @@ const INITIAL_MENU_DATA = {
 
 // Detailed sub-ingredients mapping for local school menus
 const RECIPE_BREAKDOWNS = {
-  'nasi-putih': [
-    { nama: 'Beras (untuk nasi)', qty: 80, unit: 'g', harga: 1100 }
+  'nasi': [
+    { nama: 'Beras (untuk nasi)', qty: 45, unit: 'g', harga: 600 }
   ],
   'nasi-merah': [
     { nama: 'Beras Merah (untuk nasi)', qty: 80, unit: 'g', harga: 1700 }
@@ -420,8 +420,8 @@ const DEFAULT_INGREDIENT_PRICES = {
 // Detailed recipe mapping for each menu item to display complete logs
 const RECIPE_DETAILS = {
   // Karbo
-  'nasi-putih': {
-    utama: { nama: 'Beras', qty: 80, unit: 'g', catatan: 'Nasi matang ±200g/porsi' }
+  'nasi': {
+    utama: { nama: 'Beras', qty: 45, unit: 'g', catatan: 'Nasi matang ±100g/porsi' }
   },
   'nasi-merah': {
     utama: { nama: 'Beras Merah', qty: 80, unit: 'g', catatan: 'Nasi merah matang ±180g/porsi' }
@@ -625,6 +625,15 @@ export default function App() {
   const [overhead, setOverhead] = useState(25); // percentage
   const [jamMakanSiang, setJamMakanSiang] = useState('11:30'); // target lunchtime
 
+  // Gizsee Calculator States
+  const [calculatorRows, setCalculatorRows] = useState([
+    { id: '1', nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice' }
+  ]);
+  const [calculatorHistory, setCalculatorHistory] = useState([]);
+  const [tkpiModalMode, setTkpiModalMode] = useState('custom_menu'); // 'custom_menu' or 'calculator'
+  const [activeRowIndexForSearch, setActiveRowIndexForSearch] = useState(null);
+  const [calcTargetUsia, setCalcTargetUsia] = useState('10-12L');
+
   // Dynamic Back-Scheduling helper
   const calculateTimeline = (jamMakan) => {
     try {
@@ -759,6 +768,11 @@ export default function App() {
           if (parsed.qcTesterName !== undefined) setQcTesterName(parsed.qcTesterName);
           if (parsed.qcNotes !== undefined) setQcNotes(parsed.qcNotes);
           if (parsed.qcStatus !== undefined) setQcStatus(parsed.qcStatus);
+          
+          // Load Gizsee Calculator cache
+          if (parsed.calculatorRows) setCalculatorRows(parsed.calculatorRows);
+          if (parsed.calculatorHistory) setCalculatorHistory(parsed.calculatorHistory);
+          if (parsed.calcTargetUsia) setCalcTargetUsia(parsed.calcTargetUsia);
         }
       } catch (e) {
         console.warn('Gagal membaca cache lokal:', e);
@@ -774,7 +788,8 @@ export default function App() {
         const cacheObj = {
           usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, deletedMenuIds, menuPrices, customRecipeDetails,
           recipeDetails, ingredientPrices, categoriesList,
-          qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus
+          qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus,
+          calculatorRows, calculatorHistory, calcTargetUsia
         };
         await AsyncStorage.setItem('sppg_planner_cache', JSON.stringify(cacheObj));
       } catch (e) {
@@ -784,7 +799,8 @@ export default function App() {
     saveCache();
   }, [usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, deletedMenuIds, menuPrices, customRecipeDetails,
       recipeDetails, ingredientPrices, categoriesList,
-      qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus]);
+      qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus,
+      calculatorRows, calculatorHistory, calcTargetUsia]);
 
   // ═══════════════════════════════════════
   //  MATHEMATICAL CALCULATIONS
@@ -1769,6 +1785,7 @@ export default function App() {
         <TouchableOpacity 
           style={styles.searchTkpiBtn} 
           onPress={() => {
+            setTkpiModalMode('custom_menu');
             setTkpiSearchQuery('');
             setSelectedTkpiItem(null);
             setTkpiPortionInput('100');
@@ -2696,6 +2713,541 @@ export default function App() {
     </ScrollView>
   );
 
+  // ═══════════════════════════════════════
+  //  GIZSEE CALCULATOR LOGIC
+  // ═══════════════════════════════════════
+
+  const handleUpdateCalculatorRowWeight = (index, berat) => {
+    const updatedRows = [...calculatorRows];
+    if (updatedRows[index]) {
+      const portion = parseFloat(berat) || 0;
+      const factor = portion / 100;
+      updatedRows[index] = {
+        ...updatedRows[index],
+        berat: berat,
+        kalori: Math.round((updatedRows[index].baseKalori || 0) * factor),
+        protein: parseFloat(((updatedRows[index].baseProtein || 0) * factor).toFixed(1)),
+        karbo: parseFloat(((updatedRows[index].baseKarbo || 0) * factor).toFixed(1)),
+        lemak: parseFloat(((updatedRows[index].baseLemak || 0) * factor).toFixed(1)),
+        serat: parseFloat(((updatedRows[index].baseSerat || 0) * factor).toFixed(1))
+      };
+      setCalculatorRows(updatedRows);
+    }
+  };
+
+  const handleDeleteCalculatorRow = (index) => {
+    const updatedRows = calculatorRows.filter((_, idx) => idx !== index);
+    if (updatedRows.length === 0) {
+      setCalculatorRows([
+        { id: String(Date.now()), nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice' }
+      ]);
+    } else {
+      setCalculatorRows(updatedRows);
+    }
+  };
+
+  const handleSaveCalculator = () => {
+    const validRows = calculatorRows.filter(row => row.nama.trim() !== '' && parseFloat(row.berat) > 0);
+    if (validRows.length === 0) {
+      Alert.alert('Gagal Menyimpan', 'Silakan isi setidaknya satu bahan makanan dengan berat yang valid.');
+      return;
+    }
+
+    let totKal = 0, totProt = 0, totKar = 0, totLem = 0, totSer = 0;
+    validRows.forEach(row => {
+      totKal += row.kalori || 0;
+      totProt += row.protein || 0;
+      totKar += row.karbo || 0;
+      totLem += row.lemak || 0;
+      totSer += row.serat || 0;
+    });
+
+    const newHistoryItem = {
+      id: String(Date.now()),
+      timestamp: new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' }) + ', ' + new Date().toLocaleDateString('id', { day: '2-digit', month: 'short' }),
+      rows: validRows,
+      totals: {
+        kalori: totKal,
+        protein: parseFloat(totProt.toFixed(1)),
+        karbo: parseFloat(totKar.toFixed(1)),
+        lemak: parseFloat(totLem.toFixed(1)),
+        serat: parseFloat(totSer.toFixed(1))
+      }
+    };
+
+    setCalculatorHistory([newHistoryItem, ...calculatorHistory]);
+    setCalculatorRows([
+      { id: String(Date.now()), nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice' }
+    ]);
+    Alert.alert('Tersimpan', 'Hasil perhitungan berhasil disimpan ke dalam Riwayat.');
+  };
+
+  const handleLoadHistoryToCalculator = (item) => {
+    if (item && item.rows && item.rows.length > 0) {
+      setCalculatorRows(item.rows);
+      Alert.alert('Dipulihkan', 'Data riwayat berhasil dimuat kembali ke kalkulator aktif.');
+    }
+  };
+
+  const handleDeleteHistoryItem = (id) => {
+    setCalculatorHistory(prev => prev.filter(x => x.id !== id));
+  };
+
+  const generateNutritionNarrative = (totals, target) => {
+    const { kalori, protein, lemak, karbo } = totals;
+    const targetKal = target.kal || target.kalori || 600;
+    const targetProt = target.protein || 15;
+    const targetLem = target.lemak || 19.5;
+    const targetKar = target.karbo || 90;
+
+    if (kalori === 0) {
+      return {
+        verdict: 'Silakan isi bahan makanan',
+        color: '#626C90',
+        narrative: 'Tambahkan bahan makanan dari Kamus Gizi TKPI Kemenkes di atas dan input beratnya dalam gram untuk melihat analisis pemenuhan gizi rinci di sini.'
+      };
+    }
+
+    const pctKal = (kalori / targetKal) * 100;
+    const pctProt = (protein / targetProt) * 100;
+    const pctLem = (lemak / targetLem) * 100;
+    const pctKar = (karbo / targetKar) * 100;
+
+    let verdict = 'Sesuai Target Gizi';
+    let color = '#4ADE80'; // Green
+
+    if (pctKal < 90 || pctProt < 90) {
+      verdict = 'Kurang Memenuhi Standar';
+      color = '#FB923C'; // Orange
+    } else if (pctKal > 115 || pctProt > 120) {
+      verdict = 'Gizi Berlebih';
+      color = '#F87171'; // Red
+    }
+
+    let parts = [];
+
+    // 1. Kalori
+    if (pctKal < 90) {
+      parts.push(`• Kecukupan Energi: Terpenuhi ${Math.round(pctKal)}% (${kalori} kkal dari target ${targetKal} kkal). Kandungan energi masih kurang. Pertimbangkan menambah porsi bahan pokok (Karbohidrat) seperti Nasi, Kentang, atau Jagung.`);
+    } else if (pctKal > 115) {
+      parts.push(`• Kecukupan Energi: Terpenuhi ${Math.round(pctKal)}% (${kalori} kkal dari target ${targetKal} kkal). Kandungan energi melebihi batas anjuran. Sebaiknya kurangi porsi karbohidrat atau batasi penggunaan minyak/mentega.`);
+    } else {
+      parts.push(`• Kecukupan Energi: Terpenuhi ${Math.round(pctKal)}% (${kalori} kkal dari target ${targetKal} kkal). Kandungan kalori sudah ideal dan aman untuk porsi makan siang.`);
+    }
+
+    // 2. Protein
+    if (pctProt < 90) {
+      parts.push(`• Kecukupan Protein: Terpenuhi ${Math.round(pctProt)}% (${protein}g dari target ${targetProt}g). Protein masih di bawah standar minimal BGN. Sangat disarankan menambah porsi lauk hewani (misal: ayam, ikan segar, telur) atau lauk nabati (tempe/tahu murni).`);
+    } else {
+      parts.push(`• Kecukupan Protein: Terpenuhi ${Math.round(pctProt)}% (${protein}g dari target ${targetProt}g). Asupan protein sudah sangat mencukupi standar pertumbuhan anak sekolah.`);
+    }
+
+    // 3. Piring Makanku BGN Check
+    const allNames = calculatorRows.map(r => r.nama.toLowerCase()).join(' ');
+    const hasCarb = allNames.match(/(nasi|kentang|singkong|jagung|ubi|roti|mie|talas|sagu)/i);
+    const hasAnimalProt = allNames.match(/(ayam|daging|sapi|kambing|telur|ikan|udang|cumi|kepiting|susu|lele|patin|nila|gurame|tongkol)/i);
+    const hasPlantProt = allNames.match(/(tempe|tahu|kacang|kedelai|arcis|polong|kecipir|miso)/i);
+    const hasVeggieOrFruit = allNames.match(/(bayam|wortel|kangkung|sawi|tomat|buncis|labu|timun|kol|brokoli|pisang|pepaya|jeruk|apel|mangga|semangka|melon)/i);
+
+    let bgnMissing = [];
+    if (!hasCarb) bgnMissing.push('Karbohidrat');
+    if (!hasAnimalProt) bgnMissing.push('Lauk Hewani');
+    if (!hasPlantProt) bgnMissing.push('Lauk Nabati');
+    if (!hasVeggieOrFruit) bgnMissing.push('Sayur/Buah');
+
+    if (bgnMissing.length > 0) {
+      parts.push(`• Kelengkapan Piring MBG: Menu belum seimbang. Masih kekurangan unsur ${bgnMissing.join(', ')} sesuai regulasi kombinasi piring gizi BGN.`);
+    } else {
+      parts.push(`• Kelengkapan Piring MBG: Piring Makanku Lengkap! Semua unsur wajib (Karbohidrat + Lauk Hewani + Lauk Nabati + Sayur/Buah) terdeteksi dalam kalkulator.`);
+    }
+
+    // 4. Yield Factor (Susut)
+    const hasFreshMeatOrVeg = allNames.match(/(bayam|kangkung|ayam|daging|ikan|lele|patin|nila|sapi)/i);
+    if (hasFreshMeatOrVeg) {
+      parts.push(`• Yield Factor (Penyusutan Masak): Ingat, berat bahan segar yang diinput adalah berat kotor mentah. Pada saat disiangi/dimasak, terjadi penyusutan berat siap konsumsi sekitar 20-35% (khususnya bayam, kangkung, dan daging/ikan). Pastikan belanja logistik dilebihkan sesuai faktor susut.`);
+    }
+
+    // 5. Alergen Check
+    let allergensFound = [];
+    if (allNames.includes('telur')) allergensFound.push('Telur');
+    if (allNames.match(/(ikan|patin|lele|nila|gurame|tongkol|bandeng)/i)) allergensFound.push('Ikan');
+    if (allNames.match(/(udang|cumi|kepiting|lobster|seafood)/i)) allergensFound.push('Seafood');
+    if (allNames.includes('susu')) allergensFound.push('Susu Sapi');
+
+    if (allergensFound.length > 0) {
+      parts.push(`• Sensitivitas Alergi: Menu ini mengandung bahan berisiko alergi tinggi (${allergensFound.join(', ')}). Ahli Gizi menyarankan katering menyiapkan alternatif protein pengganti setara gizi (seperti ayam fillet atau tahu/tempe ekstra) untuk siswa yang alergi.`);
+    }
+
+    // 6. Keamanan Pangan
+    parts.push(`• Batas Waktu Konsumsi: Hidangan olahan segar ini wajib dikonsumsi maksimal 3 jam setelah proses pemorsian katering selesai untuk menghindari risiko pembusukan.`);
+
+    return {
+      verdict,
+      color,
+      narrative: parts.join('\n\n')
+    };
+  };
+
+  const renderTab4 = () => {
+    let totKal = 0, totProt = 0, totKar = 0, totLem = 0, totSer = 0;
+    calculatorRows.forEach(row => {
+      totKal += row.kalori || 0;
+      totProt += row.protein || 0;
+      totKar += row.karbo || 0;
+      totLem += row.lemak || 0;
+      totSer += row.serat || 0;
+    });
+    
+    const totals = {
+      kalori: totKal,
+      protein: parseFloat(totProt.toFixed(1)),
+      karbo: parseFloat(totKar.toFixed(1)),
+      lemak: parseFloat(totLem.toFixed(1)),
+      serat: parseFloat(totSer.toFixed(1))
+    };
+
+    const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['10-12L'];
+    const narrativeResult = generateNutritionNarrative(totals, targetAkg);
+
+    // Compute checklist variables for visualization diagram
+    const targetKal = targetAkg.kal || targetAkg.kalori || 600;
+    const targetProt = targetAkg.protein || 15;
+    const pctKal = (totals.kalori / targetKal) * 100;
+    const pctProt = (totals.protein / targetProt) * 100;
+
+    const allNames = calculatorRows.map(r => r.nama.toLowerCase()).join(' ');
+    const hasCarb = allNames.match(/(nasi|kentang|singkong|jagung|ubi|roti|mie|talas|sagu)/i);
+    const hasAnimalProt = allNames.match(/(ayam|daging|sapi|kambing|telur|ikan|udang|cumi|kepiting|susu|lele|patin|nila|gurame|tongkol)/i);
+    const hasPlantProt = allNames.match(/(tempe|tahu|kacang|kedelai|arcis|polong|kecipir|miso)/i);
+    const hasVeggieOrFruit = allNames.match(/(bayam|wortel|kangkung|sawi|tomat|buncis|labu|timun|kol|brokoli|pisang|pepaya|jeruk|apel|mangga|semangka|melon)/i);
+
+    return (
+      <ScrollView style={styles.tabContent}>
+        {/* Header Kalkulasi Harian */}
+        <Text style={styles.gizseeTitle}>Kalkulasi Harian</Text>
+        <Text style={styles.gizseeSubtitle}>Hitung Kandungan Gizi</Text>
+
+        {/* Target Selector */}
+        <View style={styles.card}>
+          <Text style={styles.label}>🎯 Target Pemenuhan Gizi Acuan:</Text>
+          <View style={styles.pickerWrapper}>
+            {Object.keys(AKG_DATA).map((key) => (
+              <TouchableOpacity
+                key={key}
+                style={[styles.pickerBtn, calcTargetUsia === key && styles.pickerBtnActive]}
+                onPress={() => setCalcTargetUsia(key)}
+              >
+                <Text style={[styles.pickerBtnText, calcTargetUsia === key && styles.pickerBtnTextActive]}>
+                  {AKG_DATA[key].name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* List of Ingredients */}
+        <Text style={styles.sectionTitle}>🥗 Bahan Makanan Kalkulator</Text>
+        <View style={styles.card}>
+          {calculatorRows.map((row, idx) => (
+            <View key={row.id || idx} style={{ marginBottom: 12 }}>
+              <View style={styles.calcRow}>
+                {/* Nama Bahan Button */}
+                <TouchableOpacity
+                  style={styles.calcInputNamaBtn}
+                  onPress={() => {
+                    setTkpiModalMode('calculator');
+                    setActiveRowIndexForSearch(idx);
+                    setShowTkpiModal(true);
+                  }}
+                >
+                  <Text style={{ fontSize: 16 }}>{row.nama ? getFoodIcon(row.icon) : '🔍'}</Text>
+                  <Text style={row.nama ? styles.calcInputNamaBtnText : styles.calcInputNamaPlaceholder} numberOfLines={1}>
+                    {row.nama || 'Pilih Bahan Makanan...'}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Berat Input */}
+                <TextInput
+                  style={styles.calcInputBerat}
+                  placeholder="Gram"
+                  placeholderTextColor="#626C90"
+                  keyboardType="numeric"
+                  value={row.berat}
+                  onChangeText={(val) => handleUpdateCalculatorRowWeight(idx, val)}
+                />
+
+                {/* Delete Row Button */}
+                <TouchableOpacity
+                  style={styles.calcTrashBtn}
+                  onPress={() => handleDeleteCalculatorRow(idx)}
+                >
+                  <MaterialCommunityIcons name="trash-can-outline" size={20} color="#F87171" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Detail Nilai Gizi Per Item */}
+              {row.nama !== '' && (
+                <View style={styles.calcRowNutritionDetail}>
+                  <Text style={styles.calcRowNutritionText}>
+                    ⚡ {Math.round(row.kalori || 0)} kkal  |  🍖 {parseFloat((row.protein || 0).toFixed(1))}g P  |  🍞 {parseFloat((row.karbo || 0).toFixed(1))}g K  |  🥑 {parseFloat((row.lemak || 0).toFixed(1))}g L
+                  </Text>
+                </View>
+              )}
+            </View>
+          ))}
+
+          {/* Action Buttons Row */}
+          <View style={styles.gizseeActionsRow}>
+            <TouchableOpacity
+              style={[styles.gizseeActionBtn, styles.gizseeActionBtnLeft]}
+              onPress={handleSaveCalculator}
+            >
+              <MaterialCommunityIcons name="content-save-outline" size={18} color="#A5ACCC" />
+              <Text style={styles.gizseeActionBtnLeftText}>Simpan</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.gizseeActionBtn, styles.gizseeActionBtnRight]}
+              onPress={() => {
+                setCalculatorRows([
+                  ...calculatorRows,
+                  { id: String(Date.now()), nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice' }
+                ]);
+              }}
+            >
+              <MaterialCommunityIcons name="plus" size={18} color="#FFF" />
+              <Text style={styles.gizseeActionBtnRightText}>Tambah Bahan</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Hasil Perhitungan Card */}
+        <View style={styles.gizseeHasilCard}>
+          <Text style={styles.gizseeHasilTitle}>📊 Hasil Kalkulasi Gizi</Text>
+          
+          <View style={styles.gizseeHasilGrid}>
+            <View style={styles.gizseeHasilCol}>
+              <View style={styles.gizseeHasilRow}>
+                <Text style={styles.gizseeHasilLabel}>⚡ Energi :</Text>
+                <Text style={styles.gizseeHasilVal}>{totals.kalori} kkal</Text>
+              </View>
+              <View style={styles.gizseeHasilRow}>
+                <Text style={styles.gizseeHasilLabel}>🍖 Protein :</Text>
+                <Text style={styles.gizseeHasilVal}>{totals.protein} g</Text>
+              </View>
+            </View>
+            
+            <View style={styles.gizseeHasilCol}>
+              <View style={styles.gizseeHasilRow}>
+                <Text style={styles.gizseeHasilLabel}>🥑 Lemak :</Text>
+                <Text style={styles.gizseeHasilVal}>{totals.lemak} g</Text>
+              </View>
+              <View style={styles.gizseeHasilRow}>
+                <Text style={styles.gizseeHasilLabel}>🍞 Karbohidrat :</Text>
+                <Text style={styles.gizseeHasilVal}>{totals.karbo} g</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Progress Bars & Narrative Card */}
+        {totals.kalori > 0 && (
+          <View>
+            <View style={styles.gizseeReportCard}>
+              <Text style={[styles.gizseeHasilTitle, { color: narrativeResult.color }]}>
+                📢 STATUS: {narrativeResult.verdict.toUpperCase()}
+              </Text>
+              
+              {/* Progress bars inside narrative card */}
+              <View style={{ marginVertical: 12 }}>
+                {/* Kalori */}
+                <View style={styles.gbrRow}>
+                  <Text style={styles.gbrLabel}>Energi</Text>
+                  <View style={styles.gbrBarTrack}>
+                    <View style={[styles.gbrBarFill, { width: `${Math.min(100, totals.kalori/targetAkg.kal*100)}%`, backgroundColor: '#FACC15' }]} />
+                  </View>
+                  <Text style={styles.gbrValue}>{Math.round(totals.kalori/targetAkg.kal*100)}%</Text>
+                </View>
+                
+                {/* Protein */}
+                <View style={styles.gbrRow}>
+                  <Text style={styles.gbrLabel}>Protein</Text>
+                  <View style={styles.gbrBarTrack}>
+                    <View style={[styles.gbrBarFill, { width: `${Math.min(100, totals.protein/targetAkg.protein*100)}%`, backgroundColor: '#4ADE80' }]} />
+                  </View>
+                  <Text style={styles.gbrValue}>{Math.round(totals.protein/targetAkg.protein*100)}%</Text>
+                </View>
+                
+                {/* Karbo */}
+                <View style={styles.gbrRow}>
+                  <Text style={styles.gbrLabel}>Karbohidrat</Text>
+                  <View style={styles.gbrBarTrack}>
+                    <View style={[styles.gbrBarFill, { width: `${Math.min(100, totals.karbo/targetAkg.karbo*100)}%`, backgroundColor: '#60A5FA' }]} />
+                  </View>
+                  <Text style={styles.gbrValue}>{Math.round(totals.karbo/targetAkg.karbo*100)}%</Text>
+                </View>
+                
+                {/* Lemak */}
+                <View style={styles.gbrRow}>
+                  <Text style={styles.gbrLabel}>Lemak</Text>
+                  <View style={styles.gbrBarTrack}>
+                    <View style={[styles.gbrBarFill, { width: `${Math.min(100, totals.lemak/targetAkg.lemak*100)}%`, backgroundColor: '#FB923C' }]} />
+                  </View>
+                  <Text style={styles.gbrValue}>{Math.round(totals.lemak/targetAkg.lemak*100)}%</Text>
+                </View>
+              </View>
+              
+              <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.08)', marginVertical: 8 }} />
+              
+              <Text style={styles.label}>📝 Rekomendasi Ahli Gizi SPPG:</Text>
+              <Text style={styles.gizseeNarrativeText}>{narrativeResult.narrative}</Text>
+            </View>
+
+            {/* Checklist Visualisasi Standar MBG */}
+            <View style={styles.gizseeReportCard}>
+              <Text style={styles.gizseeHasilTitle}>📋 Visualisasi Standar MBG (Piring Makanku)</Text>
+              
+              <View style={styles.checklistGrid}>
+                <View style={styles.checklistItem}>
+                  <MaterialCommunityIcons 
+                    name={hasCarb ? "check-circle" : "close-circle"} 
+                    size={20} 
+                    color={hasCarb ? "#4ADE80" : "#F87171"} 
+                  />
+                  <Text style={[styles.checklistText, { color: hasCarb ? '#FFF' : '#A5ACCC' }]}>
+                    Bahan Pokok (Karbohidrat)
+                  </Text>
+                </View>
+
+                <View style={styles.checklistItem}>
+                  <MaterialCommunityIcons 
+                    name={hasAnimalProt ? "check-circle" : "close-circle"} 
+                    size={20} 
+                    color={hasAnimalProt ? "#4ADE80" : "#F87171"} 
+                  />
+                  <Text style={[styles.checklistText, { color: hasAnimalProt ? '#FFF' : '#A5ACCC' }]}>
+                    Lauk Hewani (Prot. Hewani)
+                  </Text>
+                </View>
+
+                <View style={styles.checklistItem}>
+                  <MaterialCommunityIcons 
+                    name={hasPlantProt ? "check-circle" : "close-circle"} 
+                    size={20} 
+                    color={hasPlantProt ? "#4ADE80" : "#F87171"} 
+                  />
+                  <Text style={[styles.checklistText, { color: hasPlantProt ? '#FFF' : '#A5ACCC' }]}>
+                    Lauk Nabati (Prot. Nabati)
+                  </Text>
+                </View>
+
+                <View style={styles.checklistItem}>
+                  <MaterialCommunityIcons 
+                    name={hasVeggieOrFruit ? "check-circle" : "close-circle"} 
+                    size={20} 
+                    color={hasVeggieOrFruit ? "#4ADE80" : "#F87171"} 
+                  />
+                  <Text style={[styles.checklistText, { color: hasVeggieOrFruit ? '#FFF' : '#A5ACCC' }]}>
+                    Sayur & Buah-Buahan
+                  </Text>
+                </View>
+
+                <View style={{ height: 1, backgroundColor: 'rgba(255,255,255,0.08)', width: '100%', marginVertical: 6 }} />
+
+                <View style={styles.checklistItem}>
+                  <MaterialCommunityIcons 
+                    name={pctKal >= 90 && pctKal <= 115 ? "check-circle" : "alert-circle"} 
+                    size={20} 
+                    color={pctKal >= 90 && pctKal <= 115 ? "#4ADE80" : "#FB923C"} 
+                  />
+                  <Text style={[styles.checklistText, { color: pctKal >= 90 && pctKal <= 115 ? '#FFF' : '#FB923C' }]}>
+                    Kecukupan Energi: {Math.round(pctKal)}% ({pctKal < 90 ? 'Kurang' : (pctKal > 115 ? 'Berlebih' : 'Sesuai Target')})
+                  </Text>
+                </View>
+
+                <View style={styles.checklistItem}>
+                  <MaterialCommunityIcons 
+                    name={pctProt >= 90 && pctProt <= 120 ? "check-circle" : "alert-circle"} 
+                    size={20} 
+                    color={pctProt >= 90 && pctProt <= 120 ? "#4ADE80" : "#FB923C"} 
+                  />
+                  <Text style={[styles.checklistText, { color: pctProt >= 90 && pctProt <= 120 ? '#FFF' : '#FB923C' }]}>
+                    Kecukupan Protein: {Math.round(pctProt)}% ({pctProt < 90 ? 'Kurang' : (pctProt > 120 ? 'Berlebih' : 'Sesuai Target')})
+                  </Text>
+                </View>
+              </View>
+
+              {/* Rangkuman Detail Gizi & Legenda */}
+              <View style={{ marginTop: 12, backgroundColor: 'rgba(255, 255, 255, 0.02)', padding: 10, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.04)' }}>
+                <Text style={{ color: '#E2E8F0', fontSize: 11, fontWeight: '700', marginBottom: 4 }}>💡 Keterangan Indikator & Target MBG:</Text>
+                <Text style={{ color: '#A5ACCC', fontSize: 11, lineHeight: 16 }}>
+                  • <Text style={{ color: '#4ADE80', fontWeight: '700' }}>Hijau (Centang)</Text>: Nutrisi optimal sesuai standar BGN (Energi 90-115%, Protein 90-120%).{"\n"}
+                  • <Text style={{ color: '#FB923C', fontWeight: '700' }}>Oranye (Tanda Seru)</Text>: Nutrisi <Text style={{ color: '#FB923C' }}>Kurang</Text> (&lt;90%) atau <Text style={{ color: '#FB923C' }}>Berlebih</Text> (&gt;115% Energi, &gt;120% Protein) sehingga porsi belanja/masak perlu disesuaikan.{"\n"}
+                  • <Text style={{ color: '#F87171', fontWeight: '700' }}>Merah (Silang)</Text>: Komponen bahan wajib piring MBG belum terdeteksi dalam daftar masakan.
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        {/* Riwayat Perhitungan */}
+        <Text style={styles.riwayatTitle}>🕒 Riwayat Perhitungan Gizi</Text>
+        {calculatorHistory.length === 0 ? (
+          <View style={[styles.card, { alignItems: 'center', paddingVertical: 20 }]}>
+            <MaterialCommunityIcons name="history" size={24} color="#626C90" />
+            <Text style={[styles.hintText, { marginTop: 6, marginBottom: 0 }]}>Belum ada riwayat perhitungan gizi yang disimpan.</Text>
+          </View>
+        ) : (
+          calculatorHistory.map((item) => (
+            <View key={item.id} style={styles.riwayatCard}>
+              <View style={styles.riwayatHeader}>
+                <Text style={styles.riwayatTime}>🕒 Saved: {item.timestamp}</Text>
+                <TouchableOpacity
+                  onPress={() => handleDeleteHistoryItem(item.id)}
+                  style={{ padding: 2 }}
+                >
+                  <MaterialCommunityIcons name="close" size={16} color="#EF4444" />
+                </TouchableOpacity>
+              </View>
+
+              {/* List ingredients in history item */}
+              <Text style={{ color: '#E2E8F0', fontSize: 12, fontWeight: '600' }}>
+                {item.rows.map(r => `${getFoodIcon(r.icon)} ${r.nama} (${r.berat}g)`).join(', ')}
+              </Text>
+
+              {/* Nutrients badges */}
+              <View style={styles.riwayatGiziRow}>
+                <View style={styles.riwayatGiziBadge}>
+                  <Text style={styles.riwayatGiziText}>⚡ {item.totals.kalori} kkal</Text>
+                </View>
+                <View style={[styles.riwayatGiziBadge, { backgroundColor: 'rgba(74, 222, 128, 0.1)' }]}>
+                  <Text style={[styles.riwayatGiziText, { color: '#4ADE80' }]}>🍖 {item.totals.protein}g</Text>
+                </View>
+                <View style={[styles.riwayatGiziBadge, { backgroundColor: 'rgba(96, 165, 250, 0.1)' }]}>
+                  <Text style={[styles.riwayatGiziText, { color: '#60A5FA' }]}>🍞 {item.totals.karbo}g</Text>
+                </View>
+                <View style={[styles.riwayatGiziBadge, { backgroundColor: 'rgba(251, 146, 60, 0.1)' }]}>
+                  <Text style={[styles.riwayatGiziText, { color: '#FB923C' }]}>🥑 {item.totals.lemak}g</Text>
+                </View>
+              </View>
+
+              {/* Riwayat Actions */}
+              <View style={styles.riwayatBtnRow}>
+                <TouchableOpacity
+                  style={styles.riwayatBtn}
+                  onPress={() => handleLoadHistoryToCalculator(item)}
+                >
+                  <MaterialCommunityIcons name="restore" size={14} color="#60A5FA" />
+                  <Text style={[styles.riwayatBtnText, { color: '#60A5FA' }]}>Muat ke Kalkulator</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))
+        )}
+      </ScrollView>
+    );
+  };
+
 
 
   const getRecipeIngredientsListStr = (itemId) => {
@@ -3320,16 +3872,42 @@ export default function App() {
 
     const handleUseTkpiItem = () => {
       if (!selectedTkpiItem) return;
-      setCustomIcon(selectedTkpiItem.icon);
-      setCustomNama(`${selectedTkpiItem.nama} (${portionGrams}g)`);
-      setCustomKat(selectedTkpiItem.kat);
-      setCustomKalori(String(calcGizi.kalori));
-      setCustomProtein(String(calcGizi.protein));
-      setCustomKarbo(String(calcGizi.karbo));
-      setCustomLemak(String(calcGizi.lemak));
-      setCustomSerat(String(calcGizi.serat));
-      setCustomMbgStatus(selectedTkpiItem.mbgStatus);
-      setCustomMbgNotes(selectedTkpiItem.mbgNotes);
+      
+      if (tkpiModalMode === 'calculator') {
+        const updatedRows = [...calculatorRows];
+        if (activeRowIndexForSearch !== null && updatedRows[activeRowIndexForSearch]) {
+          updatedRows[activeRowIndexForSearch] = {
+            ...updatedRows[activeRowIndexForSearch],
+            nama: selectedTkpiItem.nama,
+            berat: String(portionGrams),
+            kalori: calcGizi.kalori,
+            protein: calcGizi.protein,
+            karbo: calcGizi.karbo,
+            lemak: calcGizi.lemak,
+            serat: calcGizi.serat,
+            baseKalori: selectedTkpiItem.kalori,
+            baseProtein: selectedTkpiItem.protein,
+            baseKarbo: selectedTkpiItem.karbo,
+            baseLemak: selectedTkpiItem.lemak,
+            baseSerat: selectedTkpiItem.serat,
+            mbgStatus: selectedTkpiItem.mbgStatus,
+            mbgNotes: selectedTkpiItem.mbgNotes,
+            icon: selectedTkpiItem.icon
+          };
+          setCalculatorRows(updatedRows);
+        }
+      } else {
+        setCustomIcon(selectedTkpiItem.icon);
+        setCustomNama(`${selectedTkpiItem.nama} (${portionGrams}g)`);
+        setCustomKat(selectedTkpiItem.kat);
+        setCustomKalori(String(calcGizi.kalori));
+        setCustomProtein(String(calcGizi.protein));
+        setCustomKarbo(String(calcGizi.karbo));
+        setCustomLemak(String(calcGizi.lemak));
+        setCustomSerat(String(calcGizi.serat));
+        setCustomMbgStatus(selectedTkpiItem.mbgStatus);
+        setCustomMbgNotes(selectedTkpiItem.mbgNotes);
+      }
       
       // Close modal
       setShowTkpiModal(false);
@@ -3554,12 +4132,19 @@ export default function App() {
         >
           <Text style={[styles.tabButtonText, activeTab === 3 && styles.tabButtonTextActive]}>3. Hasil</Text>
         </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tabButton, activeTab === 4 && styles.tabButtonActive]}
+          onPress={() => setActiveTab(4)}
+        >
+          <Text style={[styles.tabButtonText, activeTab === 4 && styles.tabButtonTextActive]}>4. Kalkulasi Harian</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Tab Pages */}
       {activeTab === 1 && renderTab1()}
       {activeTab === 2 && renderTab2()}
       {activeTab === 3 && renderTab3()}
+      {activeTab === 4 && renderTab4()}
 
       {/* TKPI Database Modal */}
       {renderTkpiModal()}
@@ -4812,5 +5397,268 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  gizseeTitle: {
+    color: '#FFF',
+    fontSize: 24,
+    fontWeight: '800',
+    marginTop: 10,
+    marginBottom: 2,
+  },
+  gizseeSubtitle: {
+    color: '#A5ACCC',
+    fontSize: 14,
+    marginBottom: 20,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  calcRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  calcInputNamaBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1E2538',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2D3748',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+  },
+  calcInputNamaBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  calcInputNamaPlaceholder: {
+    color: '#626C90',
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  calcInputBerat: {
+    width: 80,
+    backgroundColor: '#1E2538',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#2D3748',
+    color: '#FFF',
+    fontSize: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    marginLeft: 10,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  calcTrashBtn: {
+    padding: 10,
+    marginLeft: 5,
+  },
+  gizseeActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  gizseeActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    flex: 0.48,
+  },
+  gizseeActionBtnLeft: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: '#2D3748',
+  },
+  gizseeActionBtnLeftText: {
+    color: '#A5ACCC',
+    fontSize: 13,
+    fontWeight: '700',
+    marginLeft: 6,
+  },
+  gizseeActionBtnRight: {
+    backgroundColor: '#3B82F6',
+  },
+  gizseeActionBtnRightText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '700',
+    marginLeft: 6,
+  },
+  gizseeHasilCard: {
+    backgroundColor: '#161B29',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#2D3748',
+  },
+  gizseeHasilTitle: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 12,
+    letterSpacing: 0.5,
+  },
+  gizseeHasilGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  gizseeHasilCol: {
+    flex: 0.48,
+  },
+  gizseeHasilRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.03)',
+  },
+  gizseeHasilLabel: {
+    color: '#A5ACCC',
+    fontSize: 13,
+  },
+  gizseeHasilVal: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  gizseeReportCard: {
+    backgroundColor: '#1E2538',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#2B354F',
+  },
+  gbrRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  gbrLabel: {
+    color: '#A5ACCC',
+    fontSize: 12,
+    width: 90,
+  },
+  gbrBarTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 4,
+    marginHorizontal: 10,
+    overflow: 'hidden',
+  },
+  gbrBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  gbrValue: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
+    width: 35,
+    textAlign: 'right',
+  },
+  gizseeNarrativeText: {
+    color: '#E2E8F0',
+    fontSize: 13,
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  riwayatTitle: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '800',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  riwayatCard: {
+    backgroundColor: '#161B29',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#2A3042',
+  },
+  riwayatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  riwayatTime: {
+    color: '#A5ACCC',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  riwayatGiziRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    gap: 6,
+  },
+  riwayatGiziBadge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  riwayatGiziText: {
+    color: '#A5ACCC',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  riwayatBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.03)',
+    paddingTop: 8,
+  },
+  riwayatBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  riwayatBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginLeft: 4,
+  },
+  checklistGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  checklistItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '47%',
+    marginVertical: 4,
+  },
+  checklistText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  calcRowNutritionDetail: {
+    marginTop: -8,
+    marginLeft: 12,
+    marginBottom: 8,
+    paddingLeft: 34,
+  },
+  calcRowNutritionText: {
+    color: '#A5ACCC',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });
