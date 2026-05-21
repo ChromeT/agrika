@@ -957,6 +957,7 @@ export default function App() {
       const combined = [...baseList, ...customMenus.filter(x => x.kat === kat)];
       
       idsArray.forEach(id => {
+        if (deletedMenuIds.includes(id)) return;
         const found = combined.find(x => x.id === id);
         if (found) {
           const price = getMenuCostPerPortion(found);
@@ -1735,7 +1736,7 @@ export default function App() {
                             alignItems: 'center',
                             justifyContent: 'center'
                           }}
-                          onPress={() => handleDeleteMenu(item)}
+                          onPress={() => handleDeleteMenu({ ...item, kat: cat.key })}
                         >
                           <MaterialCommunityIcons name="trash-can-outline" size={12} color="#F87171" />
                         </TouchableOpacity>
@@ -1747,36 +1748,6 @@ export default function App() {
             </View>
           );
         })}
-
-        {deletedMenuIds.length > 0 && (
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(255,255,255,0.03)',
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.08)',
-              borderRadius: 6,
-              paddingVertical: 8,
-              marginBottom: 15,
-              marginTop: 5
-            }}
-            onPress={() => {
-              Alert.alert(
-                'Pulihkan Menu',
-                'Apakah Anda yakin ingin mengembalikan semua menu bawaan yang telah dihapus?',
-                [
-                  { text: 'Batal', style: 'cancel' },
-                  { text: 'Pulihkan', onPress: () => setDeletedMenuIds([]) }
-                ]
-              );
-            }}
-          >
-            <MaterialCommunityIcons name="backup-restore" size={14} color="#A5ACCC" style={{ marginRight: 6 }} />
-            <Text style={{ color: '#A5ACCC', fontSize: 11.5, fontWeight: '700' }}>🔄 Pulihkan Semua Menu Bawaan</Text>
-          </TouchableOpacity>
-        )}
 
         {/* Form Tambah Custom */}
         <Text style={styles.sectionTitle}>➕ Tambah Bahan Custom Lokal</Text>
