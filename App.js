@@ -2882,8 +2882,13 @@ Example Output format:
       const totalWeight = parseFloat(parsed.totalWeight) || 100;
       const matchedRows = [];
       
-      parsed.ingredients.forEach((ing, index) => {
-        const targetWeight = totalWeight * ing.ratio;
+      const ingredients = parsed.ingredients || [];
+      if (!Array.isArray(ingredients)) {
+        throw new Error('Respon AI tidak menyertakan daftar bahan makanan.');
+      }
+      
+      ingredients.forEach((ing, index) => {
+        const targetWeight = totalWeight * (ing.ratio || 0);
         const cleanKeyword = ing.searchKeyword.toLowerCase().trim();
         
         // Find best match in local TKPI database
