@@ -32,13 +32,14 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Missing query parameter', received: body });
   }
 
-  const apiKey = process.env.CLAUDE_API_KEY || process.env.EXPO_PUBLIC_CLAUDE_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'CLAUDE_API_KEY is not configured on Vercel.' });
+  const claudeApiKey = process.env.CLAUDE_API_KEY || process.env.EXPO_PUBLIC_CLAUDE_API_KEY;
+  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+
+  if (!claudeApiKey && !geminiApiKey) {
+    return res.status(500).json({ error: 'Neither CLAUDE_API_KEY nor GEMINI_API_KEY is configured. Please set GEMINI_API_KEY for a 100% free option!' });
   }
 
-  try {
-    const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
+  const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
 Your job is to analyze the user's recipe query (which could be in casual Indonesian, questions, or specific menu requests, e.g. "sawi gulung isi tahu seperti di tiktok : 54g" or "kalau sawi gulung telur seberat 54 gram?").
 
 Tasks:
@@ -69,10 +70,64 @@ Example Output format:
   ]
 }`;
 
+  // Use Gemini if API key is configured (Gemini has a very generous free tier)
+  if (geminiApiKey) {
+    try {
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+      const response = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `User query: "${query}"`
+            }]
+          }],
+          systemInstruction: {
+            parts: [{
+              text: systemPrompt
+            }]
+          },
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Gemini API Error: ${errText}`);
+      }
+
+      const data = await response.json();
+      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts[0]) {
+        throw new Error('Invalid response structure from Gemini API');
+      }
+
+      const responseText = data.candidates[0].content.parts[0].text.trim();
+      
+      // Return formatted as expected by client App.js
+      return res.status(200).json({
+        content: [{
+          text: responseText
+        }]
+      });
+    } catch (geminiError) {
+      if (!claudeApiKey) {
+        return res.status(500).json({ error: `Gemini failed: ${geminiError.message}` });
+      }
+      console.log('Gemini failed, falling back to Claude:', geminiError.message);
+    }
+  }
+
+  // Fallback to Claude
+  try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'x-api-key': apiKey,
+        'x-api-key': claudeApiKey,
         'anthropic-version': '2023-06-01',
         'content-type': 'application/json'
       },
