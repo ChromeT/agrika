@@ -18,9 +18,18 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { query } = req.body;
+  let body = req.body;
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid JSON body: ' + e.message });
+    }
+  }
+
+  const query = body ? body.query : null;
   if (!query) {
-    return res.status(400).json({ error: 'Missing query parameter' });
+    return res.status(400).json({ error: 'Missing query parameter', received: body });
   }
 
   const apiKey = process.env.CLAUDE_API_KEY || process.env.EXPO_PUBLIC_CLAUDE_API_KEY;

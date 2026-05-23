@@ -2790,7 +2790,7 @@ export default function App() {
         response = await fetch('https://agrika.vercel.app/api/parse-recipe', {
           method: 'POST',
           headers: {
-            'content-type': 'application/json'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             query: rawText
