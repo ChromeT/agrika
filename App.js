@@ -2777,27 +2777,6 @@ export default function App() {
       return;
     }
 
-    const parts = rawText.split(':');
-    if (parts.length < 2) {
-      Alert.alert('Format Salah', 'Gunakan format: "Nama Menu : [berat] g".\nContoh: "Sawi gulung isi tahu : 54g"');
-      return;
-    }
-    
-    const menuName = parts[0].trim();
-    const weightStr = parts[1].trim();
-    
-    const weightMatch = weightStr.match(/([\d.]+)/);
-    if (!weightMatch) {
-      Alert.alert('Berat Tidak Valid', 'Silakan masukkan jumlah berat dalam gram (contoh: 54g).');
-      return;
-    }
-    
-    const totalWeight = parseFloat(weightMatch[1]);
-    if (isNaN(totalWeight) || totalWeight <= 0) {
-      Alert.alert('Berat Tidak Valid', 'Silakan masukkan jumlah berat yang valid.');
-      return;
-    }
-
     setIsAiLoading(true);
     setAiExplanation('');
     setAiIngredients([]);
@@ -2814,8 +2793,7 @@ export default function App() {
             'content-type': 'application/json'
           },
           body: JSON.stringify({
-            menuName,
-            totalWeight
+            query: rawText
           })
         });
       } catch (proxyError) {
@@ -2831,13 +2809,21 @@ export default function App() {
         }
 
         const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
-Your job is to analyze the custom/mix recipe menu query, determine the typical ingredient breakdown, find the best matching food items, and return the breakdown along with search keywords to query the local Kemenkes TKPI database.
+Your job is to analyze the user's recipe query (which could be in casual Indonesian, questions, or specific menu requests, e.g. "sawi gulung isi tahu seperti di tiktok : 54g" or "kalau sawi gulung telur seberat 54 gram?").
 
-Analyze the input menu and total weight (in grams), estimate the standard culinary proportion (ratios summing up exactly to 1.0), and suggest the best search keywords for each ingredient to match the local TKPI database.
-You must respond ONLY with a valid JSON object. Do not include any explanations outside of the JSON. Do not include markdown code block formatting.
+Tasks:
+1. Extract the actual menu name and the total weight (in grams) from the user's query. If no weight is mentioned, assume a standard portion of 100 grams.
+2. Determine the typical raw ingredient breakdown for this menu.
+3. Calculate the weight of each ingredient based on standard culinary proportions (ratios summing up exactly to 1.0).
+4. Suggest the best search keywords for each ingredient to match the local Kemenkes TKPI database.
+5. Provide a brief, friendly explanation in casual youth Indonesian with emojis.
+
+Respond ONLY with a valid JSON object. Do not include any explanations outside of the JSON. Do not include markdown code block formatting.
 
 Example Output format:
 {
+  "menuName": "Sawi gulung isi tahu",
+  "totalWeight": 54,
   "explanation": "Ooh sawi gulung isi tahu yang viral di TikTok itu ya! Sawi putih dikukus lalu diisi tahu di tengahnya. Menyehatkan banget buat adik-adik di sekolah! 🥬✨",
   "ingredients": [
     {
@@ -2853,8 +2839,6 @@ Example Output format:
   ]
 }`;
 
-        const userPrompt = `Analyze the menu: "${menuName}" with total weight: ${totalWeight} grams. Make sure the ingredients ratios sum up to 1.0.`;
-
         response = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
@@ -2865,7 +2849,7 @@ Example Output format:
           body: JSON.stringify({
             model: 'claude-3-5-haiku-20241022',
             max_tokens: 1024,
-            messages: [{ role: 'user', content: userPrompt }],
+            messages: [{ role: 'user', content: `User query: "${rawText}"` }],
             system: systemPrompt
           })
         });
@@ -2885,6 +2869,7 @@ Example Output format:
       }
 
       const parsed = JSON.parse(responseText);
+      const totalWeight = parseFloat(parsed.totalWeight) || 100;
       const matchedRows = [];
       
       parsed.ingredients.forEach((ing, index) => {
@@ -3229,7 +3214,7 @@ Example Output format:
                 <ActivityIndicator size="small" color="#FFF" />
               ) : (
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <MaterialCommunityIcons name="sparkles" size={14} color="#FFF" style={{ marginRight: 4 }} />
+                  <MaterialCommunityIcons name="star" size={14} color="#FFF" style={{ marginRight: 4 }} />
                   <Text style={styles.aiSubmitBtnText}>Tanya AI</Text>
                 </View>
               )}

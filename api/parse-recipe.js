@@ -18,9 +18,9 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { menuName, totalWeight } = req.body;
-  if (!menuName || !totalWeight) {
-    return res.status(400).json({ error: 'Missing menuName or totalWeight parameter' });
+  const { query } = req.body;
+  if (!query) {
+    return res.status(400).json({ error: 'Missing query parameter' });
   }
 
   const apiKey = process.env.CLAUDE_API_KEY || process.env.EXPO_PUBLIC_CLAUDE_API_KEY;
@@ -30,13 +30,21 @@ module.exports = async (req, res) => {
 
   try {
     const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
-Your job is to analyze the custom/mix recipe menu query, determine the typical ingredient breakdown, find the best matching food items, and return the breakdown along with search keywords to query the local Kemenkes TKPI database.
+Your job is to analyze the user's recipe query (which could be in casual Indonesian, questions, or specific menu requests, e.g. "sawi gulung isi tahu seperti di tiktok : 54g" or "kalau sawi gulung telur seberat 54 gram?").
 
-Analyze the input menu and total weight (in grams), estimate the standard culinary proportion (ratios summing up exactly to 1.0), and suggest the best search keywords for each ingredient to match the local TKPI database.
-You must respond ONLY with a valid JSON object. Do not include any explanations outside of the JSON. Do not include markdown code block formatting.
+Tasks:
+1. Extract the actual menu name and the total weight (in grams) from the user's query. If no weight is mentioned, assume a standard portion of 100 grams.
+2. Determine the typical raw ingredient breakdown for this menu.
+3. Calculate the weight of each ingredient based on standard culinary proportions (ratios summing up exactly to 1.0).
+4. Suggest the best search keywords for each ingredient to match the local Kemenkes TKPI database.
+5. Provide a brief, friendly explanation in casual youth Indonesian with emojis.
+
+Respond ONLY with a valid JSON object. Do not include any explanations outside of the JSON. Do not include markdown code block formatting.
 
 Example Output format:
 {
+  "menuName": "Sawi gulung isi tahu",
+  "totalWeight": 54,
   "explanation": "Ooh sawi gulung isi tahu yang viral di TikTok itu ya! Sawi putih dikukus lalu diisi tahu di tengahnya. Menyehatkan banget buat adik-adik di sekolah! 🥬✨",
   "ingredients": [
     {
@@ -52,8 +60,6 @@ Example Output format:
   ]
 }`;
 
-    const userPrompt = `Analyze the menu: "${menuName}" with total weight: ${totalWeight} grams. Make sure the ingredients ratios sum up to 1.0.`;
-
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -67,7 +73,7 @@ Example Output format:
         messages: [
           {
             role: 'user',
-            content: userPrompt
+            content: `User query: "${query}"`
           }
         ],
         system: systemPrompt
