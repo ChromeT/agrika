@@ -2798,18 +2798,39 @@ export default function App() {
       return;
     }
 
-    const apiKey = process.env.EXPO_PUBLIC_CLAUDE_API_KEY;
-    if (!apiKey || apiKey === 'your_claude_api_key_here') {
-      Alert.alert('Konfigurasi Diperlukan ⚙️', 'API Key belum dikonfigurasi. Silakan tambahkan EXPO_PUBLIC_CLAUDE_API_KEY di file .env lokal atau Vercel Environment Variables kamu ya!');
-      return;
-    }
-
     setIsAiLoading(true);
     setAiExplanation('');
     setAiIngredients([]);
 
     try {
-      const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
+      const localApiKey = process.env.EXPO_PUBLIC_CLAUDE_API_KEY;
+      let response;
+      let useProxy = true;
+
+      try {
+        response = await fetch('https://agrika.vercel.app/api/parse-recipe', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            menuName,
+            totalWeight
+          })
+        });
+      } catch (proxyError) {
+        console.log('Failed to fetch from Vercel proxy, falling back to direct API call:', proxyError);
+        useProxy = false;
+      }
+
+      // Fallback: If proxy call fails or returns non-200, and we have a local API key, call Anthropic directly
+      if (!useProxy || !response || response.status !== 200) {
+        if (!localApiKey || localApiKey === 'your_claude_api_key_here') {
+          const errMsg = response ? `Vercel Proxy Error (${response.status})` : 'Koneksi ke Vercel proxy gagal dan tidak ada API key lokal.';
+          throw new Error(errMsg);
+        }
+
+        const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
 Your job is to analyze the custom/mix recipe menu query, determine the typical ingredient breakdown, find the best matching food items, and return the breakdown along with search keywords to query the local Kemenkes TKPI database.
 
 Analyze the input menu and total weight (in grams), estimate the standard culinary proportion (ratios summing up exactly to 1.0), and suggest the best search keywords for each ingredient to match the local TKPI database.
@@ -2832,27 +2853,23 @@ Example Output format:
   ]
 }`;
 
-      const userPrompt = `Analyze the menu: "${menuName}" with total weight: ${totalWeight} grams. Make sure the ingredients ratios sum up to 1.0.`;
+        const userPrompt = `Analyze the menu: "${menuName}" with total weight: ${totalWeight} grams. Make sure the ingredients ratios sum up to 1.0.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-haiku-20241022',
-          max_tokens: 1024,
-          messages: [
-            {
-              role: 'user',
-              content: userPrompt
-            }
-          ],
-          system: systemPrompt
-        })
-      });
+        response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': localApiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'claude-3-5-haiku-20241022',
+            max_tokens: 1024,
+            messages: [{ role: 'user', content: userPrompt }],
+            system: systemPrompt
+          })
+        });
+      }
 
       if (!response.ok) {
         const errText = await response.text();
