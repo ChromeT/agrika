@@ -627,7 +627,7 @@ export default function App() {
 
   // Gizsee Calculator States
   const [calculatorRows, setCalculatorRows] = useState([
-    { id: '1', nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice' }
+    { id: '1', nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice', kat: '' }
   ]);
   const [calculatorHistory, setCalculatorHistory] = useState([]);
   const [tkpiModalMode, setTkpiModalMode] = useState('custom_menu'); // 'custom_menu' or 'calculator'
@@ -2748,7 +2748,7 @@ export default function App() {
 
     setCalculatorHistory([newHistoryItem, ...calculatorHistory]);
     setCalculatorRows([
-      { id: String(Date.now()), nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice' }
+      { id: String(Date.now()), nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice', kat: '' }
     ]);
     Alert.alert('Tersimpan', 'Hasil perhitungan berhasil disimpan ke dalam Riwayat.');
   };
@@ -2762,6 +2762,95 @@ export default function App() {
 
   const handleDeleteHistoryItem = (id) => {
     setCalculatorHistory(prev => prev.filter(x => x.id !== id));
+  };
+
+  const handleExportToMenu = () => {
+    const validRows = calculatorRows.filter(row => row.nama.trim() !== '' && parseFloat(row.berat) > 0);
+    if (validRows.length === 0) {
+      Alert.alert('Gagal Ekspor', 'Silakan isi setidaknya satu bahan makanan dengan berat yang valid.');
+      return;
+    }
+
+    const newCustomMenus = [];
+    const newRecipeDetails = {};
+    const nextSelected = { ...selected };
+
+    // Group valid rows by category
+    const rowsByCategory = {};
+    validRows.forEach(row => {
+      const kat = row.kat || 'protein';
+      if (!rowsByCategory[kat]) {
+        rowsByCategory[kat] = [];
+      }
+      rowsByCategory[kat].push(row);
+    });
+
+    const timestamp = Date.now();
+
+    // For each category, create custom menu items and update selected
+    Object.keys(rowsByCategory).forEach(kat => {
+      const rows = rowsByCategory[kat];
+      const exportedIds = [];
+      
+      rows.forEach((row, idx) => {
+        const id = `custom-calc-${timestamp}-${kat}-${idx}`;
+        
+        // Attempt to get price
+        const estimatedPrice = getIngredientCost(row.nama, parseFloat(row.berat) || 0, 'g') || 0;
+        
+        const newItem = {
+          id,
+          icon: row.icon || '🍽️',
+          nama: `${row.nama} (${row.berat}g)`,
+          porsi: '1 Porsi',
+          kalori: row.kalori || 0,
+          protein: row.protein || 0,
+          karbo: row.karbo || 0,
+          lemak: row.lemak || 0,
+          serat: row.serat || 0,
+          harga: estimatedPrice,
+          kat: kat,
+          mbgStatus: row.mbgStatus || 'aman',
+          mbgNotes: row.mbgNotes || 'Diekspor dari kalkulator harian.'
+        };
+        
+        newCustomMenus.push(newItem);
+        exportedIds.push(id);
+        
+        // Save recipe breakdown
+        newRecipeDetails[id] = {
+          utama: {
+            nama: row.nama,
+            qty: parseFloat(row.berat) || 0,
+            unit: 'g',
+            catatan: 'Diekspor dari Kalkulator Harian'
+          }
+        };
+      });
+      
+      // Set the selected items for this category to the exported ones (replacing previous selection)
+      nextSelected[kat] = exportedIds;
+    });
+
+    // Update state
+    setCustomMenus(prev => [...prev, ...newCustomMenus]);
+    setCustomRecipeDetails(prev => ({ ...prev, ...newRecipeDetails }));
+    setSelected(nextSelected);
+
+    Alert.alert(
+      'Ekspor Sukses! 💕',
+      `Berhasil mengekspor ${validRows.length} bahan makanan ke Halaman Menu kita dan otomatis terpilih.\n\nYuk lihat hasilnya langsung di halaman Hasil Analisa!`,
+      [
+        {
+          text: 'Nanti Dulu',
+          style: 'cancel'
+        },
+        {
+          text: 'Lihat Analisa',
+          onPress: () => setActiveTab(3)
+        }
+      ]
+    );
   };
 
   const generateNutritionNarrative = (totals, target) => {
@@ -2982,7 +3071,7 @@ export default function App() {
               onPress={() => {
                 setCalculatorRows([
                   ...calculatorRows,
-                  { id: String(Date.now()), nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice' }
+                  { id: String(Date.now()), nama: '', berat: '', kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0, baseKalori: 0, baseProtein: 0, baseKarbo: 0, baseLemak: 0, baseSerat: 0, mbgStatus: 'aman', mbgNotes: '', icon: 'rice', kat: '' }
                 ]);
               }}
             >
@@ -3019,6 +3108,16 @@ export default function App() {
               </View>
             </View>
           </View>
+
+          {totals.kalori > 0 && (
+            <TouchableOpacity
+              style={styles.gizseeExportBtn}
+              onPress={handleExportToMenu}
+            >
+              <MaterialCommunityIcons name="export-variant" size={18} color="#FFF" />
+              <Text style={styles.gizseeExportBtnText}>Ekspor Hasil Kalkulasi ke Menu</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Progress Bars & Narrative Card */}
@@ -3863,7 +3962,8 @@ export default function App() {
             baseSerat: selectedTkpiItem.serat,
             mbgStatus: selectedTkpiItem.mbgStatus,
             mbgNotes: selectedTkpiItem.mbgNotes,
-            icon: selectedTkpiItem.icon
+            icon: selectedTkpiItem.icon,
+            kat: selectedTkpiItem.kat
           };
           setCalculatorRows(updatedRows);
         }
@@ -4089,25 +4189,25 @@ export default function App() {
           style={[styles.tabButton, activeTab === 1 && styles.tabButtonActive]}
           onPress={() => setActiveTab(1)}
         >
-          <Text style={[styles.tabButtonText, activeTab === 1 && styles.tabButtonTextActive]}>1. Setup</Text>
+          <Text style={[styles.tabButtonText, activeTab === 1 && styles.tabButtonTextActive]}>Setup</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tabButton, activeTab === 2 && styles.tabButtonActive]}
           onPress={() => setActiveTab(2)}
         >
-          <Text style={[styles.tabButtonText, activeTab === 2 && styles.tabButtonTextActive]}>2. Menu</Text>
+          <Text style={[styles.tabButtonText, activeTab === 2 && styles.tabButtonTextActive]}>Menu</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tabButton, activeTab === 3 && styles.tabButtonActive]}
           onPress={() => setActiveTab(3)}
         >
-          <Text style={[styles.tabButtonText, activeTab === 3 && styles.tabButtonTextActive]}>3. Hasil</Text>
+          <Text style={[styles.tabButtonText, activeTab === 3 && styles.tabButtonTextActive]}>Hasil</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tabButton, activeTab === 4 && styles.tabButtonActive]}
           onPress={() => setActiveTab(4)}
         >
-          <Text style={[styles.tabButtonText, activeTab === 4 && styles.tabButtonTextActive]}>4. Kalkulasi Harian</Text>
+          <Text style={[styles.tabButtonText, activeTab === 4 && styles.tabButtonTextActive]}>Kalkulasi Harian</Text>
         </TouchableOpacity>
       </View>
 
@@ -5631,5 +5731,22 @@ const styles = StyleSheet.create({
     color: '#A5ACCC',
     fontSize: 11,
     fontWeight: '600',
+  },
+  gizseeExportBtn: {
+    backgroundColor: '#10B981',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: '#059669',
+  },
+  gizseeExportBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+    marginLeft: 6,
   },
 });
