@@ -2803,6 +2803,16 @@ export default function App() {
 
       // Fallback: If proxy call fails or returns non-200, and we have a local API key, call Anthropic directly
       if (!useProxy || !response || response.status !== 200) {
+        if (Platform.OS === 'web') {
+          if (response) {
+            const errJson = await response.json().catch(() => ({}));
+            const apiError = errJson.error || `HTTP ${response.status}`;
+            throw new Error(apiError);
+          } else {
+            throw new Error('Koneksi ke Vercel proxy gagal.');
+          }
+        }
+
         if (!localApiKey || localApiKey === 'your_claude_api_key_here') {
           const errMsg = response ? `Vercel Proxy Error (${response.status})` : 'Koneksi ke Vercel proxy gagal dan tidak ada API key lokal.';
           throw new Error(errMsg);
