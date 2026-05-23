@@ -2897,10 +2897,47 @@ Example Output format:
           found = TKPI_DATABASE.find(x => x.nama.toLowerCase().includes(cleanKeyword) || cleanKeyword.includes(x.nama.toLowerCase()));
         }
         if (!found) {
-          // Try word splitting
-          const words = cleanKeyword.split(/\s+/);
+          // Try advanced keyword matching with ranking score
+          const words = cleanKeyword.split(/\s+/).filter(w => w.length > 1);
           if (words.length > 0) {
-            found = TKPI_DATABASE.find(x => x.nama.toLowerCase().includes(words[0]));
+            let bestMatch = null;
+            let maxScore = 0;
+            const genericTerms = ['daging', 'mentah', 'segar', 'matang', 'rebus', 'kukus', 'goreng', 'kering', 'bubuk', 'daun', 'biji', 'buah', 'tepung', 'minyak', 'air', 'muda', 'tua'];
+            
+            for (const x of TKPI_DATABASE) {
+              const nameLower = x.nama.toLowerCase();
+              let score = 0;
+              
+              words.forEach(word => {
+                if (nameLower.includes(word)) {
+                  if (genericTerms.includes(word)) {
+                    score += 1;
+                  } else {
+                    score += 5; // Specific terms like 'ayam', 'tahu', 'sawi' get much higher weight
+                  }
+                }
+              });
+              
+              // Extra points if the exact cleanKeyword is present in full
+              if (nameLower.includes(cleanKeyword)) {
+                score += 10;
+              }
+              
+              // Tie-breaker: prefer shorter names that are closer to the search query length
+              if (score > 0) {
+                const lengthDiff = Math.abs(nameLower.length - cleanKeyword.length);
+                score += (100 - lengthDiff) * 0.01;
+              }
+              
+              if (score > maxScore) {
+                maxScore = score;
+                bestMatch = x;
+              }
+            }
+            
+            if (maxScore > 0) {
+              found = bestMatch;
+            }
           }
         }
         
