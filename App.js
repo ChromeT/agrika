@@ -11,7 +11,8 @@ import {
   Alert,
   Dimensions,
   Share,
-  Modal
+  Modal,
+  ActivityIndicator
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -633,6 +634,12 @@ export default function App() {
   const [tkpiModalMode, setTkpiModalMode] = useState('custom_menu'); // 'custom_menu' or 'calculator'
   const [activeRowIndexForSearch, setActiveRowIndexForSearch] = useState(null);
   const [calcTargetUsia, setCalcTargetUsia] = useState('10-12L');
+
+  // Claude AI States
+  const [aiInputText, setAiInputText] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState('');
+  const [aiIngredients, setAiIngredients] = useState([]);
 
   // Dynamic Back-Scheduling helper
   const calculateTimeline = (jamMakan) => {
@@ -2764,6 +2771,177 @@ export default function App() {
     setCalculatorHistory(prev => prev.filter(x => x.id !== id));
   };
 
+  const handleAIParseInput = async (rawText) => {
+    if (!rawText.trim()) {
+      Alert.alert('Gagal', 'Silakan masukkan nama menu dan beratnya. Contoh: "Sawi gulung isi tahu : 54g"');
+      return;
+    }
+
+    const parts = rawText.split(':');
+    if (parts.length < 2) {
+      Alert.alert('Format Salah', 'Gunakan format: "Nama Menu : [berat] g".\nContoh: "Sawi gulung isi tahu : 54g"');
+      return;
+    }
+    
+    const menuName = parts[0].trim();
+    const weightStr = parts[1].trim();
+    
+    const weightMatch = weightStr.match(/([\d.]+)/);
+    if (!weightMatch) {
+      Alert.alert('Berat Tidak Valid', 'Silakan masukkan jumlah berat dalam gram (contoh: 54g).');
+      return;
+    }
+    
+    const totalWeight = parseFloat(weightMatch[1]);
+    if (isNaN(totalWeight) || totalWeight <= 0) {
+      Alert.alert('Berat Tidak Valid', 'Silakan masukkan jumlah berat yang valid.');
+      return;
+    }
+
+    const apiKey = process.env.EXPO_PUBLIC_CLAUDE_API_KEY;
+    if (!apiKey || apiKey === 'your_claude_api_key_here') {
+      Alert.alert('Konfigurasi Diperlukan ⚙️', 'API Key belum dikonfigurasi. Silakan tambahkan EXPO_PUBLIC_CLAUDE_API_KEY di file .env lokal atau Vercel Environment Variables kamu ya!');
+      return;
+    }
+
+    setIsAiLoading(true);
+    setAiExplanation('');
+    setAiIngredients([]);
+
+    try {
+      const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
+Your job is to analyze the custom/mix recipe menu query, determine the typical ingredient breakdown, find the best matching food items, and return the breakdown along with search keywords to query the local Kemenkes TKPI database.
+
+Analyze the input menu and total weight (in grams), estimate the standard culinary proportion (ratios summing up exactly to 1.0), and suggest the best search keywords for each ingredient to match the local TKPI database.
+You must respond ONLY with a valid JSON object. Do not include any explanations outside of the JSON. Do not include markdown code block formatting.
+
+Example Output format:
+{
+  "explanation": "Ooh sawi gulung isi tahu yang viral di TikTok itu ya! Sawi putih dikukus lalu diisi tahu di tengahnya. Menyehatkan banget buat adik-adik di sekolah! 🥬✨",
+  "ingredients": [
+    {
+      "nama": "Sawi putih",
+      "ratio": 0.65,
+      "searchKeyword": "sawi putih"
+    },
+    {
+      "nama": "Tahu putih",
+      "ratio": 0.35,
+      "searchKeyword": "tahu"
+    }
+  ]
+}`;
+
+      const userPrompt = `Analyze the menu: "${menuName}" with total weight: ${totalWeight} grams. Make sure the ingredients ratios sum up to 1.0.`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-haiku-20241022',
+          max_tokens: 1024,
+          messages: [
+            {
+              role: 'user',
+              content: userPrompt
+            }
+          ],
+          system: systemPrompt
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`API Error (${response.status}): ${errText}`);
+      }
+
+      const data = await response.json();
+      let responseText = data.content[0].text.trim();
+      
+      // Strip markdown code block formatting if present
+      if (responseText.startsWith('```')) {
+        responseText = responseText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+      }
+
+      const parsed = JSON.parse(responseText);
+      const matchedRows = [];
+      
+      parsed.ingredients.forEach((ing, index) => {
+        const targetWeight = totalWeight * ing.ratio;
+        const cleanKeyword = ing.searchKeyword.toLowerCase().trim();
+        
+        // Find best match in local TKPI database
+        let found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanKeyword);
+        if (!found) {
+          found = TKPI_DATABASE.find(x => x.nama.toLowerCase().includes(cleanKeyword) || cleanKeyword.includes(x.nama.toLowerCase()));
+        }
+        if (!found) {
+          // Try word splitting
+          const words = cleanKeyword.split(/\s+/);
+          if (words.length > 0) {
+            found = TKPI_DATABASE.find(x => x.nama.toLowerCase().includes(words[0]));
+          }
+        }
+        
+        if (!found) {
+          found = {
+            nama: ing.nama,
+            kalori: 100, protein: 1, karbo: 10, lemak: 1, serat: 1,
+            mbgStatus: 'aman', mbgNotes: 'Bahan kustom (tidak ada di TKPI)', icon: 'food', kat: 'sayur'
+          };
+        }
+        
+        const factor = targetWeight / 100;
+        matchedRows.push({
+          id: `ai-${Date.now()}-${index}`,
+          nama: found.nama,
+          berat: String(targetWeight.toFixed(1)),
+          kalori: Math.round((found.kalori || 0) * factor),
+          protein: parseFloat(((found.protein || 0) * factor).toFixed(1)),
+          karbo: parseFloat(((found.karbo || 0) * factor).toFixed(1)),
+          lemak: parseFloat(((found.lemak || 0) * factor).toFixed(1)),
+          serat: parseFloat(((found.serat || 0) * factor).toFixed(1)),
+          baseKalori: found.kalori || 0,
+          baseProtein: found.protein || 0,
+          baseKarbo: found.karbo || 0,
+          baseLemak: found.lemak || 0,
+          baseSerat: found.serat || 0,
+          mbgStatus: found.mbgStatus || 'aman',
+          mbgNotes: found.mbgNotes || '',
+          icon: found.icon || 'leaf',
+          kat: found.kat || 'sayur'
+        });
+      });
+      
+      setAiExplanation(parsed.explanation);
+      setAiIngredients(matchedRows);
+      
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Gagal Memproses AI', `Terjadi error saat menghubungi Asisten Claude: ${error.message}`);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const handleApplyAiIngredients = () => {
+    if (aiIngredients.length === 0) return;
+    
+    setCalculatorRows(prev => {
+      const cleanPrev = prev.filter(r => r.nama.trim() !== '');
+      return [...cleanPrev, ...aiIngredients];
+    });
+    
+    setAiInputText('');
+    setAiExplanation('');
+    setAiIngredients([]);
+    Alert.alert('Berhasil! 💕', 'Bahan hasil rekomendasi AI berhasil dimasukkan ke tabel kalkulator aktif kita.');
+  };
+
   const handleExportToMenu = () => {
     const validRows = calculatorRows.filter(row => row.nama.trim() !== '' && parseFloat(row.berat) > 0);
     if (validRows.length === 0) {
@@ -3003,6 +3181,69 @@ export default function App() {
               </TouchableOpacity>
             ))}
           </View>
+        </View>
+
+        {/* Asisten AI Cerdas Card */}
+        <View style={[styles.card, styles.aiCard]}>
+          <View style={styles.aiHeader}>
+            <MaterialCommunityIcons name="robot" size={20} color="#C084FC" style={{ marginRight: 6 }} />
+            <Text style={styles.aiCardTitle}>Asisten Resep Cerdas (Claude AI)</Text>
+          </View>
+          
+          <Text style={styles.aiCardDesc}>
+            Mencari takaran resep campuran atau menu viral (seperti sawi gulung isi tahu). 
+            Ketik nama menu & berat total di bawah ini!
+          </Text>
+          
+          <View style={styles.aiInputRow}>
+            <TextInput
+              style={styles.aiTextInput}
+              placeholder="Contoh: Sawi gulung isi tahu : 54g"
+              placeholderTextColor="#626C90"
+              value={aiInputText}
+              onChangeText={setAiInputText}
+            />
+            <TouchableOpacity 
+              style={[styles.aiSubmitBtn, isAiLoading && styles.aiSubmitBtnDisabled]} 
+              onPress={() => handleAIParseInput(aiInputText)}
+              disabled={isAiLoading}
+            >
+              {isAiLoading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <MaterialCommunityIcons name="sparkles" size={14} color="#FFF" style={{ marginRight: 4 }} />
+                  <Text style={styles.aiSubmitBtnText}>Tanya AI</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* AI Response Preview */}
+          {aiExplanation ? (
+            <View style={styles.aiResponseWrapper}>
+              <View style={styles.aiChatBubble}>
+                <Text style={styles.aiChatBubbleText}>🤖 {aiExplanation}</Text>
+              </View>
+              
+              <Text style={styles.aiPreviewLabel}>📊 Pembagian Bahan oleh AI:</Text>
+              {aiIngredients.map((item, idx) => (
+                <View key={item.id || idx} style={styles.aiIngredientItem}>
+                  <Text style={styles.aiIngredientText}>
+                    {getFoodIcon(item.icon)} {item.nama}
+                  </Text>
+                  <Text style={styles.aiIngredientWeight}>
+                    {item.berat} gram
+                  </Text>
+                </View>
+              ))}
+
+              <TouchableOpacity style={styles.aiApplyBtn} onPress={handleApplyAiIngredients}>
+                <MaterialCommunityIcons name="playlist-plus" size={18} color="#FFF" style={{ marginRight: 4 }} />
+                <Text style={styles.aiApplyBtnText}>Masukkan ke Tabel Kalkulator</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
         </View>
 
         {/* List of Ingredients */}
@@ -5748,5 +5989,113 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     marginLeft: 6,
+  },
+  aiCard: {
+    borderColor: '#4A1D96',
+    borderWidth: 1,
+    backgroundColor: 'rgba(74, 29, 150, 0.08)',
+  },
+  aiHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  aiCardTitle: {
+    color: '#C084FC',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  aiCardDesc: {
+    color: '#A5ACCC',
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  aiInputRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  aiTextInput: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: '#FFF',
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: '#2A3042',
+  },
+  aiSubmitBtn: {
+    backgroundColor: '#8B5CF6',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiSubmitBtnDisabled: {
+    backgroundColor: '#4C1D95',
+  },
+  aiSubmitBtnText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  aiResponseWrapper: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+    paddingTop: 12,
+  },
+  aiChatBubble: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#A78BFA',
+  },
+  aiChatBubbleText: {
+    color: '#E2E8F0',
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  aiPreviewLabel: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  aiIngredientItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderRadius: 6,
+    padding: 8,
+    marginBottom: 6,
+  },
+  aiIngredientText: {
+    color: '#FFF',
+    fontSize: 13,
+  },
+  aiIngredientWeight: {
+    color: '#F472B6',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  aiApplyBtn: {
+    backgroundColor: '#EC4899',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 10,
+    marginTop: 12,
+  },
+  aiApplyBtnText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
