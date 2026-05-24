@@ -2894,38 +2894,62 @@ Example Output format:
         // Find best match in local TKPI database
         let found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanKeyword);
         if (!found) {
-          found = TKPI_DATABASE.find(x => x.nama.toLowerCase().includes(cleanKeyword) || cleanKeyword.includes(x.nama.toLowerCase()));
-        }
-        if (!found) {
-          // Try advanced keyword matching with ranking score
+          // Use advanced keyword matching with ranking score directly for partial matches
           const words = cleanKeyword.split(/\s+/).filter(w => w.length > 1);
           if (words.length > 0) {
             let bestMatch = null;
-            let maxScore = 0;
-            const genericTerms = ['daging', 'mentah', 'segar', 'matang', 'rebus', 'kukus', 'goreng', 'kering', 'bubuk', 'daun', 'biji', 'buah', 'tepung', 'minyak', 'air', 'muda', 'tua'];
+            let maxScore = -9999;
+            const genericTerms = ['daging', 'mentah', 'segar', 'matang', 'rebus', 'kukus', 'goreng', 'kering', 'bubuk', 'daun', 'biji', 'buah', 'tepung', 'minyak', 'air', 'muda', 'tua', 'putih', 'merah', 'kuning', 'hijau'];
+            const processingTerms = ['goreng', 'rebus', 'kukus', 'kering', 'bakar', 'panggang', 'asin', 'olahan', 'awetan'];
             
             for (const x of TKPI_DATABASE) {
               const nameLower = x.nama.toLowerCase();
+              const nameLowerClean = nameLower.replace(/\(.*\)/g, '').trim();
+              const nameWords = nameLowerClean.split(/[\s,()\/]+/).filter(w => w.length > 1);
               let score = 0;
               
-              words.forEach(word => {
-                if (nameLower.includes(word)) {
-                  if (genericTerms.includes(word)) {
-                    score += 1;
+              words.forEach((word, idx) => {
+                if (nameLowerClean.includes(word)) {
+                  const isStart = nameLowerClean.startsWith(word) || nameLowerClean.split('/').some(part => part.trim().startsWith(word));
+                  if (idx === 0 && isStart && !genericTerms.includes(word)) {
+                    score += 15; // Noun startsWith synonym match (e.g. singkong, tahu)
+                  } else if (idx === 0 && !genericTerms.includes(word)) {
+                    score += 8;  // Noun includes match
+                  } else if (genericTerms.includes(word)) {
+                    score += 1;  // Generic term (daging, minyak, etc.)
                   } else {
-                    score += 5; // Specific terms like 'ayam', 'tahu', 'sawi' get much higher weight
+                    score += 5;  // Other specific terms
                   }
                 }
               });
               
-              // Extra points if the exact cleanKeyword is present in full
-              if (nameLower.includes(cleanKeyword)) {
-                score += 10;
+              // Penalty for extra specific words in DB name not present in search keyword
+              nameWords.forEach(w => {
+                if (!words.includes(w) && !genericTerms.includes(w)) {
+                  score -= 4;
+                }
+              });
+              
+              // Penalty for extra processing terms (e.g. goreng, rebus) if not requested
+              processingTerms.forEach(term => {
+                if (nameLowerClean.includes(term) && !cleanKeyword.includes(term)) {
+                  score -= 3;
+                }
+              });
+              
+              // Heavy penalty for leaf ('daun') crops if not specifically looking for a leaf
+              if (nameLowerClean.startsWith('daun') && !cleanKeyword.startsWith('daun')) {
+                score -= 10;
               }
               
-              // Tie-breaker: prefer shorter names that are closer to the search query length
+              // Extra points if the exact cleanKeyword is present in full
+              if (nameLowerClean.includes(cleanKeyword)) {
+                score += 15;
+              }
+              
+              // Tie-breaker: prefer shorter names closer to search query length
               if (score > 0) {
-                const lengthDiff = Math.abs(nameLower.length - cleanKeyword.length);
+                const lengthDiff = Math.abs(nameLowerClean.length - cleanKeyword.length);
                 score += (100 - lengthDiff) * 0.01;
               }
               
@@ -2935,7 +2959,7 @@ Example Output format:
               }
             }
             
-            if (maxScore > 0) {
+            if (maxScore > 2) {
               found = bestMatch;
             }
           }

@@ -52,10 +52,16 @@ Tasks for Case A (Single Recipe):
 Tasks for Case B (List of Multiple Items):
 1. Parse all items and their individual weights.
 2. Sum all the individual weights to compute the "totalWeight".
-3. For compound recipe items (e.g. "Ayam woku", "Sawi isi tahu", "Perkedel tahu"), break them down into typical sub-ingredients (e.g. Chicken meat, Tofu, Cabbage, Oil) using typical proportions. For simple items (e.g. "Nasi putih", "Anggur"), treat them as a single ingredient.
-4. Calculate the total absolute weight for each distinct ingredient.
-5. Compute the ratio of each ingredient relative to the computed "totalWeight" (i.e. ratio = ingredient_weight / totalWeight). All ratios in the "ingredients" list must sum up exactly to 1.0.
-6. Suggest the best search keywords for each ingredient to query the Kemenkes TKPI database.
+3. For compound recipe items (e.g. "Ayam woku", "Sawi isi tahu", "Perkedel tahu"), break them down into their 2-3 PRIMARY ingredients only (e.g. Ayam woku = Ayam + Minyak kelapa sawit; Perkedel tahu = Tahu + Minyak kelapa sawit; Sawi isi tahu = Sawi putih + Tahu).
+4. For simple items (e.g. "Nasi putih", "Anggur"), DO NOT break them down. Keep them as a single ingredient.
+5. Calculate the total absolute weight for each distinct ingredient.
+6. Compute the ratio of each ingredient relative to the computed "totalWeight" (i.e. ratio = ingredient_weight / totalWeight). All ratios in the "ingredients" list must sum up exactly to 1.0.
+7. Suggest the best search keywords for each ingredient to query the Kemenkes TKPI database.
+
+Strict Rules for Ingredients:
+- ONLY output the primary, macro-contributing ingredients (e.g. meat, main vegetable, main carb source, cooking oil).
+- DO NOT list optional binders, breadcrumbs, spices, condiments (like shallots, garlic, chili, salt), or side ingredients as separate rows.
+- Use standard, clean search keywords that exist in typical food databases: e.g. use "nasi putih" instead of detailed descriptions, use "tahu" instead of "tahu putih", use "singkong" instead of specific snacks, use "sawi putih" instead of fancy vegetable rolls.
 
 Provide a friendly explanation in casual youth Indonesian with emojis.
 Respond ONLY with a valid JSON object. Do not include any explanations outside of the JSON. Do not include markdown code block formatting.
