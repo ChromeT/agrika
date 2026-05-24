@@ -3178,19 +3178,9 @@ Example Output format:
   };
 
   const handleScaleToTargetAkg = () => {
-    let totKal = 0;
-    let totProt = 0;
-    let totKar = 0;
-    let totLem = 0;
-
-    calculatorRows.forEach(row => {
-      totKal += row.kalori || 0;
-      totProt += row.protein || 0;
-      totKar += row.karbo || 0;
-      totLem += row.lemak || 0;
-    });
-
-    if (totKal <= 0) {
+    // 1. Check if we have ingredients
+    const validRows = calculatorRows.filter(row => row.nama.trim() !== '' && parseFloat(row.berat) > 0);
+    if (validRows.length === 0) {
       Alert.alert('Info', 'Tambahkan bahan makanan terlebih dahulu dengan berat > 0.');
       return;
     }
@@ -3201,56 +3191,99 @@ Example Output format:
     const targetKar = targetAkg.karbo || 80;
     const targetLem = targetAkg.lemak || 20;
 
-    // We want to find a scaling factor 'f' that minimizes the sum of squared relative errors:
-    // E(f) = sum_n (f * A_n / T_n - 1)^2
-    // Let X_n = A_n / T_n
-    // The analytical minimum is at f = sum(X_n) / sum(X_n^2)
+    // 2. Identify all unique categories present in the calculator rows
+    const categories = ['karbo', 'protein', 'sayur', 'buah', 'lainnya'];
     
-    let sumX = 0;
-    let sumX2 = 0;
+    // Initialize scaling factors for each category
+    const factors = {};
+    categories.forEach(cat => {
+      factors[cat] = 1.0;
+    });
 
-    // 1. Kalori
-    if (totKal > 0 && targetKal > 0) {
-      const x = totKal / targetKal;
-      sumX += x;
-      sumX2 += x * x;
-    }
-    // 2. Protein
-    if (totProt > 0 && targetProt > 0) {
-      const x = totProt / targetProt;
-      sumX += x;
-      sumX2 += x * x;
-    }
-    // 3. Karbohidrat
-    if (totKar > 0 && targetKar > 0) {
-      const x = totKar / targetKar;
-      sumX += x;
-      sumX2 += x * x;
-    }
-    // 4. Lemak
-    if (totLem > 0 && targetLem > 0) {
-      const x = totLem / targetLem;
-      sumX += x;
-      sumX2 += x * x;
+    // 3. Optimize scaling factors using Coordinate Descent (100 iterations)
+    // We want to minimize:
+    // Loss = (Actual_kal/Target_kal - 1)^2 + (Actual_prot/Target_prot - 1)^2 + ...
+    // Subject to: 0.2 <= f_cat <= 4.0
+    for (let iter = 0; iter < 100; iter++) {
+      categories.forEach(cat => {
+        // C[j] is the contribution of the current category 'cat' to nutrient j (at f_cat = 1.0)
+        // O[j] is the contribution of all other categories (using their current factors)
+        const C = [0, 0, 0, 0]; // 0: kal, 1: prot, 2: kar, 3: lem
+        const O = [0, 0, 0, 0];
+
+        calculatorRows.forEach(row => {
+          if (!row.nama || !row.berat) return;
+          const rowCat = row.kat || 'sayur';
+          const isCurrentCat = (rowCat === cat) || (cat === 'lainnya' && !categories.includes(rowCat));
+          
+          const baseKal = row.baseKalori || 0;
+          const baseProt = row.baseProtein || 0;
+          const baseKar = row.baseKarbo || 0;
+          const baseLem = row.baseLemak || 0;
+          const berat = parseFloat(row.berat) || 0;
+
+          // Contribution at current weight
+          const rowKal = baseKal * (berat / 100);
+          const rowProt = baseProt * (berat / 100);
+          const rowKar = baseKar * (berat / 100);
+          const rowLem = baseLem * (berat / 100);
+
+          if (isCurrentCat) {
+            C[0] += rowKal;
+            C[1] += rowProt;
+            C[2] += rowKar;
+            C[3] += rowLem;
+          } else {
+            const f = factors[rowCat] !== undefined ? factors[rowCat] : (factors['lainnya'] || 1.0);
+            O[0] += f * rowKal;
+            O[1] += f * rowProt;
+            O[2] += f * rowKar;
+            O[3] += f * rowLem;
+          }
+        });
+
+        // If this category doesn't contribute anything to any nutrient, skip it
+        if (C[0] === 0 && C[1] === 0 && C[2] === 0 && C[3] === 0) {
+          return;
+        }
+
+        // We want to minimize:
+        // L(f) = sum_j ( (f * C[j] + O[j]) / T[j] - 1 )^2
+        // Let Y[j] = C[j] / T[j]
+        // Let Z[j] = O[j] / T[j] - 1
+        // Then L(f) = sum_j (f * Y[j] + Z[j])^2
+        // Derivative w.r.t f: 2 * sum_j (f * Y[j] + Z[j]) * Y[j] = 0
+        // f = - sum(Z[j] * Y[j]) / sum(Y[j]^2)
+        const T = [targetKal, targetProt, targetKar, targetLem];
+        let sumZY = 0;
+        let sumY2 = 0;
+
+        for (let j = 0; j < 4; j++) {
+          if (T[j] > 0) {
+            const Y = C[j] / T[j];
+            const Z = O[j] / T[j] - 1;
+            sumZY += Z * Y;
+            sumY2 += Y * Y;
+          }
+        }
+
+        if (sumY2 > 0) {
+          let optimalF = -sumZY / sumY2;
+          // Constrain factor between 0.2 and 4.0 to keep portions culinarily realistic
+          factors[cat] = Math.min(4.0, Math.max(0.2, optimalF));
+        }
+      });
     }
 
-    let factor = 1;
-    if (sumX2 > 0) {
-      factor = sumX / sumX2;
-    }
-
-    // Round factor to 3 decimal places for stability
-    factor = Math.round(factor * 1000) / 1000;
-
-    if (factor <= 0) {
-      Alert.alert('Error', 'Gagal menghitung faktor skala yang valid.');
-      return;
-    }
-
+    // 4. Apply the calculated factors to the calculator rows
     const updatedRows = calculatorRows.map(row => {
       if (!row.nama || !row.berat) return row;
       const curBerat = parseFloat(row.berat);
       if (isNaN(curBerat) || curBerat <= 0) return row;
+      
+      const rowCat = row.kat || 'sayur';
+      const factor = factors[rowCat] !== undefined ? factors[rowCat] : (factors['lainnya'] || 1.0);
+      
       const newBerat = parseFloat((curBerat * factor).toFixed(1));
       
       return {
@@ -3266,18 +3299,50 @@ Example Output format:
 
     setCalculatorRows(updatedRows);
 
-    const newKalPct = Math.round((totKal * factor) / targetKal * 100);
-    const newProtPct = Math.round((totProt * factor) / targetProt * 100);
-    const newKarPct = Math.round((totKar * factor) / targetKar * 100);
-    const newLemPct = Math.round((totLem * factor) / targetLem * 100);
+    // 5. Calculate new totals for display in the alert
+    let newKal = 0, newProt = 0, newKar = 0, newLem = 0;
+    updatedRows.forEach(row => {
+      newKal += row.kalori || 0;
+      newProt += row.protein || 0;
+      newKar += row.karbo || 0;
+      newLem += row.lemak || 0;
+    });
+
+    const newKalPct = Math.round(newKal / targetKal * 100);
+    const newProtPct = Math.round(newProt / targetProt * 100);
+    const newKarPct = Math.round(newKar / targetKar * 100);
+    const newLemPct = Math.round(newLem / targetLem * 100);
+
+    // Format display names of categories that were scaled
+    const catLabels = {
+      karbo: 'Makanan Pokok (Karbo)',
+      protein: 'Lauk Pauk (Protein/Minyak)',
+      sayur: 'Sayuran',
+      buah: 'Buah-buahan',
+      lainnya: 'Bahan Lainnya'
+    };
+
+    let scaleDetails = '';
+    Object.keys(factors).forEach(cat => {
+      // Only show if the category has at least one item with weight > 0
+      const hasCatItems = calculatorRows.some(row => {
+        const rowCat = row.kat || 'sayur';
+        return ((rowCat === cat) || (cat === 'lainnya' && !categories.includes(rowCat))) && parseFloat(row.berat) > 0;
+      });
+      if (hasCatItems) {
+        scaleDetails += `• ${catLabels[cat] || cat}: dikali ${factors[cat].toFixed(2)}x\n`;
+      }
+    });
 
     Alert.alert(
       'Porsi Disesuaikan Seimbang! 💕', 
-      `Takaran porsi disesuaikan (dikali ${factor.toFixed(2)}x) agar paling seimbang memenuhi seluruh AKG target:\n\n` +
-      `• Energi: ${newKalPct}% dari target (${Math.round(totKal * factor)}/${targetKal} kkal)\n` +
-      `• Protein: ${newProtPct}% dari target (${(totProt * factor).toFixed(1)}/${targetProt}g)\n` +
-      `• Karbohidrat: ${newKarPct}% dari target (${(totKar * factor).toFixed(1)}/${targetKar}g)\n` +
-      `• Lemak: ${newLemPct}% dari target (${(totLem * factor).toFixed(1)}/${targetLem}g)`
+      `Takaran porsi per kategori bahan berhasil otomatis disesuaikan secara mandiri agar paling seimbang memenuhi target AKG:\n\n` +
+      scaleDetails + `\n` +
+      `Hasil pemenuhan target AKG saat ini:\n` +
+      `⚡ Energi: ${newKalPct}% (${Math.round(newKal)}/${targetKal} kkal)\n` +
+      `🍖 Protein: ${newProtPct}% (${newProt.toFixed(1)}/${targetProt}g)\n` +
+      `🌾 Karbohidrat: ${newKarPct}% (${newKar.toFixed(1)}/${targetKar}g)\n` +
+      `🥑 Lemak: ${newLemPct}% (${newLem.toFixed(1)}/${targetLem}g)`
     );
   };
 
