@@ -2794,8 +2794,10 @@ export default function App() {
 
     try {
       const localApiKey = process.env.EXPO_PUBLIC_CLAUDE_API_KEY;
+      const localGeminiApiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
       let response;
       let useProxy = true;
+      let directSuccess = false;
 
       try {
         response = await fetch('https://agrika.vercel.app/api/parse-recipe', {
@@ -2812,23 +2814,8 @@ export default function App() {
         useProxy = false;
       }
 
-      // Fallback: If proxy call fails or returns non-200, and we have a local API key, call Anthropic directly
+      // Fallback: If proxy call fails or returns non-200, try local API keys
       if (!useProxy || !response || response.status !== 200) {
-        if (Platform.OS === 'web') {
-          if (response) {
-            const errJson = await response.json().catch(() => ({}));
-            const apiError = errJson.error || `HTTP ${response.status}`;
-            throw new Error(apiError);
-          } else {
-            throw new Error('Koneksi ke Vercel proxy gagal.');
-          }
-        }
-
-        if (!localApiKey || localApiKey === 'your_claude_api_key_here') {
-          const errMsg = response ? `Vercel Proxy Error (${response.status})` : 'Koneksi ke Vercel proxy gagal dan tidak ada API key lokal.';
-          throw new Error(errMsg);
-        }
-
         const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
 Your job is to analyze the user's query, which can be:
 A) A single recipe query (e.g. "sawi gulung isi tahu seperti di tiktok : 54g" or "kalau sawi gulung telur seberat 54 gram?")
@@ -2888,20 +2875,91 @@ Example Output format:
   ]
 }`;
 
-        response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'x-api-key': localApiKey,
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'claude-3-5-haiku-20241022',
-            max_tokens: 1024,
-            messages: [{ role: 'user', content: `User query: "${rawText}"` }],
-            system: systemPrompt
-          })
-        });
+        // 1. Try Gemini Direct API Fallback (CORS-friendly on Web)
+        if (localGeminiApiKey && localGeminiApiKey !== 'your_gemini_api_key_here') {
+          try {
+            console.log('Attempting direct Gemini API call fallback...');
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${localGeminiApiKey}`;
+            const geminiResponse = await fetch(geminiUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [{
+                    text: `User query: "${rawText}"`
+                  }]
+                }],
+                systemInstruction: {
+                  parts: [{
+                    text: systemPrompt
+                  }]
+                },
+                generationConfig: {
+                  responseMimeType: "application/json"
+                }
+              })
+            });
+
+            if (geminiResponse.ok) {
+              const geminiData = await geminiResponse.json();
+              if (geminiData.candidates && geminiData.candidates[0] && geminiData.candidates[0].content && geminiData.candidates[0].content.parts[0]) {
+                const responseText = geminiData.candidates[0].content.parts[0].text.trim();
+                response = {
+                  ok: true,
+                  status: 200,
+                  json: async () => ({
+                    content: [{
+                      text: responseText
+                    }]
+                  })
+                };
+                directSuccess = true;
+                console.log('Direct Gemini API fallback successful!');
+              }
+            } else {
+              const geminiErrText = await geminiResponse.text();
+              console.log('Gemini API returned error status:', geminiResponse.status, geminiErrText);
+            }
+          } catch (geminiErr) {
+            console.log('Direct Gemini API fallback failed with error:', geminiErr);
+          }
+        }
+
+        // 2. Try Claude Direct API Fallback (Standard fallback, might encounter CORS on Web)
+        if (!directSuccess) {
+          if (Platform.OS === 'web') {
+            if (response) {
+              const errJson = await response.json().catch(() => ({}));
+              const apiError = errJson.error || `HTTP ${response.status}`;
+              throw new Error(apiError);
+            } else {
+              throw new Error('Koneksi ke Vercel proxy gagal.');
+            }
+          }
+
+          if (!localApiKey || localApiKey === 'your_claude_api_key_here') {
+            const errMsg = response ? `Vercel Proxy Error (${response.status})` : 'Koneksi ke Vercel proxy gagal dan tidak ada API key lokal.';
+            throw new Error(errMsg);
+          }
+
+          console.log('Attempting direct Claude API call fallback...');
+          response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'x-api-key': localApiKey,
+              'anthropic-version': '2023-06-01',
+              'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: 'claude-3-5-haiku-20241022',
+              max_tokens: 1024,
+              messages: [{ role: 'user', content: `User query: "${rawText}"` }],
+              system: systemPrompt
+            })
+          });
+        }
       }
 
       if (!response.ok) {
