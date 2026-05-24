@@ -2928,102 +2928,139 @@ Example Output format:
       
       ingredients.forEach((ing, index) => {
         const targetWeight = ing.berat !== undefined ? parseFloat(ing.berat) : totalWeight * (ing.ratio || 0);
-        const rawKeyword = (ing.searchKeyword || ing.nama || '').trim();
-        const cleanKeyword = rawKeyword.toLowerCase();
+        const cleanKeyword = ing.searchKeyword.toLowerCase().trim();
         
-        // ═══════════════════════════════════════
-        // TIERED TKPI MATCHING (Most Accurate First)
-        // ═══════════════════════════════════════
-        let found = null;
-        
-        // Tier 1: EXACT full name match (case-insensitive) — AI now sends exact TKPI names
-        found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanKeyword);
-        
-        // Tier 2: EXACT match ignoring parenthetical English names
+        // Find best match in local TKPI database
+        let found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanKeyword);
         if (!found) {
-          found = TKPI_DATABASE.find(x => {
-            const nameBase = x.nama.toLowerCase().replace(/\s*\(.*\)\s*$/, '').trim();
-            return nameBase === cleanKeyword;
-          });
-        }
-        
-        // Tier 3: startsWith match — keyword is a prefix of a TKPI entry
-        if (!found) {
-          const startsWithMatches = TKPI_DATABASE.filter(x => 
-            x.nama.toLowerCase().startsWith(cleanKeyword)
-          );
-          if (startsWithMatches.length > 0) {
-            startsWithMatches.sort((a, b) => a.nama.length - b.nama.length);
-            found = startsWithMatches[0];
-          }
-        }
-        
-        // Tier 4: TKPI entry name starts with keyword (without commas)
-        if (!found) {
-          const keyBase = cleanKeyword.split(',')[0].trim();
-          const candidates = TKPI_DATABASE.filter(x => {
-            const nLow = x.nama.toLowerCase();
-            return nLow.startsWith(keyBase + ',') || nLow.startsWith(keyBase + ' ');
-          });
-          if (candidates.length > 0) {
-            const preferRaw = candidates.find(x => x.nama.toLowerCase().includes('mentah'));
-            const preferFresh = candidates.find(x => x.nama.toLowerCase().includes('segar'));
-            found = preferRaw || preferFresh || candidates[0];
-          }
-        }
-        
-        // Tier 5: Fuzzy word-based scoring (last resort)
-        if (!found) {
-          const words = cleanKeyword.split(/[\s,/()]+/).filter(w => w.length > 1);
+          // Use advanced keyword matching with ranking score directly for partial matches
+          const words = cleanKeyword.split(/\s+/).filter(w => w.length > 1);
           if (words.length > 0) {
             let bestMatch = null;
             let maxScore = -9999;
             const genericTerms = ['daging', 'mentah', 'segar', 'matang', 'rebus', 'kukus', 'goreng', 'kering', 'bubuk', 'daun', 'biji', 'buah', 'tepung', 'minyak', 'air', 'muda', 'tua', 'putih', 'merah', 'kuning', 'hijau'];
-            const processingTerms = ['goreng', 'rebus', 'kukus', 'kering', 'bakar', 'panggang', 'asin'];
+            const processingTerms = ['goreng', 'rebus', 'kukus', 'kering', 'bakar', 'panggang', 'asin', 'olahan', 'awetan'];
             
             for (const x of TKPI_DATABASE) {
               const nameLower = x.nama.toLowerCase();
               const nameLowerClean = nameLower.replace(/\(.*\)/g, '').trim();
-              const nameWords = nameLowerClean.split(/[\s,/()]+/).filter(w => w.length > 1);
+              const nameWords = nameLowerClean.split(/[\s,()\/]+/).filter(w => w.length > 1);
               let score = 0;
               
               words.forEach((word, idx) => {
                 if (nameLowerClean.includes(word)) {
                   const isStart = nameLowerClean.startsWith(word) || nameLowerClean.split('/').some(part => part.trim().startsWith(word));
-                  if (idx === 0 && isStart && !genericTerms.includes(word)) score += 15;
-                  else if (idx === 0 && !genericTerms.includes(word)) score += 8;
-                  else if (genericTerms.includes(word)) score += 1;
-                  else score += 5;
+                  if (idx === 0 && isStart && !genericTerms.includes(word)) {
+                    score += 15; // Noun startsWith synonym match (e.g. singkong, tahu)
+                  } else if (idx === 0 && !genericTerms.includes(word)) {
+                    score += 8;  // Noun includes match
+                  } else if (genericTerms.includes(word)) {
+                    score += 1;  // Generic term (daging, minyak, etc.)
+                  } else {
+                    score += 5;  // Other specific terms
+                  }
                 }
               });
               
+              // Penalty for extra words in DB name not present in search keyword
               nameWords.forEach(w => {
-                if (!words.includes(w)) score -= (genericTerms.includes(w) ? 1.5 : 4.0);
+                if (!words.includes(w)) {
+                  if (genericTerms.includes(w)) {
+                    score -= 1.5; // Penalty for extra generic terms (e.g. minyak, segar)
+                  } else {
+                    score -= 4.0; // Penalty for extra specific terms
+                  }
+                }
               });
               
+              // Penalty for extra processing terms (e.g. goreng, rebus) if not requested
               processingTerms.forEach(term => {
-                if (nameLowerClean.includes(term) && !cleanKeyword.includes(term)) score -= 3;
+                if (nameLowerClean.includes(term) && !cleanKeyword.includes(term)) {
+                  score -= 3;
+                }
               });
               
-              if (nameLowerClean.startsWith('daun') && !cleanKeyword.startsWith('daun')) score -= 10;
+              // Heavy penalty for leaf ('daun') crops if not specifically looking for a leaf
+              if (nameLowerClean.startsWith('daun') && !cleanKeyword.startsWith('daun')) {
+                score -= 10;
+              }
 
-              const exoticPenaltyTerms = ['penyu', 'maleo', 'bebek', 'kuda', 'rusa', 'kelinci', 'ular', 'biawak', 'celeng'];
-              if (!exoticPenaltyTerms.some(t => cleanKeyword.includes(t))) {
-                if (exoticPenaltyTerms.some(t => nameLowerClean.includes(t))) score -= 20;
+              const cleanKeywordLower = cleanKeyword.toLowerCase();
+
+              // Eggs: Penalize duck, quail, turtle, maleo, salted eggs if looking for generic eggs
+              if (cleanKeywordLower.includes('telur') && 
+                  !cleanKeywordLower.includes('bebek') && 
+                  !cleanKeywordLower.includes('puyuh') && 
+                  !cleanKeywordLower.includes('penyu') && 
+                  !cleanKeywordLower.includes('maleo') &&
+                  !cleanKeywordLower.includes('asin')) {
+                if (nameLowerClean.includes('bebek') || 
+                    nameLowerClean.includes('puyuh') || 
+                    nameLowerClean.includes('penyu') || 
+                    nameLowerClean.includes('maleo') ||
+                    nameLowerClean.includes('asin')) {
+                  score -= 20;
+                }
+              }
+
+              // Milk: Penalize camel, horse, soy, buffalo milk if looking for generic milk
+              if (cleanKeywordLower.includes('susu') && 
+                  !cleanKeywordLower.includes('kambing') && 
+                  !cleanKeywordLower.includes('kuda') && 
+                  !cleanKeywordLower.includes('kedelai') && 
+                  !cleanKeywordLower.includes('kerbau')) {
+                if (nameLowerClean.includes('kambing') || 
+                    nameLowerClean.includes('kuda') || 
+                    nameLowerClean.includes('kerbau') ||
+                    nameLowerClean.includes('kedelai')) {
+                  score -= 20;
+                }
+              }
+
+              // Meat (Daging / Ayam / Sapi / Kambing)
+              const meatKeywords = ['daging', 'ayam', 'sapi', 'kambing'];
+              const hasMeatKeyword = meatKeywords.some(kw => cleanKeywordLower.includes(kw));
+
+              if (hasMeatKeyword) {
+                // Penalize offal/organs if not explicitly requested
+                const offalTerms = ['ampela', 'hati', 'usus', 'jantung', 'paru', 'babat', 'otak', 'limpa', 'dideh', 'darah', 'tetelan', 'lemak'];
+                const requestedOffal = offalTerms.some(term => cleanKeywordLower.includes(term));
+                if (!requestedOffal) {
+                  if (offalTerms.some(term => nameLowerClean.includes(term))) {
+                    score -= 20;
+                  }
+                }
+
+                // Penalize obscure wildlife or less common meats if looking for generic meat
+                const obscureMeats = ['kuda', 'rusa', 'kelinci', 'penyu', 'anjing', 'ular', 'biawak', 'celeng', 'hutan', 'bebek', 'maleo'];
+                const requestedObscure = obscureMeats.some(term => cleanKeywordLower.includes(term));
+                if (!requestedObscure) {
+                  if (obscureMeats.some(term => nameLowerClean.includes(term))) {
+                    score -= 20;
+                  }
+                }
               }
               
-              const offalTerms = ['ampela', 'hati', 'usus', 'jantung', 'paru', 'babat', 'otak', 'limpa', 'dideh', 'darah'];
-              if (!offalTerms.some(t => cleanKeyword.includes(t))) {
-                if (offalTerms.some(t => nameLowerClean.includes(t))) score -= 20;
+              // Extra points if the exact cleanKeyword is present in full
+              if (nameLowerClean.includes(cleanKeyword)) {
+                score += 15;
               }
               
-              if (nameLowerClean.includes(cleanKeyword)) score += 15;
-              if (score > 0) score += (100 - Math.abs(nameLowerClean.length - cleanKeyword.length)) * 0.01;
+              // Tie-breaker: prefer shorter names closer to search query length
+              if (score > 0) {
+                const lengthDiff = Math.abs(nameLowerClean.length - cleanKeyword.length);
+                score += (100 - lengthDiff) * 0.01;
+              }
               
-              if (score > maxScore) { maxScore = score; bestMatch = x; }
+              if (score > maxScore) {
+                maxScore = score;
+                bestMatch = x;
+              }
             }
             
-            if (maxScore > 2) found = bestMatch;
+            if (maxScore > 2) {
+              found = bestMatch;
+            }
           }
         }
         
@@ -3035,12 +3072,11 @@ Example Output format:
           };
         }
         
-        const beratDisplay = Number.isInteger(targetWeight) ? String(targetWeight) : String(parseFloat(targetWeight.toFixed(1)));
         const factor = targetWeight / 100;
         matchedRows.push({
           id: `ai-${Date.now()}-${index}`,
           nama: found.nama,
-          berat: beratDisplay,
+          berat: String(targetWeight.toFixed(1)),
           kalori: Math.round((found.kalori || 0) * factor),
           protein: parseFloat(((found.protein || 0) * factor).toFixed(1)),
           karbo: parseFloat(((found.karbo || 0) * factor).toFixed(1)),
