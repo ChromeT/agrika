@@ -607,15 +607,15 @@ const RECIPE_DETAILS = {
 
 // Data Standar Gizi Porsi Makan MBG Resmi Badan Gizi Nasional (Juknis Final Juni 2025)
 const AKG_DATA = {
-  'balita': { name: 'Anak Balita', kal: 342, pctAkg: 24.4, protein: 47.6, lemak: 21.6, karbo: 20.6, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
-  'paud': { name: 'Siswa TK/PAUD/RA', kal: 328, pctAkg: 23.4, protein: 25.0, lemak: 23.7, karbo: 20.9, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
-  'sd_kecil': { name: 'Siswa SD/MI (Kelas 1-3)', kal: 368.8, pctAkg: 22.3, protein: 23.1, lemak: 24.1, karbo: 20.1, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
-  'sd_besar': { name: 'Siswa SD/MI (Kelas 4-6)', kal: 531, pctAkg: 32.2, protein: 33.1, lemak: 30.9, karbo: 31.0, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
-  'smp': { name: 'Siswa SMP/MTs Sederajat', kal: 719, pctAkg: 32.3, protein: 34.8, lemak: 30.7, karbo: 30.8, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
-  'sma': { name: 'Siswa SMA/MA/SMK Sederajat', kal: 762.5, pctAkg: 32.1, protein: 36.4, lemak: 31.0, karbo: 30.4, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
-  'bumil': { name: 'Ibu Hamil', kal: 818, pctAkg: 33.3, protein: 40.4, lemak: 32.1, karbo: 31.9, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
-  'busui': { name: 'Ibu Menyusui', kal: 818, pctAkg: 31.9, protein: 52.9, lemak: 32.2, karbo: 30.8, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
-  'slb': { name: 'Siswa SLB (Menyesuaikan Usia)', kal: 531, pctAkg: 32.2, protein: 33.1, lemak: 30.9, karbo: 31.0, waktu: 'Makan Siang', rujukan: 'Sesuai kelompok usia' }
+  'balita': { name: 'Anak Balita', kal: 342, pctAkg: 24.4, protein: 9.5, lemak: 10.8, karbo: 45.3, serat: 3.7, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
+  'paud': { name: 'Siswa TK/PAUD/RA', kal: 328, pctAkg: 23.4, protein: 6.3, lemak: 11.9, karbo: 46.0, serat: 3.5, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
+  'sd_kecil': { name: 'Siswa SD/MI (Kelas 1-3)', kal: 368.8, pctAkg: 22.3, protein: 9.2, lemak: 13.3, karbo: 50.3, serat: 3.3, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
+  'sd_besar': { name: 'Siswa SD/MI (Kelas 4-6)', kal: 531, pctAkg: 32.2, protein: 13.2, lemak: 17.0, karbo: 77.5, serat: 4.8, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'smp': { name: 'Siswa SMP/MTs Sederajat', kal: 719, pctAkg: 32.3, protein: 23.5, lemak: 23.0, karbo: 100.1, serat: 6.5, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'sma': { name: 'Siswa SMA/MA/SMK Sederajat', kal: 762.5, pctAkg: 32.1, protein: 25.5, lemak: 24.0, karbo: 106.4, serat: 6.4, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'bumil': { name: 'Ibu Hamil', kal: 818, pctAkg: 33.3, protein: 36.4, lemak: 27.3, karbo: 111.7, serat: 6.7, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'busui': { name: 'Ibu Menyusui', kal: 818, pctAkg: 31.9, protein: 50.3, lemak: 27.4, karbo: 107.8, serat: 6.4, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'slb': { name: 'Siswa SLB (Menyesuaikan Usia)', kal: 531, pctAkg: 32.2, protein: 13.2, lemak: 17.0, karbo: 77.5, serat: 4.8, waktu: 'Makan Siang', rujukan: 'Sesuai kelompok usia' }
 };
 
 export default function App() {
