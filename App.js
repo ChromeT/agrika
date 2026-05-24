@@ -2675,11 +2675,11 @@ export default function App() {
             {/* Target AKG Row */}
             <View style={{ flexDirection: 'row', paddingVertical: 2 }}>
               <Text style={{ flex: 2, color: '#60A5FA', fontSize: 10, fontWeight: '700' }}>Target AKG ({usia})</Text>
-              <Text style={{ flex: 1.2, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.kalori} kkal</Text>
+              <Text style={{ flex: 1.2, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.kal} kkal</Text>
               <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.protein}g</Text>
               <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.karbo}g</Text>
               <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.lemak}g</Text>
-              <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.serat}g</Text>
+              <Text style={{ flex: 1, color: '#60A5FA', fontSize: 10, fontWeight: '700', textAlign: 'right' }}>{activeAkg.serat || '—'}</Text>
             </View>
           </View>
         </ScrollView>
@@ -3180,21 +3180,72 @@ Example Output format:
   const handleScaleToTargetAkg = () => {
     let totKal = 0;
     let totProt = 0;
+    let totKar = 0;
+    let totLem = 0;
+
     calculatorRows.forEach(row => {
       totKal += row.kalori || 0;
       totProt += row.protein || 0;
+      totKar += row.karbo || 0;
+      totLem += row.lemak || 0;
     });
+
     if (totKal <= 0) {
       Alert.alert('Info', 'Tambahkan bahan makanan terlebih dahulu dengan berat > 0.');
       return;
     }
-    const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['sd_besar'];
-    const targetKal = targetAkg.kal || targetAkg.kalori || 600;
-    const targetProt = targetAkg.protein || 15;
 
-    const kalFactor = targetKal / totKal;
-    const protFactor = totProt > 0 ? (targetProt / totProt) : 0;
-    const factor = Math.max(kalFactor, protFactor);
+    const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['sd_besar'];
+    const targetKal = targetAkg.kal || 600;
+    const targetProt = targetAkg.protein || 15;
+    const targetKar = targetAkg.karbo || 80;
+    const targetLem = targetAkg.lemak || 20;
+
+    // We want to find a scaling factor 'f' that minimizes the sum of squared relative errors:
+    // E(f) = sum_n (f * A_n / T_n - 1)^2
+    // Let X_n = A_n / T_n
+    // The analytical minimum is at f = sum(X_n) / sum(X_n^2)
+    
+    let sumX = 0;
+    let sumX2 = 0;
+
+    // 1. Kalori
+    if (totKal > 0 && targetKal > 0) {
+      const x = totKal / targetKal;
+      sumX += x;
+      sumX2 += x * x;
+    }
+    // 2. Protein
+    if (totProt > 0 && targetProt > 0) {
+      const x = totProt / targetProt;
+      sumX += x;
+      sumX2 += x * x;
+    }
+    // 3. Karbohidrat
+    if (totKar > 0 && targetKar > 0) {
+      const x = totKar / targetKar;
+      sumX += x;
+      sumX2 += x * x;
+    }
+    // 4. Lemak
+    if (totLem > 0 && targetLem > 0) {
+      const x = totLem / targetLem;
+      sumX += x;
+      sumX2 += x * x;
+    }
+
+    let factor = 1;
+    if (sumX2 > 0) {
+      factor = sumX / sumX2;
+    }
+
+    // Round factor to 3 decimal places for stability
+    factor = Math.round(factor * 1000) / 1000;
+
+    if (factor <= 0) {
+      Alert.alert('Error', 'Gagal menghitung faktor skala yang valid.');
+      return;
+    }
 
     const updatedRows = calculatorRows.map(row => {
       if (!row.nama || !row.berat) return row;
@@ -3214,8 +3265,20 @@ Example Output format:
     });
 
     setCalculatorRows(updatedRows);
-    const scaledBy = factor === protFactor ? 'kebutuhan protein' : 'kebutuhan energi';
-    Alert.alert('Porsi Disesuaikan! 💕', `Takaran porsi berhasil otomatis disesuaikan (dikali ${factor.toFixed(2)}x) berdasarkan ${scaledBy} agar semua kandungan gizi tidak ada yang kurang (memenuhi target ${targetKal} kkal dan ${targetProt}g protein).`);
+
+    const newKalPct = Math.round((totKal * factor) / targetKal * 100);
+    const newProtPct = Math.round((totProt * factor) / targetProt * 100);
+    const newKarPct = Math.round((totKar * factor) / targetKar * 100);
+    const newLemPct = Math.round((totLem * factor) / targetLem * 100);
+
+    Alert.alert(
+      'Porsi Disesuaikan Seimbang! 💕', 
+      `Takaran porsi disesuaikan (dikali ${factor.toFixed(2)}x) agar paling seimbang memenuhi seluruh AKG target:\n\n` +
+      `• Energi: ${newKalPct}% dari target (${Math.round(totKal * factor)}/${targetKal} kkal)\n` +
+      `• Protein: ${newProtPct}% dari target (${(totProt * factor).toFixed(1)}/${targetProt}g)\n` +
+      `• Karbohidrat: ${newKarPct}% dari target (${(totKar * factor).toFixed(1)}/${targetKar}g)\n` +
+      `• Lemak: ${newLemPct}% dari target (${(totLem * factor).toFixed(1)}/${targetLem}g)`
+    );
   };
 
   const handleExportToMenu = () => {
