@@ -3004,7 +3004,7 @@ Example Output format:
       
     } catch (error) {
       console.error(error);
-      Alert.alert('Gagal Memproses AI', `Terjadi error saat menghubungi Asisten Claude: ${error.message}`);
+      Alert.alert('Gagal Memproses AI', `Terjadi error saat menghubungi Asisten AI: ${error.message}`);
     } finally {
       setIsAiLoading(false);
     }
@@ -3022,6 +3022,40 @@ Example Output format:
     setAiExplanation('');
     setAiIngredients([]);
     Alert.alert('Berhasil! 💕', 'Bahan hasil rekomendasi AI berhasil dimasukkan ke tabel kalkulator aktif kita.');
+  };
+
+  const handleScaleToTargetAkg = () => {
+    let totKal = 0;
+    calculatorRows.forEach(row => {
+      totKal += row.kalori || 0;
+    });
+    if (totKal <= 0) {
+      Alert.alert('Info', 'Tambahkan bahan makanan terlebih dahulu dengan berat > 0.');
+      return;
+    }
+    const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['10-12L'];
+    const targetKal = targetAkg.kal || targetAkg.kalori || 600;
+    const factor = targetKal / totKal;
+
+    const updatedRows = calculatorRows.map(row => {
+      if (!row.nama || !row.berat) return row;
+      const curBerat = parseFloat(row.berat);
+      if (isNaN(curBerat) || curBerat <= 0) return row;
+      const newBerat = parseFloat((curBerat * factor).toFixed(1));
+      
+      return {
+        ...row,
+        berat: String(newBerat),
+        kalori: (row.baseKalori || 0) * (newBerat / 100),
+        protein: (row.baseProtein || 0) * (newBerat / 100),
+        karbo: (row.baseKarbo || 0) * (newBerat / 100),
+        lemak: (row.baseLemak || 0) * (newBerat / 100),
+        serat: (row.baseSerat || 0) * (newBerat / 100),
+      };
+    });
+
+    setCalculatorRows(updatedRows);
+    Alert.alert('Porsi Disesuaikan! 💕', `Takaran porsi berhasil otomatis disesuaikan (dikali ${factor.toFixed(2)}x) agar memenuhi target Acuan Kemenkes ${targetKal} kkal.`);
   };
 
   const handleExportToMenu = () => {
@@ -3269,7 +3303,7 @@ Example Output format:
         <View style={[styles.card, styles.aiCard]}>
           <View style={styles.aiHeader}>
             <MaterialCommunityIcons name="robot" size={20} color="#C084FC" style={{ marginRight: 6 }} />
-            <Text style={styles.aiCardTitle}>Asisten Resep Cerdas (Claude AI)</Text>
+            <Text style={styles.aiCardTitle}>Asisten Resep Cerdas</Text>
           </View>
           
           <Text style={styles.aiCardDesc}>
@@ -3402,6 +3436,16 @@ Example Output format:
               <Text style={styles.gizseeActionBtnRightText}>Tambah Bahan</Text>
             </TouchableOpacity>
           </View>
+
+          {totals.kalori > 0 && (
+            <TouchableOpacity
+              style={styles.scaleAkgBtn}
+              onPress={handleScaleToTargetAkg}
+            >
+              <MaterialCommunityIcons name="calculator-variant" size={18} color="#FFF" style={{ marginRight: 6 }} />
+              <Text style={styles.scaleAkgBtnText}>Auto-Sesuaikan Porsi ke Target AKG</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Hasil Perhitungan Card */}
@@ -3442,6 +3486,64 @@ Example Output format:
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Kebutuhan Belanja Dapur Card */}
+        {totals.kalori > 0 && (
+          <View style={styles.kitchenLogisticsCard}>
+            <Text style={styles.gizseeHasilTitle}>👥 Kebutuhan Belanja Dapur ({jmlSiswa} Siswa)</Text>
+            <Text style={styles.kitchenDescText}>
+              Dihitung otomatis dengan standardisasi porsi susut (Yield Factor) Kemenkes agar porsi bersih di piring anak tetap terpenuhi.
+            </Text>
+            
+            <View style={styles.kitchenLogisticsList}>
+              {calculatorRows.filter(r => r.nama && parseFloat(r.berat) > 0).map((row, idx) => {
+                const porsiMatang = parseFloat(row.berat) || 0;
+                const totalPorsiMatangKg = (porsiMatang * siswaNum) / 1000;
+                
+                // Yield / Susut Factor calculation
+                let yieldFactor = 1.0;
+                let yieldNotes = '100% (Tanpa susut)';
+                const nameLower = row.nama.toLowerCase();
+                
+                if (nameLower.includes('ayam') || nameLower.includes('daging') || nameLower.includes('sapi') || nameLower.includes('ikan') || nameLower.includes('bebek')) {
+                  yieldFactor = 0.75; // Ayam/daging susut 25% saat dimasak
+                  yieldNotes = '75% (Susut masak 25%)';
+                } else if (nameLower.includes('sawi') || nameLower.includes('bayam') || nameLower.includes('kangkung') || nameLower.includes('sayur') || nameLower.includes('daun')) {
+                  yieldFactor = 0.70; // Sayur disiangi & layu susut 30%
+                  yieldNotes = '70% (Susut layu/siang 30%)';
+                } else if (nameLower.includes('tempe') || nameLower.includes('tahu')) {
+                  yieldFactor = 0.95; // Tahu/tempe susut 5%
+                  yieldNotes = '95% (Susut goreng 5%)';
+                }
+                
+                const totalMentahKg = totalPorsiMatangKg / yieldFactor;
+                
+                return (
+                  <View key={row.id || idx} style={styles.kitchenLogisticsItem}>
+                    <View style={styles.kitchenItemHeader}>
+                      <Text style={styles.kitchenItemName}>
+                        {getFoodIcon(row.icon)} {row.nama}
+                      </Text>
+                      <Text style={styles.kitchenItemYield}>{yieldNotes}</Text>
+                    </View>
+                    <View style={styles.kitchenItemGrid}>
+                      <View style={styles.kitchenItemCol}>
+                        <Text style={styles.kitchenItemLabel}>Porsi Bersih (Matang):</Text>
+                        <Text style={styles.kitchenItemVal}>{(totalPorsiMatangKg).toFixed(2)} kg</Text>
+                      </View>
+                      <View style={styles.kitchenItemCol}>
+                        <Text style={styles.kitchenItemLabel}>Kebutuhan Belanja (Mentah):</Text>
+                        <Text style={[styles.kitchenItemVal, { color: '#C084FC', fontWeight: 'bold' }]}>
+                          {(totalMentahKg).toFixed(2)} kg
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
 
         {/* Progress Bars & Narrative Card */}
         {totals.kalori > 0 && (
@@ -6179,5 +6281,82 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 13,
     fontWeight: '700',
+  },
+  scaleAkgBtn: {
+    backgroundColor: '#8B5CF6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    paddingVertical: 10,
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  scaleAkgBtnText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  kitchenLogisticsCard: {
+    backgroundColor: '#1E293B',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    marginBottom: 16,
+  },
+  kitchenDescText: {
+    color: '#A5ACCC',
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: 12,
+  },
+  kitchenLogisticsList: {
+    marginTop: 8,
+  },
+  kitchenLogisticsItem: {
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)',
+  },
+  kitchenItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+    paddingBottom: 6,
+  },
+  kitchenItemName: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  kitchenItemYield: {
+    color: '#F472B6',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  kitchenItemGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  kitchenItemCol: {
+    flex: 1,
+  },
+  kitchenItemLabel: {
+    color: '#94A3B8',
+    fontSize: 11,
+    marginBottom: 2,
+  },
+  kitchenItemVal: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
