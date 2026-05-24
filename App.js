@@ -727,6 +727,9 @@ export default function App() {
   const [qcNotes, setQcNotes] = useState('');
   const [qcStatus, setQcStatus] = useState('layak');
 
+  const [aiRecLoading, setAiRecLoading] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState('');
+
   // TKPI Modal & Search state
   const [showTkpiModal, setShowTkpiModal] = useState(false);
   const [tkpiSearchQuery, setTkpiSearchQuery] = useState('');
@@ -779,6 +782,7 @@ export default function App() {
           if (parsed.qcTesterName !== undefined) setQcTesterName(parsed.qcTesterName);
           if (parsed.qcNotes !== undefined) setQcNotes(parsed.qcNotes);
           if (parsed.qcStatus !== undefined) setQcStatus(parsed.qcStatus);
+          if (parsed.aiRecommendations !== undefined) setAiRecommendations(parsed.aiRecommendations);
           
           // Load Gizsee Calculator cache
           if (parsed.calculatorRows) setCalculatorRows(parsed.calculatorRows);
@@ -800,7 +804,7 @@ export default function App() {
           usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, deletedMenuIds, menuPrices, customRecipeDetails,
           recipeDetails, ingredientPrices, categoriesList,
           qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus,
-          calculatorRows, calculatorHistory, calcTargetUsia
+          calculatorRows, calculatorHistory, calcTargetUsia, aiRecommendations
         };
         await AsyncStorage.setItem('sppg_planner_cache', JSON.stringify(cacheObj));
       } catch (e) {
@@ -811,7 +815,7 @@ export default function App() {
   }, [usia, jmlSiswa, spareMode, spareVal, budget, overhead, selected, customMenus, deletedMenuIds, menuPrices, customRecipeDetails,
       recipeDetails, ingredientPrices, categoriesList,
       qcRasa, qcAroma, qcTekstur, qcPenampilan, qcHigienitas, qcSuhu, qcWaktu, qcTesterName, qcNotes, qcStatus,
-      calculatorRows, calculatorHistory, calcTargetUsia]);
+      calculatorRows, calculatorHistory, calcTargetUsia, aiRecommendations]);
 
   // ═══════════════════════════════════════
   //  MATHEMATICAL CALCULATIONS
@@ -2209,9 +2213,122 @@ export default function App() {
     );
   };
 
-  const renderTab3 = () => (
-    <ScrollView style={styles.tabContent}>
-      {/* Alert Budget */}
+  const getConsolidatedSummaryText = () => {
+    const ageAkg = AKG_DATA[usia] || AKG_DATA['sd_besar'];
+    const calPct = Math.round(totKal / ageAkg.kal * 100);
+    const protPct = Math.round(totProt / ageAkg.protein * 100);
+    const selectedCategories = selectedItems.map(it => it.kat);
+    
+    const parts = [];
+    
+    // 1. Kelengkapan Piring
+    const missing = [];
+    if (!selectedCategories.includes('karbo')) missing.push('Karbohidrat');
+    if (!selectedCategories.includes('protein')) missing.push('Lauk Pauk (Protein)');
+    if (!selectedCategories.includes('sayur')) missing.push('Sayuran');
+    if (!selectedCategories.includes('buah')) missing.push('Buah');
+    
+    if (missing.length > 0) {
+      parts.push(`Kombinasi hidangan piring MBG belum lengkap karena belum menyertakan unsur ${missing.join(', ')} sesuai standar regulasi BGN.`);
+    } else {
+      parts.push("Kombinasi hidangan sudah lengkap memenuhi unsur piring gizi seimbang (Karbohidrat, Lauk Pauk Protein, Sayur, dan Buah).");
+    }
+
+    // 2. Energi & Protein
+    let giziStatus = '';
+    if (calPct >= 90 && calPct <= 110 && protPct >= 90 && protPct <= 110) {
+      giziStatus = `Kandungan zat gizi makro sangat ideal dengan Energi memenuhi ${calPct}% target dan Protein memenuhi ${protPct}% target kecukupan harian.`;
+    } else {
+      giziStatus = `Asupan energi saat ini memenuhi ${calPct}% target (${calPct < 90 ? 'defisit' : calPct > 110 ? 'surplus' : 'optimal'}) dan protein memenuhi ${protPct}% target (${protPct < 90 ? 'defisit' : protPct > 110 ? 'surplus' : 'optimal'}).`;
+    }
+    parts.push(giziStatus);
+
+    // 3. Budget
+    if (isBudgetOk) {
+      parts.push(`Biaya bahan baku masuk anggaran dengan sisa dana sebesar Rp ${Math.round(diffBB).toLocaleString('id')}/porsi.`);
+    } else {
+      parts.push(`Belanja bahan baku over budget sebesar Rp ${Math.abs(Math.round(diffBB)).toLocaleString('id')}/porsi. Disarankan mengganti protein atau buah ke alternatif lokal.`);
+    }
+
+    // 4. Regulasi
+    const dilarangItems = selectedItems.filter(it => it.mbgStatus === 'dilarang');
+    const dibatasiItems = selectedItems.filter(it => it.mbgStatus === 'dibatasi');
+    if (dilarangItems.length > 0) {
+      parts.push(`Perhatian: Terdeteksi bahan makanan dilarang (${dilarangItems.map(x=>x.nama).join(', ')}) yang melanggar juknis MBG.`);
+    } else if (dibatasiItems.length > 0) {
+      parts.push(`Catatan: Menu mengandung bahan yang dibatasi (${dibatasiItems.map(x=>x.nama).join(', ')}).`);
+    } else {
+      parts.push("Seluruh bahan makanan 100% aman dan bersumber segar dari pangan lokal sesuai regulasi.");
+    }
+
+    return parts.join(' ');
+  };
+
+  const renderTab3 = () => {
+    const summaryText = getConsolidatedSummaryText();
+    return (
+      <ScrollView style={styles.tabContent}>
+        {/* Ringkasan Naratif Menyeluruh & Rekomendasi AI */}
+        <View style={[styles.card, { borderColor: '#8B5CF6', borderWidth: 1, backgroundColor: 'rgba(139, 92, 246, 0.03)', padding: 16 }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <MaterialCommunityIcons name="file-document-edit" size={20} color="#A78BFA" />
+            <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '800', marginLeft: 8 }}>
+              Ringkasan Naratif Menyeluruh
+            </Text>
+          </View>
+          
+          <Text style={{ color: '#D1D5DB', fontSize: 12.5, lineHeight: 18, marginBottom: 12 }}>
+            {summaryText}
+          </Text>
+
+          {/* Tombol Rekomendasi AI */}
+          <TouchableOpacity
+            style={{
+              flexDirection: 'row',
+              backgroundColor: '#8B5CF6',
+              borderRadius: 8,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onPress={handleGetAIRecommendations}
+            disabled={aiRecLoading}
+          >
+            {aiRecLoading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <>
+                <MaterialCommunityIcons name="star-face" size={18} color="#FFF" style={{ marginRight: 8 }} />
+                <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '800', letterSpacing: 0.3 }}>
+                  Dapatkan Rekomendasi AI Gizi
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          {/* Hasil Rekomendasi AI */}
+          {aiRecommendations ? (
+            <View style={{ 
+              marginTop: 14, 
+              paddingTop: 14, 
+              borderTopWidth: 1, 
+              borderTopColor: 'rgba(139, 92, 246, 0.2)',
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <MaterialCommunityIcons name="robot" size={18} color="#C084FC" />
+                <Text style={{ color: '#C084FC', fontSize: 13, fontWeight: '800', marginLeft: 6 }}>
+                  Rekomendasi Perbaikan AI Ahli Gizi:
+                </Text>
+              </View>
+              <View style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8, padding: 12 }}>
+                {renderAIResponse(aiRecommendations)}
+              </View>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Alert Budget */}
       <View style={[styles.alertContainer, isBudgetOk ? styles.alertContainerGreen : styles.alertContainerOrange]}>
         <MaterialCommunityIcons 
           name={isBudgetOk ? 'check-circle' : 'alert-circle'} 
@@ -2412,8 +2529,8 @@ export default function App() {
         })}
       </View>
 
-      {/* ANALISIS NARATIF PEMENUHAN GIZI */}
-      <Text style={styles.sectionTitle}>📝 Analisis Naratif Pemenuhan Gizi</Text>
+      {/* INFOGRAFIS PEMENUHAN GIZI */}
+      <Text style={styles.sectionTitle}>📊 Status Pemenuhan Gizi (Infografis)</Text>
       {(() => {
         const selectedCategories = selectedItems.map(it => it.kat);
         const hasKarbo = selectedCategories.includes('karbo');
@@ -2431,48 +2548,14 @@ export default function App() {
         const calPct = Math.round(totKal / ageAkg.kal * 100);
         const protPct = Math.round(totProt / ageAkg.protein * 100);
 
-        let energyStatus = '';
-        let energyAdvice = '';
-        if (calPct < 90) {
-          energyStatus = 'Kurang (Defisit)';
-          energyAdvice = 'Energi porsi MBG berada di bawah 90% target BGN. Tambahkan porsi karbohidrat utama atau tambahkan komponen berminyak sehat.';
-        } else if (calPct > 110) {
-          energyStatus = 'Berlebih (Surplus)';
-          energyAdvice = 'Energi porsi MBG melebihi 110% target BGN. Disarankan mengurangi porsi karbohidrat utama untuk mencegah obesitas.';
-        } else {
-          energyStatus = 'Optimal (Sesuai Standar)';
-          energyAdvice = 'Kandungan energi sudah berada dalam rentang ideal (90% - 110%) sesuai regulasi Badan Gizi Nasional.';
-        }
-
-        let proteinStatus = '';
-        let proteinAdvice = '';
-        if (protPct < 90) {
-          proteinStatus = 'Kurang (Defisit)';
-          proteinAdvice = 'Kadar protein di bawah 90% target. Disarankan menambah lauk hewani atau ganti dengan menu bernutrisi protein tinggi.';
-        } else if (protPct > 110) {
-          proteinStatus = 'Tinggi (Surplus)';
-          proteinAdvice = 'Kadar protein melebihi 110% target. Sangat baik untuk pemulihan dan tumbuh kembang anak.';
-        } else {
-          proteinStatus = 'Optimal (Sesuai Standar)';
-          proteinAdvice = 'Kandungan protein memenuhi target kecukupan gizi harian (90% - 110%) secara seimbang.';
-        }
-
         const fatCalPct = Math.round((totLem * 9) / (totKal || 1) * 100);
-        let fatAdvice = '';
-        if (fatCalPct > 35) {
-          fatAdvice = 'Proporsi lemak cukup tinggi (>35% kalori). Batasi gorengan, gunakan teknik masak kukus/panggang.';
-        } else {
-          fatAdvice = 'Keseimbangan lemak baik, aman untuk penyerapan vitamin larut lemak.';
-        }
-
-        const fiberAdvice = totSerat < 3 
-          ? 'Serat tergolong rendah (<3g). Disarankan menambah sayur berdaun hijau atau memilih buah kaya serat.'
-          : 'Kandungan serat baik untuk kesehatan pencernaan siswa.';
+        const fatPct = Math.round(totLem / ageAkg.lemak * 100);
+        const fiberPct = Math.round(totSerat / 3 * 100);
 
         return (
           <View style={styles.card}>
             {/* Status Gizi Seimbang */}
-            <View style={{ marginBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.08)', paddingBottom: 10 }}>
+            <View style={{ marginBottom: 16, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.08)', paddingBottom: 10 }}>
               <Text style={[styles.label, { marginTop: 0, marginBottom: 4 }]}>Kelengkapan Piring Gizi Seimbang:</Text>
               {missingStandard.length > 0 ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -2491,32 +2574,83 @@ export default function App() {
               )}
             </View>
 
-            {/* Narasi Energi & Protein */}
-            <View style={{ marginBottom: 10 }}>
-              <Text style={{ color: '#A5ACCC', fontSize: 10, fontWeight: '800' }}>⚡ EVALUASI ENERGI ({calPct}%)</Text>
-              <Text style={{ color: calPct < 90 || calPct > 110 ? '#FB923C' : '#4ADE80', fontSize: 12, fontWeight: '700', marginVertical: 2 }}>
-                Status: {energyStatus}
-              </Text>
-              <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15 }}>{energyAdvice}</Text>
-            </View>
+            {/* Infografik Grid */}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 }}>
+              {/* Energi Card */}
+              <View style={{ width: '48%', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <MaterialCommunityIcons name="lightning-bolt" size={16} color="#FACC15" />
+                  <View style={{ backgroundColor: calPct < 90 || calPct > 110 ? 'rgba(251, 146, 60, 0.15)' : 'rgba(74, 222, 128, 0.15)', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '800', color: calPct < 90 || calPct > 110 ? '#FB923C' : '#4ADE80' }}>
+                      {calPct < 90 ? 'DEFISIT' : calPct > 110 ? 'SURPLUS' : 'IDEAL'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ color: '#94A3B8', fontSize: 9, fontWeight: '700' }}>ENERGI</Text>
+                <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '800', marginVertical: 2 }}>{totKal} kkal</Text>
+                <Text style={{ color: '#64748B', fontSize: 8.5 }}>Target: {ageAkg.kal} kkal</Text>
+                <View style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 6, overflow: 'hidden' }}>
+                  <View style={{ height: 4, width: `${Math.min(100, calPct)}%`, backgroundColor: calPct < 90 || calPct > 110 ? '#FB923C' : '#4ADE80', borderRadius: 2 }} />
+                </View>
+                <Text style={{ color: calPct < 90 || calPct > 110 ? '#FB923C' : '#4ADE80', fontSize: 9, fontWeight: '700', marginTop: 4, textAlign: 'right' }}>{calPct}%</Text>
+              </View>
 
-            <View style={{ marginBottom: 10, marginTop: 4 }}>
-              <Text style={{ color: '#A5ACCC', fontSize: 10, fontWeight: '800' }}>🍗 EVALUASI PROTEIN ({protPct}%)</Text>
-              <Text style={{ color: protPct < 90 || protPct > 110 ? '#FB923C' : '#4ADE80', fontSize: 12, fontWeight: '700', marginVertical: 2 }}>
-                Status: {proteinStatus}
-              </Text>
-              <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15 }}>{proteinAdvice}</Text>
-            </View>
+              {/* Protein Card */}
+              <View style={{ width: '48%', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <MaterialCommunityIcons name="food-drumstick" size={16} color="#4ADE80" />
+                  <View style={{ backgroundColor: protPct < 90 || protPct > 110 ? 'rgba(251, 146, 60, 0.15)' : 'rgba(74, 222, 128, 0.15)', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '800', color: protPct < 90 || protPct > 110 ? '#FB923C' : '#4ADE80' }}>
+                      {protPct < 90 ? 'DEFISIT' : protPct > 110 ? 'SURPLUS' : 'IDEAL'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ color: '#94A3B8', fontSize: 9, fontWeight: '700' }}>PROTEIN</Text>
+                <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '800', marginVertical: 2 }}>{totProt.toFixed(1)} g</Text>
+                <Text style={{ color: '#64748B', fontSize: 8.5 }}>Target: {ageAkg.protein} g</Text>
+                <View style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 6, overflow: 'hidden' }}>
+                  <View style={{ height: 4, width: `${Math.min(100, protPct)}%`, backgroundColor: protPct < 90 || protPct > 110 ? '#FB923C' : '#4ADE80', borderRadius: 2 }} />
+                </View>
+                <Text style={{ color: protPct < 90 || protPct > 110 ? '#FB923C' : '#4ADE80', fontSize: 9, fontWeight: '700', marginTop: 4, textAlign: 'right' }}>{protPct}%</Text>
+              </View>
 
-            {/* Keseimbangan Zat Gizi Makro Lainnya */}
-            <View style={{ borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.08)', paddingTop: 10, marginTop: 6 }}>
-              <Text style={{ color: '#A5ACCC', fontSize: 10, fontWeight: '800', marginBottom: 4 }}>💡 REKOMENDASI DIETETIK LAINNYA:</Text>
-              <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15, marginBottom: 4 }}>
-                • <Text style={{ fontWeight: 'bold', color: '#F1F3F9' }}>Lemak:</Text> {fatAdvice}
-              </Text>
-              <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15 }}>
-                • <Text style={{ fontWeight: 'bold', color: '#F1F3F9' }}>Serat:</Text> {fiberAdvice}
-              </Text>
+              {/* Lemak Card */}
+              <View style={{ width: '48%', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <MaterialCommunityIcons name="oil" size={16} color="#FB923C" />
+                  <View style={{ backgroundColor: fatCalPct > 35 ? 'rgba(239, 68, 68, 0.15)' : 'rgba(74, 222, 128, 0.15)', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '800', color: fatCalPct > 35 ? '#EF4444' : '#4ADE80' }}>
+                      {fatCalPct > 35 ? 'TINGGI' : 'AMAN'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ color: '#94A3B8', fontSize: 9, fontWeight: '700' }}>LEMAK</Text>
+                <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '800', marginVertical: 2 }}>{totLem.toFixed(1)} g</Text>
+                <Text style={{ color: '#64748B', fontSize: 8.5 }}>Lemak/Kalori: {fatCalPct}%</Text>
+                <View style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 6, overflow: 'hidden' }}>
+                  <View style={{ height: 4, width: `${Math.min(100, fatPct)}%`, backgroundColor: fatCalPct > 35 ? '#EF4444' : '#4ADE80', borderRadius: 2 }} />
+                </View>
+                <Text style={{ color: fatCalPct > 35 ? '#EF4444' : '#4ADE80', fontSize: 9, fontWeight: '700', marginTop: 4, textAlign: 'right' }}>{fatPct}%</Text>
+              </View>
+
+              {/* Serat Card */}
+              <View style={{ width: '48%', backgroundColor: 'rgba(255, 255, 255, 0.02)', borderRadius: 8, padding: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <MaterialCommunityIcons name="sprout" size={16} color="#10B981" />
+                  <View style={{ backgroundColor: totSerat < 3 ? 'rgba(251, 146, 60, 0.15)' : 'rgba(74, 222, 128, 0.15)', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+                    <Text style={{ fontSize: 9, fontWeight: '800', color: totSerat < 3 ? '#FB923C' : '#4ADE80' }}>
+                      {totSerat < 3 ? 'RENDAH' : 'BAIK'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ color: '#94A3B8', fontSize: 9, fontWeight: '700' }}>SERAT</Text>
+                <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '800', marginVertical: 2 }}>{totSerat.toFixed(1)} g</Text>
+                <Text style={{ color: '#64748B', fontSize: 8.5 }}>Min: 3 g per porsi</Text>
+                <View style={{ height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 6, overflow: 'hidden' }}>
+                  <View style={{ height: 4, width: `${Math.min(100, fiberPct)}%`, backgroundColor: totSerat < 3 ? '#FB923C' : '#4ADE80', borderRadius: 2 }} />
+                </View>
+                <Text style={{ color: totSerat < 3 ? '#FB923C' : '#4ADE80', fontSize: 9, fontWeight: '700', marginTop: 4, textAlign: 'right' }}>{fiberPct}%</Text>
+              </View>
             </View>
           </View>
         );
@@ -2813,6 +2947,7 @@ export default function App() {
       </View>
     </ScrollView>
   );
+};
 
   // ═══════════════════════════════════════
   //  GIZSEE CALCULATOR LOGIC
@@ -2892,6 +3027,149 @@ export default function App() {
 
   const handleDeleteHistoryItem = (id) => {
     setCalculatorHistory(prev => prev.filter(x => x.id !== id));
+  };
+
+  const handleGetAIRecommendations = async () => {
+    setIsAiLoading(true);
+    setAiRecLoading(true);
+    setAiRecommendations('');
+
+    try {
+      const localGeminiApiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+      const targetAkg = AKG_DATA[usia] || AKG_DATA['sd_besar'];
+      
+      const menuDetails = selectedItems.map(item => {
+        return `- ${item.nama} (${item.kat}): Kalori: ${item.kalori} kkal, Protein: ${item.protein}g, Karbo: ${item.karbo}g, Lemak: ${item.lemak}g, Harga: Rp ${item.harga}/porsi, Status BGN: ${item.mbgStatus}`;
+      }).join('\n');
+
+      const systemPrompt = `You are a professional Senior Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG - Makanan Bergizi Gratis) program, working under the guidelines of the National Nutrition Agency (BGN) and Ministry of Health.
+Your task is to analyze the current meal menu plan and provide professional, actionable, and specific recommendations to improve the meal's nutritional balance, budget compliance, allergen safety, and culinary realism.
+
+Guidelines:
+1. Speak in professional yet friendly Indonesian language (casually professional). Use supportive emojis.
+2. Structure your response into clear sections using Markdown:
+   - ### 📊 Analisis Pemenuhan Gizi (Actionable steps to fix energy/protein/fat/fiber deficits or surpluses. Be very specific about grams and targets. Suggest adding or reducing specific food categories).
+   - ### ⚠️ Regulasi & Keamanan Pangan (Comment on compliance: check if there are dilarang/dibatasi items. Highlight allergen warnings e.g. eggs, fish, seafood and suggest alternatives like chicken fillet or tofu/tempe).
+   - ### 💰 Optimasi Biaya (Food Costing) (Provide recommendations on fitting within the budget, e.g. swapping high-cost ingredients with local, budget-friendly alternatives).
+   - ### 🕒 Manajemen Operasional & Dapur (Operational advice, yield factors handling, maximum 3-hour consumption timeline).
+
+Please keep your feedback highly practical, specific, and actionable for a caterer preparing meals for school students.`;
+
+      const userMessage = `Current target profile: ${targetAkg.name}
+Targets:
+- Energi: ${targetAkg.kal} kkal
+- Protein: ${targetAkg.protein} g
+- Karbohidrat: ${targetAkg.karbo} g
+- Lemak: ${targetAkg.lemak} g
+
+Current Actual Totals:
+- Energi: ${totKal} kkal (${Math.round(totKal/targetAkg.kal*100)}%)
+- Protein: ${totProt} g (${Math.round(totProt/targetAkg.protein*100)}%)
+- Karbohidrat: ${totKar} g (${Math.round(totKar/targetAkg.karbo*100)}%)
+- Lemak: ${totLem} g (${Math.round(totLem/targetAkg.lemak*100)}%)
+- Serat: ${totSerat} g
+
+Budget info:
+- Limit Bahan Baku/Porsi: Rp ${budgetBB}
+- Biaya Aktual Bahan Baku/Porsi: Rp ${totBiaya}
+- Status Budget: ${isBudgetOk ? 'AMAN' : 'OVER BUDGET'}
+
+Selected Menu Items:
+${menuDetails || '(Belum ada menu yang dipilih)'}`;
+
+      let responseText = '';
+      let success = false;
+
+      if (localGeminiApiKey && localGeminiApiKey !== 'your_gemini_api_key_here') {
+        try {
+          console.log('Attempting direct Gemini API call for recommendations...');
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${localGeminiApiKey}`;
+          const geminiResponse = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: userMessage
+                }]
+              }],
+              systemInstruction: {
+                parts: [{
+                  text: systemPrompt
+                }]
+              }
+            })
+          });
+
+          if (geminiResponse.ok) {
+            const geminiData = await geminiResponse.json();
+            if (geminiData.candidates && geminiData.candidates[0] && geminiData.candidates[0].content && geminiData.candidates[0].content.parts[0]) {
+              responseText = geminiData.candidates[0].content.parts[0].text.trim();
+              success = true;
+              console.log('Direct Gemini API recommendations call successful!');
+            }
+          } else {
+            const errText = await geminiResponse.text();
+            console.log('Gemini API returned error:', geminiResponse.status, errText);
+          }
+        } catch (geminiErr) {
+          console.log('Direct Gemini API recommendations call failed:', geminiErr);
+        }
+      }
+
+      if (!success) {
+        throw new Error('Gagal mendapatkan rekomendasi dari AI. Pastikan API Key Gemini terpasang dengan benar di .env!');
+      }
+
+      setAiRecommendations(responseText);
+
+    } catch (error) {
+      console.warn('Gagal memproses rekomendasi AI:', error);
+      Alert.alert('Rekomendasi AI Gagal', error.message || 'Terjadi kesalahan saat menghubungi server AI.');
+    } finally {
+      setIsAiLoading(false);
+      setAiRecLoading(false);
+    }
+  };
+
+  const renderAIResponse = (text) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return lines.map((line, idx) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('###')) {
+        return (
+          <Text key={idx} style={{ color: '#FFF', fontSize: 13, fontWeight: '800', marginTop: 12, marginBottom: 6 }}>
+            {trimmed.replace('###', '').trim()}
+          </Text>
+        );
+      } else if (trimmed.startsWith('##')) {
+        return (
+          <Text key={idx} style={{ color: '#FFF', fontSize: 14, fontWeight: '800', marginTop: 14, marginBottom: 8 }}>
+            {trimmed.replace('##', '').trim()}
+          </Text>
+        );
+      } else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+        return (
+          <View key={idx} style={{ flexDirection: 'row', marginLeft: 6, marginVertical: 2, alignItems: 'flex-start' }}>
+            <Text style={{ color: '#A78BFA', marginRight: 6 }}>•</Text>
+            <Text style={{ color: '#D1D5DB', fontSize: 11.5, lineHeight: 16, flex: 1 }}>
+              {trimmed.substring(1).trim()}
+            </Text>
+          </View>
+        );
+      } else if (trimmed === '') {
+        return <View key={idx} style={{ height: 6 }} />;
+      } else {
+        return (
+          <Text key={idx} style={{ color: '#D1D5DB', fontSize: 11.5, lineHeight: 16, marginVertical: 2 }}>
+            {trimmed}
+          </Text>
+        );
+      }
+    });
   };
 
   const handleAIParseInput = async (rawText) => {
