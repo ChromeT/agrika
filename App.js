@@ -605,13 +605,17 @@ const RECIPE_DETAILS = {
   }
 };
 
-// Data AKG Makan Siang (~30% dari Kebutuhan Harian Resmi Kemenkes PMK 28/2019)
+// Data Standar Gizi Porsi Makan MBG Resmi Badan Gizi Nasional (Juknis Final Juni 2025)
 const AKG_DATA = {
-  '7-9': { name: 'SD Kelas 1-3 (7-9 th)', kal: 495, protein: 12.0, karbo: 75.0, lemak: 16.5, serat: 6.9, gender: 'Umum' },
-  '10-12L': { name: 'SD Kelas 4-6 L (10-12 th)', kal: 600, protein: 15.0, karbo: 90.0, lemak: 19.5, serat: 8.4, gender: 'Laki-laki' },
-  '10-12P': { name: 'SD Kelas 4-6 P (10-12 th)', kal: 570, protein: 16.5, karbo: 84.0, lemak: 19.5, serat: 8.1, gender: 'Perempuan' },
-  '13-15L': { name: 'SMP Laki-laki (13-15 th)', kal: 720, protein: 21.0, karbo: 105.0, lemak: 24.0, serat: 10.2, gender: 'Laki-laki' },
-  '13-15P': { name: 'SMP Perempuan (13-15 th)', kal: 615, protein: 19.5, karbo: 90.0, lemak: 21.0, serat: 8.7, gender: 'Perempuan' }
+  'balita': { name: 'Anak Balita', kal: 342, pctAkg: 24.4, protein: 47.6, lemak: 21.6, karbo: 20.6, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
+  'paud': { name: 'Siswa TK/PAUD/RA', kal: 328, pctAkg: 23.4, protein: 25.0, lemak: 23.7, karbo: 20.9, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
+  'sd_kecil': { name: 'Siswa SD/MI (Kelas 1-3)', kal: 368.8, pctAkg: 22.3, protein: 23.1, lemak: 24.1, karbo: 20.1, waktu: 'Makan Pagi', rujukan: '20-25% AKG' },
+  'sd_besar': { name: 'Siswa SD/MI (Kelas 4-6)', kal: 531, pctAkg: 32.2, protein: 33.1, lemak: 30.9, karbo: 31.0, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'smp': { name: 'Siswa SMP/MTs Sederajat', kal: 719, pctAkg: 32.3, protein: 34.8, lemak: 30.7, karbo: 30.8, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'sma': { name: 'Siswa SMA/MA/SMK Sederajat', kal: 762.5, pctAkg: 32.1, protein: 36.4, lemak: 31.0, karbo: 30.4, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'bumil': { name: 'Ibu Hamil', kal: 818, pctAkg: 33.3, protein: 40.4, lemak: 32.1, karbo: 31.9, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'busui': { name: 'Ibu Menyusui', kal: 818, pctAkg: 31.9, protein: 52.9, lemak: 32.2, karbo: 30.8, waktu: 'Makan Siang', rujukan: '30-35% AKG' },
+  'slb': { name: 'Siswa SLB (Menyesuaikan Usia)', kal: 531, pctAkg: 32.2, protein: 33.1, lemak: 30.9, karbo: 31.0, waktu: 'Makan Siang', rujukan: 'Sesuai kelompok usia' }
 };
 
 export default function App() {
@@ -619,7 +623,7 @@ export default function App() {
   
   // Setup Parameters
   const [jmlSiswa, setJmlSiswa] = useState('150');
-  const [usia, setUsia] = useState('10-12L');
+  const [usia, setUsia] = useState('sd_besar');
   const [spareMode, setSpareMode] = useState('fix'); // 'fix' or 'pct'
   const [spareVal, setSpareVal] = useState('15');
   const [budget, setBudget] = useState('10000');
@@ -633,7 +637,7 @@ export default function App() {
   const [calculatorHistory, setCalculatorHistory] = useState([]);
   const [tkpiModalMode, setTkpiModalMode] = useState('custom_menu'); // 'custom_menu' or 'calculator'
   const [activeRowIndexForSearch, setActiveRowIndexForSearch] = useState(null);
-  const [calcTargetUsia, setCalcTargetUsia] = useState('10-12L');
+  const [calcTargetUsia, setCalcTargetUsia] = useState('sd_besar');
 
   // Claude AI States
   const [aiInputText, setAiInputText] = useState('');
@@ -1007,7 +1011,7 @@ export default function App() {
 
   const totalBB = totBiaya * totalPorsi;
 
-  const activeAkg = AKG_DATA[usia] || AKG_DATA['10-12L'];
+  const activeAkg = AKG_DATA[usia] || AKG_DATA['sd_besar'];
   const diffBB = budgetBB - totBiaya;
   const isBudgetOk = diffBB >= 0;
 
@@ -1392,7 +1396,7 @@ export default function App() {
       const activeStyle = key === usia ? 'background:#e8f5e9;font-weight:bold;' : '';
       return `
         <tr style="${activeStyle}">
-          <td style="border:1px solid #333;padding:6px 8px;"><strong>${g.name}</strong><br><small>Gender: ${g.gender}</small></td>
+          <td style="border:1px solid #333;padding:6px 8px;"><strong>${g.name}</strong><br><small>Waktu: ${g.waktu} | Rujukan: ${g.rujukan}</small></td>
           <td style="border:1px solid #333;padding:6px 8px;text-align:center;">${totKal} / ${g.kal} kkal (${calP}%)</td>
           <td style="border:1px solid #333;padding:6px 8px;text-align:center;">${totProt.toFixed(1)} / ${g.protein.toFixed(1)}g (${protP}%)</td>
         </tr>
@@ -1532,7 +1536,14 @@ export default function App() {
             <TouchableOpacity
               key={key}
               style={[styles.pickerBtn, usia === key && styles.pickerBtnActive]}
-              onPress={() => setUsia(key)}
+              onPress={() => {
+                setUsia(key);
+                if (AKG_DATA[key].waktu === 'Makan Pagi') {
+                  setJamMakanSiang('07:30');
+                } else {
+                  setJamMakanSiang('11:30');
+                }
+              }}
             >
               <Text style={[styles.pickerBtnText, usia === key && styles.pickerBtnTextActive]}>
                 {AKG_DATA[key].name}
@@ -1541,7 +1552,7 @@ export default function App() {
           ))}
         </View>
         <Text style={styles.hint}>
-          Target Makan Siang: {activeAkg.kal} kkal, P: {activeAkg.protein.toFixed(1)}g, K: {activeAkg.karbo.toFixed(1)}g, L: {activeAkg.lemak.toFixed(1)}g
+          Target {activeAkg.waktu}: {activeAkg.kal} kkal, P: {activeAkg.protein.toFixed(1)}g, K: {activeAkg.karbo.toFixed(1)}g, L: {activeAkg.lemak.toFixed(1)}g
         </Text>
       </View>
 
@@ -2229,10 +2240,10 @@ export default function App() {
       </View>
 
       {/* DIAGRAM AKG KOMPARATIF SD & SMP (FITUR UTAMA) */}
-      <Text style={styles.sectionTitle}>📈 Matriks AKG Lintas Kelas (SD &amp; SMP)</Text>
+      <Text style={styles.sectionTitle}>📈 Matriks AKG Lintas Sasaran (BGN Juknis 2025)</Text>
       <View style={styles.card}>
         <Text style={styles.hintText}>
-          Tingkat kecukupan makan siang (Energi &amp; Protein) menu terpilih untuk seluruh jenjang umur:
+          Tingkat kecukupan konsumsi gizi (Energi &amp; Protein) menu terpilih untuk seluruh kelompok sasaran:
         </Text>
         
         {Object.keys(AKG_DATA).map(key => {
@@ -2243,10 +2254,10 @@ export default function App() {
 
           let statusText = 'Sesuai';
           let statusColor = '#4ADE80';
-          if (calPct < 85 || protPct < 85) {
+          if (calPct < 90 || protPct < 90) {
             statusText = 'Kurang';
             statusColor = '#F87171';
-          } else if (calPct > 120 || protPct > 120) {
+          } else if (calPct > 110 || protPct > 110) {
             statusText = 'Lebih';
             statusColor = '#60A5FA';
           }
@@ -2304,34 +2315,34 @@ export default function App() {
         if (!hasSayur) missingStandard.push('Sayuran');
         if (!hasBuah) missingStandard.push('Buah');
 
-        const ageAkg = AKG_DATA[usia] || AKG_DATA['10-12L'];
+        const ageAkg = AKG_DATA[usia] || AKG_DATA['sd_besar'];
         const calPct = Math.round(totKal / ageAkg.kal * 100);
         const protPct = Math.round(totProt / ageAkg.protein * 100);
 
         let energyStatus = '';
         let energyAdvice = '';
-        if (calPct < 85) {
+        if (calPct < 90) {
           energyStatus = 'Kurang (Defisit)';
-          energyAdvice = 'Energi makan siang berada di bawah 85% target BGN. Tambahkan porsi karbohidrat utama atau tambahkan komponen berminyak sehat.';
-        } else if (calPct > 120) {
+          energyAdvice = 'Energi porsi MBG berada di bawah 90% target BGN. Tambahkan porsi karbohidrat utama atau tambahkan komponen berminyak sehat.';
+        } else if (calPct > 110) {
           energyStatus = 'Berlebih (Surplus)';
-          energyAdvice = 'Energi makan siang melebihi 120% target BGN. Disarankan mengurangi porsi karbohidrat utama untuk mencegah obesitas.';
+          energyAdvice = 'Energi porsi MBG melebihi 110% target BGN. Disarankan mengurangi porsi karbohidrat utama untuk mencegah obesitas.';
         } else {
           energyStatus = 'Optimal (Sesuai Standar)';
-          energyAdvice = 'Kandungan energi sudah berada dalam rentang ideal (85% - 120%) sesuai regulasi Badan Gizi Nasional.';
+          energyAdvice = 'Kandungan energi sudah berada dalam rentang ideal (90% - 110%) sesuai regulasi Badan Gizi Nasional.';
         }
 
         let proteinStatus = '';
         let proteinAdvice = '';
-        if (protPct < 85) {
+        if (protPct < 90) {
           proteinStatus = 'Kurang (Defisit)';
-          proteinAdvice = 'Kadar protein di bawah 85% target. Disarankan menambah lauk hewani atau ganti dengan menu bernutrisi protein tinggi.';
-        } else if (protPct > 120) {
+          proteinAdvice = 'Kadar protein di bawah 90% target. Disarankan menambah lauk hewani atau ganti dengan menu bernutrisi protein tinggi.';
+        } else if (protPct > 110) {
           proteinStatus = 'Tinggi (Surplus)';
-          proteinAdvice = 'Kadar protein melebihi 120% target. Sangat baik untuk pemulihan dan tumbuh kembang anak.';
+          proteinAdvice = 'Kadar protein melebihi 110% target. Sangat baik untuk pemulihan dan tumbuh kembang anak.';
         } else {
           proteinStatus = 'Optimal (Sesuai Standar)';
-          proteinAdvice = 'Kandungan protein memenuhi target kecukupan gizi harian (85% - 120%) secara seimbang.';
+          proteinAdvice = 'Kandungan protein memenuhi target kecukupan gizi harian (90% - 110%) secara seimbang.';
         }
 
         const fatCalPct = Math.round((totLem * 9) / (totKal || 1) * 100);
@@ -2371,7 +2382,7 @@ export default function App() {
             {/* Narasi Energi & Protein */}
             <View style={{ marginBottom: 10 }}>
               <Text style={{ color: '#A5ACCC', fontSize: 10, fontWeight: '800' }}>⚡ EVALUASI ENERGI ({calPct}%)</Text>
-              <Text style={{ color: calPct < 85 || calPct > 120 ? '#FB923C' : '#4ADE80', fontSize: 12, fontWeight: '700', marginVertical: 2 }}>
+              <Text style={{ color: calPct < 90 || calPct > 110 ? '#FB923C' : '#4ADE80', fontSize: 12, fontWeight: '700', marginVertical: 2 }}>
                 Status: {energyStatus}
               </Text>
               <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15 }}>{energyAdvice}</Text>
@@ -2379,7 +2390,7 @@ export default function App() {
 
             <View style={{ marginBottom: 10, marginTop: 4 }}>
               <Text style={{ color: '#A5ACCC', fontSize: 10, fontWeight: '800' }}>🍗 EVALUASI PROTEIN ({protPct}%)</Text>
-              <Text style={{ color: protPct < 85 || protPct > 120 ? '#FB923C' : '#4ADE80', fontSize: 12, fontWeight: '700', marginVertical: 2 }}>
+              <Text style={{ color: protPct < 90 || protPct > 110 ? '#FB923C' : '#4ADE80', fontSize: 12, fontWeight: '700', marginVertical: 2 }}>
                 Status: {proteinStatus}
               </Text>
               <Text style={{ color: '#8892B0', fontSize: 11.5, lineHeight: 15 }}>{proteinAdvice}</Text>
@@ -2450,7 +2461,7 @@ export default function App() {
             <Text style={styles.sectionTitle}>🕒 TIMELINE OPERASIONAL DAPUR & DISTRIBUSI (BGN)</Text>
             <View style={[styles.card, { padding: 15, marginBottom: 15 }]}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <Text style={{ color: '#F1F3F9', fontSize: 12.5, fontWeight: '700' }}>Jam Target Makan Siang Siswa:</Text>
+                <Text style={{ color: '#F1F3F9', fontSize: 12.5, fontWeight: '700' }}>Jam Target {activeAkg.waktu} Siswa:</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#1E293B', borderRadius: 6, borderWidth: 1, borderColor: '#334155', paddingHorizontal: 8, paddingVertical: 4 }}>
                   <TextInput
                     style={{ color: '#FFF', width: 50, fontSize: 13, fontWeight: 'bold', textAlign: 'center', padding: 0 }}
@@ -2508,7 +2519,7 @@ export default function App() {
                         <MaterialCommunityIcons name="emoticon-happy-outline" size={16} color="#4ADE80" />
                       </View>
                       <View style={{ marginLeft: 12, flex: 1 }}>
-                        <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>Konsumsi Makan Siang Siswa</Text>
+                        <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>Konsumsi {activeAkg.waktu} Siswa</Text>
                         <Text style={{ color: '#A5ACCC', fontSize: 11 }}>Jam {times.makanSiang} WIB (Target konsumsi utama)</Text>
                       </View>
                     </View>
@@ -2819,15 +2830,41 @@ export default function App() {
         }
 
         const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
-Your job is to analyze the user's recipe query (which could be in casual Indonesian, questions, or specific menu requests, e.g. "sawi gulung isi tahu seperti di tiktok : 54g" or "kalau sawi gulung telur seberat 54 gram?").
+Your job is to analyze the user's query, which can be:
+A) A single recipe query (e.g. "sawi gulung isi tahu seperti di tiktok : 54g" or "kalau sawi gulung telur seberat 54 gram?")
+B) A list of multiple food items with their respective weights (e.g. "Nasi putih 134 gr\n Ayam woku kemangi 77 gr\n Perkedel tahu 36 gr\n Sawi isi tahu 41 gr\n Anggur 48 gr")
 
-Tasks:
-1. Extract the actual menu name and the total weight (in grams) from the user's query. If no weight is mentioned, assume a standard portion of 100 grams.
-2. Determine the typical raw ingredient breakdown for this menu.
-3. Calculate the weight of each ingredient based on standard culinary proportions (ratios summing up exactly to 1.0).
-4. Suggest the best search keywords for each ingredient to match the local Kemenkes TKPI database.
-5. Provide a brief, friendly explanation in casual youth Indonesian with emojis.
+Tasks for Case A (Single Recipe):
+1. Extract the actual menu name and the total weight (in grams). If no weight is mentioned, assume 100 grams.
+2. Determine typical raw ingredient proportions (ratios summing up exactly to 1.0).
+3. Calculate the weight ("berat") in grams for each ingredient based on the proportions (e.g. totalWeight * ratio).
+4. Suggest the best search keywords for each ingredient to query the Kemenkes TKPI database.
 
+Tasks for Case B (List of Multiple Items):
+1. Parse all items and their individual input weights.
+2. Sum all the individual weights to compute the "totalWeight".
+3. For compound recipe items (e.g. "Ayam woku", "Sawi isi tahu", "Perkedel tahu", "Telur semur bali", "Tempe goreng"), break them down into their 2-3 PRIMARY ingredients only using realistic culinary ratios.
+   - For example, a fried item like "Tempe goreng : 25 gr" should be broken down into Tempe (~75-80% of weight, i.e. 18.8g) and Minyak kelapa sawit (~20-25% of weight, i.e. 6.2g).
+   - A wet/boiled dish like "Telur semur bali : 75 gr" should be broken down into Telur ayam (~80-95% of weight, i.e. 60-70g) and Minyak kelapa sawit / bumbu (~5-20% of weight, e.g. 5-15g).
+   - A vegetable mix like "Tumis labu siam jagung putren : 34 gr" should be broken down into Labu siam (~50% of weight, i.e. 17g) and Jagung muda (~40% of weight, i.e. 13.6g) and Minyak (~10% of weight, i.e. 3.4g). Keep the sum of broken-down weights exactly equal to the item's input weight!
+4. For simple items (e.g. "Nasi putih", "Anggur", "Salak"), DO NOT break them down. Keep them as a single ingredient and keep their weight exactly as input (e.g. "Salak : 76 gr" must have weight exactly 76g, not 76.2g!).
+5. For each ingredient row in the output, calculate:
+   - "berat": the exact absolute weight in grams (e.g. 158 for Nasi putih 158g, 76 for Salak 76g).
+   - "ratio": the ratio relative to the grand totalWeight (ratio = berat / totalWeight).
+6. Ensure that the sum of "berat" of all ingredients in the list equals "totalWeight" exactly, and the sum of "ratio" equals 1.0 exactly.
+
+Strict Rules for Ingredients:
+- ONLY output the primary, macro-contributing ingredients (e.g. meat, main vegetable, main carb source, cooking oil).
+- DO NOT list optional binders, spices, condiments (like shallots, garlic, chili, salt), or side ingredients as separate rows.
+- Use standard, clean search keywords that exist in typical food databases:
+  - "Nasi" or "Nasi putih" -> "nasi putih"
+  - "Jagung putren" / "Jagung muda" -> "jagung muda, segar"
+  - "Telur" -> "telur ayam ras, segar"
+  - "Salak" -> "salak, segar"
+  - "Tempe" -> "tempe pasar"
+- Ensure keywords are clean and simple without unnecessary extra adjectives.
+
+Provide a friendly explanation in casual youth Indonesian with emojis.
 Respond ONLY with a valid JSON object. Do not include any explanations outside of the JSON. Do not include markdown code block formatting.
 
 Example Output format:
@@ -2838,11 +2875,13 @@ Example Output format:
   "ingredients": [
     {
       "nama": "Sawi putih",
+      "berat": 35.1,
       "ratio": 0.65,
       "searchKeyword": "sawi putih"
     },
     {
       "nama": "Tahu putih",
+      "berat": 18.9,
       "ratio": 0.35,
       "searchKeyword": "tahu"
     }
@@ -2888,140 +2927,103 @@ Example Output format:
       }
       
       ingredients.forEach((ing, index) => {
-        const targetWeight = totalWeight * (ing.ratio || 0);
-        const cleanKeyword = ing.searchKeyword.toLowerCase().trim();
+        const targetWeight = ing.berat !== undefined ? parseFloat(ing.berat) : totalWeight * (ing.ratio || 0);
+        const rawKeyword = (ing.searchKeyword || ing.nama || '').trim();
+        const cleanKeyword = rawKeyword.toLowerCase();
         
-        // Find best match in local TKPI database
-        let found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanKeyword);
+        // ═══════════════════════════════════════
+        // TIERED TKPI MATCHING (Most Accurate First)
+        // ═══════════════════════════════════════
+        let found = null;
+        
+        // Tier 1: EXACT full name match (case-insensitive) — AI now sends exact TKPI names
+        found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanKeyword);
+        
+        // Tier 2: EXACT match ignoring parenthetical English names
         if (!found) {
-          // Use advanced keyword matching with ranking score directly for partial matches
-          const words = cleanKeyword.split(/\s+/).filter(w => w.length > 1);
+          found = TKPI_DATABASE.find(x => {
+            const nameBase = x.nama.toLowerCase().replace(/\s*\(.*\)\s*$/, '').trim();
+            return nameBase === cleanKeyword;
+          });
+        }
+        
+        // Tier 3: startsWith match — keyword is a prefix of a TKPI entry
+        if (!found) {
+          const startsWithMatches = TKPI_DATABASE.filter(x => 
+            x.nama.toLowerCase().startsWith(cleanKeyword)
+          );
+          if (startsWithMatches.length > 0) {
+            startsWithMatches.sort((a, b) => a.nama.length - b.nama.length);
+            found = startsWithMatches[0];
+          }
+        }
+        
+        // Tier 4: TKPI entry name starts with keyword (without commas)
+        if (!found) {
+          const keyBase = cleanKeyword.split(',')[0].trim();
+          const candidates = TKPI_DATABASE.filter(x => {
+            const nLow = x.nama.toLowerCase();
+            return nLow.startsWith(keyBase + ',') || nLow.startsWith(keyBase + ' ');
+          });
+          if (candidates.length > 0) {
+            const preferRaw = candidates.find(x => x.nama.toLowerCase().includes('mentah'));
+            const preferFresh = candidates.find(x => x.nama.toLowerCase().includes('segar'));
+            found = preferRaw || preferFresh || candidates[0];
+          }
+        }
+        
+        // Tier 5: Fuzzy word-based scoring (last resort)
+        if (!found) {
+          const words = cleanKeyword.split(/[\s,/()]+/).filter(w => w.length > 1);
           if (words.length > 0) {
             let bestMatch = null;
             let maxScore = -9999;
             const genericTerms = ['daging', 'mentah', 'segar', 'matang', 'rebus', 'kukus', 'goreng', 'kering', 'bubuk', 'daun', 'biji', 'buah', 'tepung', 'minyak', 'air', 'muda', 'tua', 'putih', 'merah', 'kuning', 'hijau'];
-            const processingTerms = ['goreng', 'rebus', 'kukus', 'kering', 'bakar', 'panggang', 'asin', 'olahan', 'awetan'];
+            const processingTerms = ['goreng', 'rebus', 'kukus', 'kering', 'bakar', 'panggang', 'asin'];
             
             for (const x of TKPI_DATABASE) {
               const nameLower = x.nama.toLowerCase();
               const nameLowerClean = nameLower.replace(/\(.*\)/g, '').trim();
-              const nameWords = nameLowerClean.split(/[\s,()\/]+/).filter(w => w.length > 1);
+              const nameWords = nameLowerClean.split(/[\s,/()]+/).filter(w => w.length > 1);
               let score = 0;
               
               words.forEach((word, idx) => {
                 if (nameLowerClean.includes(word)) {
                   const isStart = nameLowerClean.startsWith(word) || nameLowerClean.split('/').some(part => part.trim().startsWith(word));
-                  if (idx === 0 && isStart && !genericTerms.includes(word)) {
-                    score += 15; // Noun startsWith synonym match (e.g. singkong, tahu)
-                  } else if (idx === 0 && !genericTerms.includes(word)) {
-                    score += 8;  // Noun includes match
-                  } else if (genericTerms.includes(word)) {
-                    score += 1;  // Generic term (daging, minyak, etc.)
-                  } else {
-                    score += 5;  // Other specific terms
-                  }
+                  if (idx === 0 && isStart && !genericTerms.includes(word)) score += 15;
+                  else if (idx === 0 && !genericTerms.includes(word)) score += 8;
+                  else if (genericTerms.includes(word)) score += 1;
+                  else score += 5;
                 }
               });
               
-              // Penalty for extra words in DB name not present in search keyword
               nameWords.forEach(w => {
-                if (!words.includes(w)) {
-                  if (genericTerms.includes(w)) {
-                    score -= 1.5; // Penalty for extra generic terms (e.g. minyak, segar)
-                  } else {
-                    score -= 4.0; // Penalty for extra specific terms
-                  }
-                }
+                if (!words.includes(w)) score -= (genericTerms.includes(w) ? 1.5 : 4.0);
               });
               
-              // Penalty for extra processing terms (e.g. goreng, rebus) if not requested
               processingTerms.forEach(term => {
-                if (nameLowerClean.includes(term) && !cleanKeyword.includes(term)) {
-                  score -= 3;
-                }
+                if (nameLowerClean.includes(term) && !cleanKeyword.includes(term)) score -= 3;
               });
               
-              // Heavy penalty for leaf ('daun') crops if not specifically looking for a leaf
-              if (nameLowerClean.startsWith('daun') && !cleanKeyword.startsWith('daun')) {
-                score -= 10;
-              }
+              if (nameLowerClean.startsWith('daun') && !cleanKeyword.startsWith('daun')) score -= 10;
 
-              const cleanKeywordLower = cleanKeyword.toLowerCase();
-
-              // Eggs: Penalize duck, quail, turtle, maleo, salted eggs if looking for generic eggs
-              if (cleanKeywordLower.includes('telur') && 
-                  !cleanKeywordLower.includes('bebek') && 
-                  !cleanKeywordLower.includes('puyuh') && 
-                  !cleanKeywordLower.includes('penyu') && 
-                  !cleanKeywordLower.includes('maleo') &&
-                  !cleanKeywordLower.includes('asin')) {
-                if (nameLowerClean.includes('bebek') || 
-                    nameLowerClean.includes('puyuh') || 
-                    nameLowerClean.includes('penyu') || 
-                    nameLowerClean.includes('maleo') ||
-                    nameLowerClean.includes('asin')) {
-                  score -= 20;
-                }
-              }
-
-              // Milk: Penalize camel, horse, soy, buffalo milk if looking for generic milk
-              if (cleanKeywordLower.includes('susu') && 
-                  !cleanKeywordLower.includes('kambing') && 
-                  !cleanKeywordLower.includes('kuda') && 
-                  !cleanKeywordLower.includes('kedelai') && 
-                  !cleanKeywordLower.includes('kerbau')) {
-                if (nameLowerClean.includes('kambing') || 
-                    nameLowerClean.includes('kuda') || 
-                    nameLowerClean.includes('kerbau') ||
-                    nameLowerClean.includes('kedelai')) {
-                  score -= 20;
-                }
-              }
-
-              // Meat (Daging / Ayam / Sapi / Kambing)
-              const meatKeywords = ['daging', 'ayam', 'sapi', 'kambing'];
-              const hasMeatKeyword = meatKeywords.some(kw => cleanKeywordLower.includes(kw));
-
-              if (hasMeatKeyword) {
-                // Penalize offal/organs if not explicitly requested
-                const offalTerms = ['ampela', 'hati', 'usus', 'jantung', 'paru', 'babat', 'otak', 'limpa', 'dideh', 'darah', 'tetelan', 'lemak'];
-                const requestedOffal = offalTerms.some(term => cleanKeywordLower.includes(term));
-                if (!requestedOffal) {
-                  if (offalTerms.some(term => nameLowerClean.includes(term))) {
-                    score -= 20;
-                  }
-                }
-
-                // Penalize obscure wildlife or less common meats if looking for generic meat
-                const obscureMeats = ['kuda', 'rusa', 'kelinci', 'penyu', 'anjing', 'ular', 'biawak', 'celeng', 'hutan', 'bebek', 'maleo'];
-                const requestedObscure = obscureMeats.some(term => cleanKeywordLower.includes(term));
-                if (!requestedObscure) {
-                  if (obscureMeats.some(term => nameLowerClean.includes(term))) {
-                    score -= 20;
-                  }
-                }
+              const exoticPenaltyTerms = ['penyu', 'maleo', 'bebek', 'kuda', 'rusa', 'kelinci', 'ular', 'biawak', 'celeng'];
+              if (!exoticPenaltyTerms.some(t => cleanKeyword.includes(t))) {
+                if (exoticPenaltyTerms.some(t => nameLowerClean.includes(t))) score -= 20;
               }
               
-              // Extra points if the exact cleanKeyword is present in full
-              if (nameLowerClean.includes(cleanKeyword)) {
-                score += 15;
+              const offalTerms = ['ampela', 'hati', 'usus', 'jantung', 'paru', 'babat', 'otak', 'limpa', 'dideh', 'darah'];
+              if (!offalTerms.some(t => cleanKeyword.includes(t))) {
+                if (offalTerms.some(t => nameLowerClean.includes(t))) score -= 20;
               }
               
-              // Tie-breaker: prefer shorter names closer to search query length
-              if (score > 0) {
-                const lengthDiff = Math.abs(nameLowerClean.length - cleanKeyword.length);
-                score += (100 - lengthDiff) * 0.01;
-              }
+              if (nameLowerClean.includes(cleanKeyword)) score += 15;
+              if (score > 0) score += (100 - Math.abs(nameLowerClean.length - cleanKeyword.length)) * 0.01;
               
-              if (score > maxScore) {
-                maxScore = score;
-                bestMatch = x;
-              }
+              if (score > maxScore) { maxScore = score; bestMatch = x; }
             }
             
-            if (maxScore > 2) {
-              found = bestMatch;
-            }
+            if (maxScore > 2) found = bestMatch;
           }
         }
         
@@ -3033,11 +3035,12 @@ Example Output format:
           };
         }
         
+        const beratDisplay = Number.isInteger(targetWeight) ? String(targetWeight) : String(parseFloat(targetWeight.toFixed(1)));
         const factor = targetWeight / 100;
         matchedRows.push({
           id: `ai-${Date.now()}-${index}`,
           nama: found.nama,
-          berat: String(targetWeight.toFixed(1)),
+          berat: beratDisplay,
           kalori: Math.round((found.kalori || 0) * factor),
           protein: parseFloat(((found.protein || 0) * factor).toFixed(1)),
           karbo: parseFloat(((found.karbo || 0) * factor).toFixed(1)),
@@ -3091,7 +3094,7 @@ Example Output format:
       Alert.alert('Info', 'Tambahkan bahan makanan terlebih dahulu dengan berat > 0.');
       return;
     }
-    const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['10-12L'];
+    const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['sd_besar'];
     const targetKal = targetAkg.kal || targetAkg.kalori || 600;
     const targetProt = targetAkg.protein || 15;
 
@@ -3236,7 +3239,7 @@ Example Output format:
     if (pctKal < 90 || pctProt < 90) {
       verdict = 'Kurang Memenuhi Standar';
       color = '#FB923C'; // Orange
-    } else if (pctKal > 115 || pctProt > 120) {
+    } else if (pctKal > 110 || pctProt > 110) {
       verdict = 'Gizi Berlebih';
       color = '#F87171'; // Red
     }
@@ -3246,15 +3249,17 @@ Example Output format:
     // 1. Kalori
     if (pctKal < 90) {
       parts.push(`• Kecukupan Energi: Terpenuhi ${Math.round(pctKal)}% (${kalori} kkal dari target ${targetKal} kkal). Kandungan energi masih kurang. Pertimbangkan menambah porsi bahan pokok (Karbohidrat) seperti Nasi, Kentang, atau Jagung.`);
-    } else if (pctKal > 115) {
-      parts.push(`• Kecukupan Energi: Terpenuhi ${Math.round(pctKal)}% (${kalori} kkal dari target ${targetKal} kkal). Kandungan energi melebihi batas anjuran. Sebaiknya kurangi porsi karbohidrat atau batasi penggunaan minyak/mentega.`);
+    } else if (pctKal > 110) {
+      parts.push(`• Kecukupan Energi: Terpenuhi ${Math.round(pctKal)}% (${kalori} kkal dari target ${targetKal} kkal). Kandungan energi melebihi batas anjuran BGN (maksimal 110%). Sebaiknya kurangi porsi karbohidrat atau batasi penggunaan minyak/mentega.`);
     } else {
-      parts.push(`• Kecukupan Energi: Terpenuhi ${Math.round(pctKal)}% (${kalori} kkal dari target ${targetKal} kkal). Kandungan kalori sudah ideal dan aman untuk porsi makan siang.`);
+      parts.push(`• Kecukupan Energi: Terpenuhi ${Math.round(pctKal)}% (${kalori} kkal dari target ${targetKal} kkal). Kandungan kalori sudah ideal dan aman sesuai regulasi BGN.`);
     }
 
     // 2. Protein
     if (pctProt < 90) {
-      parts.push(`• Kecukupan Protein: Terpenuhi ${Math.round(pctProt)}% (${protein}g dari target ${targetProt}g). Protein masih di bawah standar minimal BGN. Sangat disarankan menambah porsi lauk hewani (misal: ayam, ikan segar, telur) atau lauk nabati (tempe/tahu murni).`);
+      parts.push(`• Kecukupan Protein: Terpenuhi ${Math.round(pctProt)}% (${protein}g dari target ${targetProt}g). Protein masih di bawah standar minimal BGN (90%). Sangat disarankan menambah porsi lauk hewani (misal: ayam, ikan segar, telur) atau lauk nabati (tempe/tahu murni).`);
+    } else if (pctProt > 110) {
+      parts.push(`• Kecukupan Protein: Terpenuhi ${Math.round(pctProt)}% (${protein}g dari target ${targetProt}g). Asupan protein melebihi batas anjuran BGN (maksimal 110%). Sebaiknya sesuaikan porsi protein.`);
     } else {
       parts.push(`• Kecukupan Protein: Terpenuhi ${Math.round(pctProt)}% (${protein}g dari target ${targetProt}g). Asupan protein sudah sangat mencukupi standar pertumbuhan anak sekolah.`);
     }
@@ -3323,7 +3328,7 @@ Example Output format:
       serat: parseFloat(totSer.toFixed(1))
     };
 
-    const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['10-12L'];
+    const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['sd_besar'];
     const narrativeResult = generateNutritionNarrative(totals, targetAkg);
 
     // Compute checklist variables for visualization diagram
@@ -3714,23 +3719,23 @@ Example Output format:
 
                 <View style={styles.checklistItem}>
                   <MaterialCommunityIcons 
-                    name={pctKal >= 90 && pctKal <= 115 ? "check-circle" : "alert-circle"} 
+                    name={pctKal >= 90 && pctKal <= 110 ? "check-circle" : "alert-circle"} 
                     size={20} 
-                    color={pctKal >= 90 && pctKal <= 115 ? "#4ADE80" : "#FB923C"} 
+                    color={pctKal >= 90 && pctKal <= 110 ? "#4ADE80" : "#FB923C"} 
                   />
-                  <Text style={[styles.checklistText, { color: pctKal >= 90 && pctKal <= 115 ? '#FFF' : '#FB923C' }]}>
-                    Kecukupan Energi: {Math.round(pctKal)}% ({pctKal < 90 ? 'Kurang' : (pctKal > 115 ? 'Berlebih' : 'Sesuai Target')})
+                  <Text style={[styles.checklistText, { color: pctKal >= 90 && pctKal <= 110 ? '#FFF' : '#FB923C' }]}>
+                    Kecukupan Energi: {Math.round(pctKal)}% ({pctKal < 90 ? 'Kurang' : (pctKal > 110 ? 'Berlebih' : 'Sesuai Target')})
                   </Text>
                 </View>
 
                 <View style={styles.checklistItem}>
                   <MaterialCommunityIcons 
-                    name={pctProt >= 90 && pctProt <= 120 ? "check-circle" : "alert-circle"} 
+                    name={pctProt >= 90 && pctProt <= 110 ? "check-circle" : "alert-circle"} 
                     size={20} 
-                    color={pctProt >= 90 && pctProt <= 120 ? "#4ADE80" : "#FB923C"} 
+                    color={pctProt >= 90 && pctProt <= 110 ? "#4ADE80" : "#FB923C"} 
                   />
-                  <Text style={[styles.checklistText, { color: pctProt >= 90 && pctProt <= 120 ? '#FFF' : '#FB923C' }]}>
-                    Kecukupan Protein: {Math.round(pctProt)}% ({pctProt < 90 ? 'Kurang' : (pctProt > 120 ? 'Berlebih' : 'Sesuai Target')})
+                  <Text style={[styles.checklistText, { color: pctProt >= 90 && pctProt <= 110 ? '#FFF' : '#FB923C' }]}>
+                    Kecukupan Protein: {Math.round(pctProt)}% ({pctProt < 90 ? 'Kurang' : (pctProt > 110 ? 'Berlebih' : 'Sesuai Target')})
                   </Text>
                 </View>
               </View>
@@ -3739,8 +3744,8 @@ Example Output format:
               <View style={{ marginTop: 12, backgroundColor: 'rgba(255, 255, 255, 0.02)', padding: 10, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.04)' }}>
                 <Text style={{ color: '#E2E8F0', fontSize: 11, fontWeight: '700', marginBottom: 4 }}>💡 Keterangan Indikator & Target MBG:</Text>
                 <Text style={{ color: '#A5ACCC', fontSize: 11, lineHeight: 16 }}>
-                  • <Text style={{ color: '#4ADE80', fontWeight: '700' }}>Hijau (Centang)</Text>: Nutrisi optimal sesuai standar BGN (Energi 90-115%, Protein 90-120%).{"\n"}
-                  • <Text style={{ color: '#FB923C', fontWeight: '700' }}>Oranye (Tanda Seru)</Text>: Nutrisi <Text style={{ color: '#FB923C' }}>Kurang</Text> (&lt;90%) atau <Text style={{ color: '#FB923C' }}>Berlebih</Text> (&gt;115% Energi, &gt;120% Protein) sehingga porsi belanja/masak perlu disesuaikan.{"\n"}
+                  • <Text style={{ color: '#4ADE80', fontWeight: '700' }}>Hijau (Centang)</Text>: Nutrisi optimal sesuai standar BGN (Energi 90-110%, Protein 90-110%).{"\n"}
+                  • <Text style={{ color: '#FB923C', fontWeight: '700' }}>Oranye (Tanda Seru)</Text>: Nutrisi <Text style={{ color: '#FB923C' }}>Kurang</Text> (&lt;90%) atau <Text style={{ color: '#FB923C' }}>Berlebih</Text> (&gt;110% Energi, &gt;110% Protein) sehingga porsi belanja/masak perlu disesuaikan.{"\n"}
                   • <Text style={{ color: '#F87171', fontWeight: '700' }}>Merah (Silang)</Text>: Komponen bahan wajib piring MBG belum terdeteksi dalam daftar masakan.
                 </Text>
               </View>

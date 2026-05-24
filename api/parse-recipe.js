@@ -1,4 +1,82 @@
-// Using native fetch in Node 18+
+// api/parse-recipe.js — Vercel Serverless Function for AI Recipe Parsing
+// Loads TKPI database to provide exact name candidates to AI
+
+const fs = require('fs');
+const path = require('path');
+
+// Load TKPI database at module level for reuse
+let TKPI_DB = [];
+try {
+  const dbPath = path.join(__dirname, '..', 'tkpi_database.json');
+  TKPI_DB = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+} catch (e) {
+  console.error('Failed to load TKPI database:', e.message);
+}
+
+/**
+ * Pre-filter TKPI database entries that are relevant to the user's query.
+ * Extracts food-related keywords from the query, then finds all TKPI entries
+ * whose names contain any of those keywords.
+ * Returns a deduplicated list of exact TKPI entry names.
+ */
+function getRelevantTkpiCandidates(query) {
+  const queryLower = query.toLowerCase();
+  
+  // Extract likely food words from the query (remove numbers, units, punctuation)
+  const foodWords = queryLower
+    .replace(/[0-9]+/g, '')
+    .replace(/(gram|gr|g|kg|ml|liter|porsi|buah|butir|lembar|iris|potong|sendok|sdm|sdt)\b/gi, '')
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 2)
+    // Remove common non-food words
+    .filter(w => !['dan', 'atau', 'yang', 'ini', 'itu', 'ada', 'dari', 'untuk', 'dengan', 'seperti', 'tiktok', 'viral', 'kira', 'sekitar', 'kurang', 'lebih', 'menu', 'masakan', 'resep', 'bahan'].includes(w));
+  
+  if (foodWords.length === 0) return [];
+  
+  const candidates = new Set();
+  
+  for (const entry of TKPI_DB) {
+    const nameLower = entry.nama.toLowerCase();
+    // Check if any food word from query appears in the TKPI entry name
+    for (const word of foodWords) {
+      if (nameLower.includes(word)) {
+        candidates.add(entry.nama);
+        break;
+      }
+    }
+  }
+  
+  // Also add common staples that may be implicit in compound recipes
+  const commonStaples = [
+    'Nasi', 'Tahu, mentah', 'Tahu goreng', 'Tempe pasar', 'Tempe pasar goreng',
+    'Tempe kedelai murni, mentah', 'Tempe kedelai murni, goreng',
+    'Telur ayam ras, segar (Domestic chicken, egg, fresh)',
+    'Telur ayam kampung, segar (Feral chicken, egg, fresh)',
+    'Minyak kelapa sawit (Palm oil)', 'Minyak kelapa (Coconut oil)',
+    'Ayam, daging, segar (Chicken, meat, fresh)',
+    'Sawi putih / pecai, segar (Pak choi, fresh)',
+    'Sawi, segar (Chinese mustard, fresh)',
+    'Labu siam, segar (Chayote, fresh)',
+    'Jagung muda / semi, segar (Baby corn, fresh)',
+    'Jagung muda, kuning, mentah (Corn,baby, yellow, raw)',
+    'Salak, segar (snake fruit, fresh)',
+    'Salak pondoh, segar (snake fruit, pondoh, fresh)',
+    'Bayam, segar (Spinach, fresh)',
+    'Wortel, segar (Carrot, fresh)',
+    'Kangkung, segar (Water spinach, fresh)',
+    'Buncis, segar (Snap bean, fresh)',
+    'Kembang tahu',
+  ];
+  
+  commonStaples.forEach(s => {
+    if (TKPI_DB.some(e => e.nama === s)) {
+      candidates.add(s);
+    }
+  });
+  
+  return Array.from(candidates);
+}
 
 module.exports = async (req, res) => {
   // Set CORS headers for local development and web requests
@@ -36,54 +114,80 @@ module.exports = async (req, res) => {
   const geminiApiKey = process.env.GEMINI_API_KEY || process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
   if (!claudeApiKey && !geminiApiKey) {
-    return res.status(500).json({ error: 'Neither CLAUDE_API_KEY nor GEMINI_API_KEY is configured. Please set GEMINI_API_KEY for a 100% free option!' });
+    return res.status(500).json({ error: 'Neither CLAUDE_API_KEY nor GEMINI_API_KEY is configured.' });
   }
+
+  // Pre-filter TKPI candidates based on query
+  const tkpiCandidates = getRelevantTkpiCandidates(query);
+  const tkpiCandidateList = tkpiCandidates.length > 0
+    ? `\n\nAvailable TKPI Database Entries (use EXACT names from this list for "searchKeyword"):\n${tkpiCandidates.map(n => `- "${n}"`).join('\n')}`
+    : '';
 
   const systemPrompt = `You are a professional Nutritionist AI Assistant for the Indonesian Free Nutritious Meal (MBG) program.
 Your job is to analyze the user's query, which can be:
 A) A single recipe query (e.g. "sawi gulung isi tahu seperti di tiktok : 54g" or "kalau sawi gulung telur seberat 54 gram?")
-B) A list of multiple food items with their respective weights (e.g. "Nasi putih 134 gr\n Ayam woku kemangi 77 gr\n Perkedel tahu 36 gr\n Sawi isi tahu 41 gr\n Anggur 48 gr")
+B) A list of multiple food items with their respective weights (e.g. "Nasi putih 134 gr\\n Ayam woku kemangi 77 gr\\n Perkedel tahu 36 gr\\n Sawi isi tahu 41 gr\\n Anggur 48 gr")
 
 Tasks for Case A (Single Recipe):
 1. Extract the actual menu name and the total weight (in grams). If no weight is mentioned, assume 100 grams.
-2. Determine typical raw ingredient proportions (ratios summing up exactly to 1.0).
-3. Suggest the best search keywords for each ingredient to query the Kemenkes TKPI database.
+2. Determine typical raw ingredient proportions using realistic culinary ratios.
+3. Calculate the weight ("berat") in grams for each ingredient.
+4. For "searchKeyword", you MUST choose the EXACT entry name from the TKPI Database list provided below.
 
 Tasks for Case B (List of Multiple Items):
-1. Parse all items and their individual weights.
+1. Parse all items and their individual input weights.
 2. Sum all the individual weights to compute the "totalWeight".
-3. For compound recipe items (e.g. "Ayam woku", "Sawi isi tahu", "Perkedel tahu"), break them down into their 2-3 PRIMARY ingredients only (e.g. Ayam woku = Ayam + Minyak kelapa sawit; Perkedel tahu = Tahu + Minyak kelapa sawit; Sawi isi tahu = Sawi putih + Tahu).
-4. For simple items (e.g. "Nasi putih", "Anggur"), DO NOT break them down. Keep them as a single ingredient.
-5. Calculate the total absolute weight for each distinct ingredient.
-6. Compute the ratio of each ingredient relative to the computed "totalWeight" (i.e. ratio = ingredient_weight / totalWeight). All ratios in the "ingredients" list must sum up exactly to 1.0.
-7. Suggest the best search keywords for each ingredient to query the Kemenkes TKPI database.
+3. For compound recipe items (e.g. "Ayam woku", "Telur semur bali", "Tempe goreng", "Tumis labu siam jagung putren"), break them down into 2-3 PRIMARY ingredients using realistic culinary ratios:
+   - Fried items (goreng): main ingredient ~75-80%, cooking oil ~20-25%
+   - Wet/braised dishes (semur/gulai/rendang): main protein ~80-90%, cooking oil/sauce ~10-20%
+   - Stir-fried vegetables (tumis/cah): vegetables ~45-50% each, oil ~5-10%
+   - The SUM of broken-down ingredient weights MUST EQUAL the item's input weight EXACTLY.
+4. For simple items (e.g. "Nasi", "Anggur", "Salak"), DO NOT break them down. Keep as single ingredient with weight exactly as input.
+5. Each ingredient must have:
+   - "berat": exact weight in grams (integer or 1-decimal, no unnecessary precision)
+   - "ratio": berat / totalWeight
+   - "searchKeyword": EXACT entry name from the TKPI Database list below
+6. Sum of all "berat" must equal "totalWeight". Sum of all "ratio" must equal 1.0.
+
+CRITICAL RULES for searchKeyword:
+- You MUST use an EXACT entry name from the TKPI Database list below. Copy the name EXACTLY as written, including parentheses and commas.
+- For "Nasi putih" or just "Nasi" → use "Nasi"
+- For "Tahu" (raw/default) → use "Tahu, mentah"
+- For "Tahu goreng" → use "Tahu goreng"
+- For "Tempe" (raw/default) → use "Tempe pasar"
+- For "Tempe goreng" → use "Tempe pasar goreng" or "Tempe kedelai murni, goreng"
+- For "Telur ayam" → use "Telur ayam ras, segar (Domestic chicken, egg, fresh)"
+- For "Minyak goreng" → use "Minyak kelapa sawit (Palm oil)"
+- For "Salak" → use "Salak, segar (snake fruit, fresh)"
+- NEVER invent a keyword not in the list. If no exact match exists, use the closest available entry.
 
 Strict Rules for Ingredients:
-- ONLY output the primary, macro-contributing ingredients (e.g. meat, main vegetable, main carb source, cooking oil).
-- DO NOT list optional binders, breadcrumbs, spices, condiments (like shallots, garlic, chili, salt), or side ingredients as separate rows.
-- Use standard, clean search keywords that exist in typical food databases: e.g. use "nasi putih" instead of detailed descriptions, use "tahu" instead of "tahu putih", use "singkong" instead of specific snacks, use "sawi putih" instead of fancy vegetable rolls.
+- ONLY output primary, macro-contributing ingredients.
+- DO NOT list spices, condiments, salt, garlic, shallots as separate rows.
 
 Provide a friendly explanation in casual youth Indonesian with emojis.
-Respond ONLY with a valid JSON object. Do not include any explanations outside of the JSON. Do not include markdown code block formatting.
+Respond ONLY with a valid JSON object. No markdown formatting.
 
-Example Output format:
+Example Output:
 {
   "menuName": "Sawi gulung isi tahu",
   "totalWeight": 54,
-  "explanation": "Ooh sawi gulung isi tahu yang viral di TikTok itu ya! Sawi putih dikukus lalu diisi tahu di tengahnya. Menyehatkan banget buat adik-adik di sekolah! 🥬✨",
+  "explanation": "Ooh sawi gulung isi tahu yang viral di TikTok itu ya! Sawi putih dikukus lalu diisi tahu di tengahnya. Menyehatkan banget! 🥬✨",
   "ingredients": [
     {
       "nama": "Sawi putih",
-      "ratio": 0.65,
-      "searchKeyword": "sawi putih"
+      "berat": 35,
+      "ratio": 0.648,
+      "searchKeyword": "Sawi putih / pecai, segar (Pak choi, fresh)"
     },
     {
-      "nama": "Tahu putih",
-      "ratio": 0.35,
-      "searchKeyword": "tahu"
+      "nama": "Tahu",
+      "berat": 19,
+      "ratio": 0.352,
+      "searchKeyword": "Tahu, mentah"
     }
   ]
-}`;
+}${tkpiCandidateList}`;
 
   // Use Gemini if API key is configured (Gemini has a very generous free tier)
   if (geminiApiKey) {
