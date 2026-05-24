@@ -2321,7 +2321,7 @@ export default function App() {
                   Rekomendasi Perbaikan AI Ahli Gizi:
                 </Text>
               </View>
-              <View style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: 8, padding: 12 }}>
+              <View style={{ backgroundColor: 'rgba(15, 23, 42, 0.45)', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(139, 92, 246, 0.25)', padding: 16 }}>
                 {renderAIResponse(aiRecommendations)}
               </View>
             </View>
@@ -3134,41 +3134,94 @@ ${menuDetails || '(Belum ada menu yang dipilih)'}`;
     }
   };
 
+  const parseBoldText = (text, baseStyle = {}, boldStyle = { fontWeight: 'bold', color: '#FFF' }) => {
+    const parts = text.split('**');
+    return parts.map((part, index) => {
+      const isBold = index % 2 === 1;
+      return (
+        <Text key={index} style={isBold ? boldStyle : baseStyle}>
+          {part}
+        </Text>
+      );
+    });
+  };
+
   const renderAIResponse = (text) => {
     if (!text) return null;
     const lines = text.split('\n');
     return lines.map((line, idx) => {
       const trimmed = line.trim();
+      
+      // Check for headings: ### heading
       if (trimmed.startsWith('###')) {
+        const headerText = trimmed.replace('###', '').trim();
         return (
-          <Text key={idx} style={{ color: '#FFF', fontSize: 13, fontWeight: '800', marginTop: 12, marginBottom: 6 }}>
-            {trimmed.replace('###', '').trim()}
-          </Text>
-        );
-      } else if (trimmed.startsWith('##')) {
-        return (
-          <Text key={idx} style={{ color: '#FFF', fontSize: 14, fontWeight: '800', marginTop: 14, marginBottom: 8 }}>
-            {trimmed.replace('##', '').trim()}
-          </Text>
-        );
-      } else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
-        return (
-          <View key={idx} style={{ flexDirection: 'row', marginLeft: 6, marginVertical: 2, alignItems: 'flex-start' }}>
-            <Text style={{ color: '#A78BFA', marginRight: 6 }}>•</Text>
-            <Text style={{ color: '#D1D5DB', fontSize: 11.5, lineHeight: 16, flex: 1 }}>
-              {trimmed.substring(1).trim()}
-            </Text>
-          </View>
-        );
-      } else if (trimmed === '') {
-        return <View key={idx} style={{ height: 6 }} />;
-      } else {
-        return (
-          <Text key={idx} style={{ color: '#D1D5DB', fontSize: 11.5, lineHeight: 16, marginVertical: 2 }}>
-            {trimmed}
+          <Text key={idx} style={{ color: '#C084FC', fontSize: 15, fontWeight: '800', marginTop: 14, marginBottom: 6, letterSpacing: 0.3 }}>
+            {parseBoldText(headerText, { color: '#C084FC' })}
           </Text>
         );
       }
+      
+      if (trimmed.startsWith('##')) {
+        const headerText = trimmed.replace('##', '').trim();
+        return (
+          <Text key={idx} style={{ color: '#FFF', fontSize: 17, fontWeight: '900', marginTop: 18, marginBottom: 8, letterSpacing: 0.4 }}>
+            {parseBoldText(headerText, { color: '#FFF' })}
+          </Text>
+        );
+      }
+
+      // Check for numbered sections like "1. **Prioritas Utama...**"
+      const numberedMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+      if (numberedMatch) {
+        const num = numberedMatch[1];
+        const content = numberedMatch[2];
+        return (
+          <View key={idx} style={{ flexDirection: 'row', marginTop: 14, marginBottom: 6, alignItems: 'flex-start' }}>
+            <View style={{ 
+              backgroundColor: '#8B5CF6', 
+              borderRadius: 6, 
+              width: 20, 
+              height: 20, 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              marginRight: 8,
+              marginTop: 1
+            }}>
+              <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '800' }}>{num}</Text>
+            </View>
+            <Text style={{ flex: 1, color: '#FFF', fontSize: 14.5, fontWeight: '800', lineHeight: 22 }}>
+              {parseBoldText(content, { color: '#FFF' })}
+            </Text>
+          </View>
+        );
+      }
+
+      // Check for bullet points: starting with • or - or * or .
+      const bulletMatch = trimmed.match(/^([•\-\*◦▪\.])\s+(.*)$/);
+      if (bulletMatch) {
+        const content = bulletMatch[2];
+        return (
+          <View key={idx} style={{ flexDirection: 'row', marginLeft: 8, marginVertical: 3, alignItems: 'flex-start' }}>
+            <Text style={{ color: '#A78BFA', marginRight: 8, fontSize: 12, marginTop: 3 }}>•</Text>
+            <Text style={{ flex: 1, color: '#D1D5DB', fontSize: 13.5, lineHeight: 20 }}>
+              {parseBoldText(content, { color: '#D1D5DB' })}
+            </Text>
+          </View>
+        );
+      }
+
+      // Empty line
+      if (trimmed === '') {
+        return <View key={idx} style={{ height: 6 }} />;
+      }
+
+      // Normal paragraph line
+      return (
+        <Text key={idx} style={{ color: '#D1D5DB', fontSize: 13.5, lineHeight: 20, marginVertical: 2 }}>
+          {parseBoldText(trimmed, { color: '#D1D5DB' })}
+        </Text>
+      );
     });
   };
 
