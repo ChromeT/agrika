@@ -1035,9 +1035,43 @@ export default function App() {
         : [...currentList, id];
       return {
         ...prev,
-        [kat]: newList
+      [kat]: newList
       };
     });
+  };
+
+  const handleClearAllSelections = () => {
+    const hasAnySelected = Object.keys(selected).some(key => {
+      return Array.isArray(selected[key]) ? selected[key].length > 0 : !!selected[key];
+    });
+
+    if (!hasAnySelected) {
+      Alert.alert('Info', 'Belum ada menu yang dipilih.');
+      return;
+    }
+
+    if (Platform.OS === 'web') {
+      const confirmClear = window.confirm('Apakah Anda yakin ingin menghapus semua pilihan menu yang telah dipilih?');
+      if (confirmClear) {
+        setSelected({ karbo: [], protein: [], sayur: [], buah: [] });
+      }
+      return;
+    }
+
+    Alert.alert(
+      'Konfirmasi',
+      'Apakah Anda yakin ingin menghapus semua pilihan menu yang telah dipilih?',
+      [
+        { text: 'Batal', style: 'cancel' },
+        { 
+          text: 'Ya, Hapus Semua', 
+          style: 'destructive',
+          onPress: () => {
+            setSelected({ karbo: [], protein: [], sayur: [], buah: [] });
+          }
+        }
+      ]
+    );
   };
 
   const handleDeleteMenu = (item) => {
@@ -1669,6 +1703,28 @@ export default function App() {
           <MaterialCommunityIcons name="information" size={16} color="#60A5FA" />
           <Text style={styles.infoText}>Pilih tepat 1 bahan makanan dari tiap kategori gizi.</Text>
         </View>
+
+        {/* Tombol Hapus Semua Pilihan Menu */}
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+            borderWidth: 1,
+            borderColor: 'rgba(239, 68, 68, 0.25)',
+            borderRadius: 8,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 16,
+          }}
+          onPress={handleClearAllSelections}
+        >
+          <MaterialCommunityIcons name="trash-can-sweep" size={18} color="#F87171" style={{ marginRight: 8 }} />
+          <Text style={{ color: '#F87171', fontSize: 13.5, fontWeight: '800', letterSpacing: 0.3 }}>
+            Hapus Semua Pilihan Menu
+          </Text>
+        </TouchableOpacity>
 
         {categories.map(cat => {
           const list = (INITIAL_MENU_DATA[cat.key] || []).filter(x => !deletedMenuIds.includes(x.id));
