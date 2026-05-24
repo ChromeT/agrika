@@ -3082,8 +3082,10 @@ Example Output format:
 
   const handleScaleToTargetAkg = () => {
     let totKal = 0;
+    let totProt = 0;
     calculatorRows.forEach(row => {
       totKal += row.kalori || 0;
+      totProt += row.protein || 0;
     });
     if (totKal <= 0) {
       Alert.alert('Info', 'Tambahkan bahan makanan terlebih dahulu dengan berat > 0.');
@@ -3091,7 +3093,11 @@ Example Output format:
     }
     const targetAkg = AKG_DATA[calcTargetUsia] || AKG_DATA['10-12L'];
     const targetKal = targetAkg.kal || targetAkg.kalori || 600;
-    const factor = targetKal / totKal;
+    const targetProt = targetAkg.protein || 15;
+
+    const kalFactor = targetKal / totKal;
+    const protFactor = totProt > 0 ? (targetProt / totProt) : 0;
+    const factor = Math.max(kalFactor, protFactor);
 
     const updatedRows = calculatorRows.map(row => {
       if (!row.nama || !row.berat) return row;
@@ -3111,7 +3117,8 @@ Example Output format:
     });
 
     setCalculatorRows(updatedRows);
-    Alert.alert('Porsi Disesuaikan! 💕', `Takaran porsi berhasil otomatis disesuaikan (dikali ${factor.toFixed(2)}x) agar memenuhi target Acuan Kemenkes ${targetKal} kkal.`);
+    const scaledBy = factor === protFactor ? 'kebutuhan protein' : 'kebutuhan energi';
+    Alert.alert('Porsi Disesuaikan! 💕', `Takaran porsi berhasil otomatis disesuaikan (dikali ${factor.toFixed(2)}x) berdasarkan ${scaledBy} agar semua kandungan gizi tidak ada yang kurang (memenuhi target ${targetKal} kkal dan ${targetProt}g protein).`);
   };
 
   const handleExportToMenu = () => {
