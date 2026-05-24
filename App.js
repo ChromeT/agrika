@@ -1040,35 +1040,45 @@ export default function App() {
     });
   };
 
-  const handleClearAllSelections = () => {
-    const hasAnySelected = Object.keys(selected).some(key => {
-      return Array.isArray(selected[key]) ? selected[key].length > 0 : !!selected[key];
+  const handleDeleteAllMenus = () => {
+    const hasAnyCustom = customMenus.length > 0;
+    const allInitialIds = [];
+    Object.keys(INITIAL_MENU_DATA).forEach(key => {
+      INITIAL_MENU_DATA[key].forEach(item => {
+        allInitialIds.push(item.id);
+      });
     });
+    const hasAnyInitialRemaining = allInitialIds.some(id => !deletedMenuIds.includes(id));
 
-    if (!hasAnySelected) {
-      Alert.alert('Info', 'Belum ada menu yang dipilih.');
+    if (!hasAnyCustom && !hasAnyInitialRemaining) {
+      Alert.alert('Info', 'Daftar menu sudah kosong.');
       return;
     }
 
+    const performDelete = () => {
+      setCustomMenus([]);
+      setCustomRecipeDetails({});
+      setDeletedMenuIds(allInitialIds);
+      setSelected({ karbo: [], protein: [], sayur: [], buah: [] });
+    };
+
     if (Platform.OS === 'web') {
-      const confirmClear = window.confirm('Apakah Anda yakin ingin menghapus semua pilihan menu yang telah dipilih?');
-      if (confirmClear) {
-        setSelected({ karbo: [], protein: [], sayur: [], buah: [] });
+      const confirmDelete = window.confirm('Apakah Anda yakin ingin menghapus semua daftar menu di layar ini? Tindakan ini tidak dapat dibatalkan.');
+      if (confirmDelete) {
+        performDelete();
       }
       return;
     }
 
     Alert.alert(
-      'Konfirmasi',
-      'Apakah Anda yakin ingin menghapus semua pilihan menu yang telah dipilih?',
+      'Konfirmasi Hapus Semua',
+      'Apakah Anda yakin ingin menghapus semua daftar menu di layar ini? Tindakan ini tidak dapat dibatalkan.',
       [
         { text: 'Batal', style: 'cancel' },
         { 
           text: 'Ya, Hapus Semua', 
           style: 'destructive',
-          onPress: () => {
-            setSelected({ karbo: [], protein: [], sayur: [], buah: [] });
-          }
+          onPress: performDelete
         }
       ]
     );
@@ -1704,27 +1714,54 @@ export default function App() {
           <Text style={styles.infoText}>Pilih tepat 1 bahan makanan dari tiap kategori gizi.</Text>
         </View>
 
-        {/* Tombol Hapus Semua Pilihan Menu */}
-        <TouchableOpacity
-          style={{
-            flexDirection: 'row',
-            backgroundColor: 'rgba(239, 68, 68, 0.08)',
-            borderWidth: 1,
-            borderColor: 'rgba(239, 68, 68, 0.25)',
-            borderRadius: 8,
-            paddingVertical: 12,
-            paddingHorizontal: 16,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16,
-          }}
-          onPress={handleClearAllSelections}
-        >
-          <MaterialCommunityIcons name="trash-can-sweep" size={18} color="#F87171" style={{ marginRight: 8 }} />
-          <Text style={{ color: '#F87171', fontSize: 13.5, fontWeight: '800', letterSpacing: 0.3 }}>
-            Hapus Semua Pilihan Menu
-          </Text>
-        </TouchableOpacity>
+        {/* Tombol Hapus Semua Menu & Pulihkan */}
+        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+              borderWidth: 1,
+              borderColor: 'rgba(239, 68, 68, 0.25)',
+              borderRadius: 8,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onPress={handleDeleteAllMenus}
+          >
+            <MaterialCommunityIcons name="delete-sweep" size={18} color="#F87171" style={{ marginRight: 8 }} />
+            <Text style={{ color: '#F87171', fontSize: 13.5, fontWeight: '800', letterSpacing: 0.3 }}>
+              Hapus Semua Menu
+            </Text>
+          </TouchableOpacity>
+
+          {deletedMenuIds.length > 0 && (
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                borderWidth: 1,
+                borderColor: 'rgba(16, 185, 129, 0.25)',
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onPress={() => {
+                setDeletedMenuIds([]);
+              }}
+            >
+              <MaterialCommunityIcons name="refresh" size={18} color="#34D399" style={{ marginRight: 8 }} />
+              <Text style={{ color: '#34D399', fontSize: 13.5, fontWeight: '800', letterSpacing: 0.3 }}>
+                Pulihkan Menu Bawaan
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {categories.map(cat => {
           const list = (INITIAL_MENU_DATA[cat.key] || []).filter(x => !deletedMenuIds.includes(x.id));
@@ -1734,91 +1771,110 @@ export default function App() {
           return (
             <View key={cat.key}>
               <Text style={styles.menuHeader}>{cat.title}</Text>
-              <View style={styles.menuGrid}>
-                {combined.map(item => {
-                  const isSel = Array.isArray(selected[cat.key]) ? selected[cat.key].includes(item.id) : selected[cat.key] === item.id;
-                  const priceVal = getMenuCostPerPortion(item);
-                  
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={[styles.menuItem, isSel && styles.menuItemActive]}
-                      onPress={() => toggleSelectMenu(cat.key, item.id)}
-                    >
-                      {isSel && (
-                        <View style={styles.checkMarkCircle}>
-                          <MaterialCommunityIcons name="check" size={12} color="#07090e" />
-                        </View>
-                      )}
-                      <Text style={styles.itemEmoji}>
-                        {getFoodIcon(item.icon)}
-                      </Text>
-                      <Text style={styles.itemName} numberOfLines={1}>{item.nama}</Text>
-                      <Text style={styles.itemPortion} numberOfLines={1}>{getMenuPortion(item)}</Text>
-                      
-                      {/* MBG Compliance Badge */}
-                      {item.mbgStatus && (
-                        <View style={[
-                          styles.complianceBadge,
-                          item.mbgStatus === 'aman' ? styles.badgeAman :
-                          item.mbgStatus === 'dibatasi' ? styles.badgeDibatasi : styles.badgeDilarang
-                        ]}>
-                          <Text style={[
-                            styles.complianceBadgeText,
-                            item.mbgStatus === 'aman' ? styles.textAman :
-                            item.mbgStatus === 'dibatasi' ? styles.textDibatasi : styles.textDilarang
+              {combined.length === 0 ? (
+                <View style={{
+                  padding: 24,
+                  backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderStyle: 'dashed',
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 16,
+                }}>
+                  <MaterialCommunityIcons name="food-off" size={24} color="#64748B" style={{ marginBottom: 6 }} />
+                  <Text style={{ color: '#64748B', fontSize: 13, fontWeight: '600', textAlign: 'center' }}>
+                    Kategori ini kosong. Silakan tambah menu baru atau impor dari kalkulator.
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.menuGrid}>
+                  {combined.map(item => {
+                    const isSel = Array.isArray(selected[cat.key]) ? selected[cat.key].includes(item.id) : selected[cat.key] === item.id;
+                    const priceVal = getMenuCostPerPortion(item);
+                    
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={[styles.menuItem, isSel && styles.menuItemActive]}
+                        onPress={() => toggleSelectMenu(cat.key, item.id)}
+                      >
+                        {isSel && (
+                          <View style={styles.checkMarkCircle}>
+                            <MaterialCommunityIcons name="check" size={12} color="#07090e" />
+                          </View>
+                        )}
+                        <Text style={styles.itemEmoji}>
+                          {getFoodIcon(item.icon)}
+                        </Text>
+                        <Text style={styles.itemName} numberOfLines={1}>{item.nama}</Text>
+                        <Text style={styles.itemPortion} numberOfLines={1}>{getMenuPortion(item)}</Text>
+                        
+                        {/* MBG Compliance Badge */}
+                        {item.mbgStatus && (
+                          <View style={[
+                            styles.complianceBadge,
+                            item.mbgStatus === 'aman' ? styles.badgeAman :
+                            item.mbgStatus === 'dibatasi' ? styles.badgeDibatasi : styles.badgeDilarang
                           ]}>
-                            {item.mbgStatus === 'aman' ? 'AM-Lokal' :
-                             item.mbgStatus === 'dibatasi' ? 'Dibatasi' : 'Dilarang'}
+                            <Text style={[
+                              styles.complianceBadgeText,
+                              item.mbgStatus === 'aman' ? styles.textAman :
+                              item.mbgStatus === 'dibatasi' ? styles.textDibatasi : styles.textDilarang
+                            ]}>
+                              {item.mbgStatus === 'aman' ? 'AM-Lokal' :
+                               item.mbgStatus === 'dibatasi' ? 'Dibatasi' : 'Dilarang'}
+                            </Text>
+                          </View>
+                        )}
+
+                        {(() => {
+                          const g = getMenuGizi(item);
+                          return <Text style={styles.itemGizi}>{g.kalori} kkal · P:{g.protein}g</Text>;
+                        })()}
+                        
+                        {getRecipeIngredientsListStr(item.id) !== '' && (
+                          <Text style={styles.itemIngredientsText} numberOfLines={1}>
+                            📦 {getRecipeIngredientsListStr(item.id)}
                           </Text>
+                        )}
+
+                        <View style={styles.priceRow}>
+                          <Text style={[styles.priceLabel, { color: '#4ADE80', fontWeight: '800' }]}>
+                            Rp {priceVal.toLocaleString('id')}
+                          </Text>
+                          <Text style={styles.priceLabel}>/p</Text>
                         </View>
-                      )}
 
-                      {(() => {
-                        const g = getMenuGizi(item);
-                        return <Text style={styles.itemGizi}>{g.kalori} kkal · P:{g.protein}g</Text>;
-                      })()}
-                      
-                      {getRecipeIngredientsListStr(item.id) !== '' && (
-                        <Text style={styles.itemIngredientsText} numberOfLines={1}>
-                          📦 {getRecipeIngredientsListStr(item.id)}
-                        </Text>
-                      )}
-
-                      <View style={styles.priceRow}>
-                        <Text style={[styles.priceLabel, { color: '#4ADE80', fontWeight: '800' }]}>
-                          Rp {priceVal.toLocaleString('id')}
-                        </Text>
-                        <Text style={styles.priceLabel}>/p</Text>
-                      </View>
-
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 5 }}>
-                        <TouchableOpacity 
-                          style={[styles.editRecipeBtn, { flex: 1, marginTop: 0 }]}
-                          onPress={() => openRecipeEditorModal(item, cat.key)}
-                        >
-                          <MaterialCommunityIcons name="pencil-box" size={12} color="#60A5FA" />
-                          <Text style={styles.editRecipeBtnText}>Resep &amp; Harga</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                          style={{
-                            padding: 6,
-                            backgroundColor: 'rgba(248, 113, 113, 0.08)',
-                            borderRadius: 4,
-                            borderWidth: 1,
-                            borderColor: 'rgba(248, 113, 113, 0.2)',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                          onPress={() => handleDeleteMenu({ ...item, kat: cat.key })}
-                        >
-                          <MaterialCommunityIcons name="trash-can-outline" size={12} color="#F87171" />
-                        </TouchableOpacity>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 5 }}>
+                          <TouchableOpacity 
+                            style={[styles.editRecipeBtn, { flex: 1, marginTop: 0 }]}
+                            onPress={() => openRecipeEditorModal(item, cat.key)}
+                          >
+                            <MaterialCommunityIcons name="pencil-box" size={12} color="#60A5FA" />
+                            <Text style={styles.editRecipeBtnText}>Resep &amp; Harga</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={{
+                              padding: 6,
+                              backgroundColor: 'rgba(248, 113, 113, 0.08)',
+                              borderRadius: 4,
+                              borderWidth: 1,
+                              borderColor: 'rgba(248, 113, 113, 0.2)',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                            onPress={() => handleDeleteMenu({ ...item, kat: cat.key })}
+                          >
+                            <MaterialCommunityIcons name="trash-can-outline" size={12} color="#F87171" />
+                          </TouchableOpacity>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
             </View>
           );
         })}
