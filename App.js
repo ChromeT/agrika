@@ -2923,10 +2923,14 @@ Example Output format:
                 }
               });
               
-              // Penalty for extra specific words in DB name not present in search keyword
+              // Penalty for extra words in DB name not present in search keyword
               nameWords.forEach(w => {
-                if (!words.includes(w) && !genericTerms.includes(w)) {
-                  score -= 4;
+                if (!words.includes(w)) {
+                  if (genericTerms.includes(w)) {
+                    score -= 1.5; // Penalty for extra generic terms (e.g. minyak, segar)
+                  } else {
+                    score -= 4.0; // Penalty for extra specific terms
+                  }
                 }
               });
               
