@@ -2945,6 +2945,62 @@ Example Output format:
               if (nameLowerClean.startsWith('daun') && !cleanKeyword.startsWith('daun')) {
                 score -= 10;
               }
+
+              const cleanKeywordLower = cleanKeyword.toLowerCase();
+
+              // Eggs: Penalize duck, quail, turtle, maleo, salted eggs if looking for generic eggs
+              if (cleanKeywordLower.includes('telur') && 
+                  !cleanKeywordLower.includes('bebek') && 
+                  !cleanKeywordLower.includes('puyuh') && 
+                  !cleanKeywordLower.includes('penyu') && 
+                  !cleanKeywordLower.includes('maleo') &&
+                  !cleanKeywordLower.includes('asin')) {
+                if (nameLowerClean.includes('bebek') || 
+                    nameLowerClean.includes('puyuh') || 
+                    nameLowerClean.includes('penyu') || 
+                    nameLowerClean.includes('maleo') ||
+                    nameLowerClean.includes('asin')) {
+                  score -= 20;
+                }
+              }
+
+              // Milk: Penalize camel, horse, soy, buffalo milk if looking for generic milk
+              if (cleanKeywordLower.includes('susu') && 
+                  !cleanKeywordLower.includes('kambing') && 
+                  !cleanKeywordLower.includes('kuda') && 
+                  !cleanKeywordLower.includes('kedelai') && 
+                  !cleanKeywordLower.includes('kerbau')) {
+                if (nameLowerClean.includes('kambing') || 
+                    nameLowerClean.includes('kuda') || 
+                    nameLowerClean.includes('kerbau') ||
+                    nameLowerClean.includes('kedelai')) {
+                  score -= 20;
+                }
+              }
+
+              // Meat (Daging / Ayam / Sapi / Kambing)
+              const meatKeywords = ['daging', 'ayam', 'sapi', 'kambing'];
+              const hasMeatKeyword = meatKeywords.some(kw => cleanKeywordLower.includes(kw));
+
+              if (hasMeatKeyword) {
+                // Penalize offal/organs if not explicitly requested
+                const offalTerms = ['ampela', 'hati', 'usus', 'jantung', 'paru', 'babat', 'otak', 'limpa', 'dideh', 'darah', 'tetelan', 'lemak'];
+                const requestedOffal = offalTerms.some(term => cleanKeywordLower.includes(term));
+                if (!requestedOffal) {
+                  if (offalTerms.some(term => nameLowerClean.includes(term))) {
+                    score -= 20;
+                  }
+                }
+
+                // Penalize obscure wildlife or less common meats if looking for generic meat
+                const obscureMeats = ['kuda', 'rusa', 'kelinci', 'penyu', 'anjing', 'ular', 'biawak', 'celeng', 'hutan', 'bebek', 'maleo'];
+                const requestedObscure = obscureMeats.some(term => cleanKeywordLower.includes(term));
+                if (!requestedObscure) {
+                  if (obscureMeats.some(term => nameLowerClean.includes(term))) {
+                    score -= 20;
+                  }
+                }
+              }
               
               // Extra points if the exact cleanKeyword is present in full
               if (nameLowerClean.includes(cleanKeyword)) {
