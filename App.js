@@ -152,7 +152,20 @@ function getIngredientGizi(nama, qty, unit) {
   if (!nama) return { kalori: 0, protein: 0, karbo: 0, lemak: 0, serat: 0 };
   
   const qtyInGrams = getIngredientWeightInGrams(nama, qty, unit);
-  const cleanName = nama.split('(')[0].trim().toLowerCase();
+  let cleanName = nama.split('(')[0].trim().toLowerCase();
+  
+  // Normalisasi sinonim umum sayur/buah agar konsisten dengan TKPI Kemenkes
+  if (cleanName === 'mentimun' || cleanName === 'timun') {
+    cleanName = 'ketimun';
+  }
+  let tempName = cleanName;
+  if (!tempName.includes('sawi')) {
+    tempName = tempName.replace(/\bdaun\s+kol\b/g, 'daun kubis');
+    tempName = tempName.replace(/\bdaun\s+kubis\b/g, 'daun kubis');
+    tempName = tempName.replace(/\bkol\b/g, 'daun kubis');
+    tempName = tempName.replace(/\bkubis\b/g, 'daun kubis');
+  }
+  cleanName = tempName.replace(/\s+/g, ' ').trim();
   
   let found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanName);
   if (!found) {
@@ -874,6 +887,18 @@ export default function App() {
   };
 
   const getMenuGizi = (item) => {
+    // Jika item adalah menu kustom (misal diekspor dari kalkulator), gunakan nilai gizi yang tertempel langsung pada item
+    // agar tidak terjadi perbedaan pembulatan atau pencarian ulang antara kalkulator dan hasil analisa.
+    if (item.id && item.id.startsWith('custom-')) {
+      return {
+        kalori: Math.round(parseFloat(item.kalori) || 0),
+        protein: parseFloat(item.protein) || 0,
+        karbo: parseFloat(item.karbo) || 0,
+        lemak: parseFloat(item.lemak) || 0,
+        serat: parseFloat(item.serat) || 0
+      };
+    }
+
     const recipe = recipeDetails[item.id] || customRecipeDetails[item.id];
     if (!recipe) {
       return {
@@ -3429,7 +3454,20 @@ Example Output format:
       
       ingredients.forEach((ing, index) => {
         const targetWeight = ing.berat !== undefined ? parseFloat(ing.berat) : totalWeight * (ing.ratio || 0);
-        const cleanKeyword = ing.searchKeyword.toLowerCase().trim();
+        let cleanKeyword = ing.searchKeyword.toLowerCase().trim();
+        
+        // Normalisasi sinonim umum sayur/buah agar konsisten dengan TKPI Kemenkes
+        if (cleanKeyword === 'mentimun' || cleanKeyword === 'timun') {
+          cleanKeyword = 'ketimun';
+        }
+        let tempKeyword = cleanKeyword;
+        if (!tempKeyword.includes('sawi')) {
+          tempKeyword = tempKeyword.replace(/\bdaun\s+kol\b/g, 'daun kubis');
+          tempKeyword = tempKeyword.replace(/\bdaun\s+kubis\b/g, 'daun kubis');
+          tempKeyword = tempKeyword.replace(/\bkol\b/g, 'daun kubis');
+          tempKeyword = tempKeyword.replace(/\bkubis\b/g, 'daun kubis');
+        }
+        cleanKeyword = tempKeyword.replace(/\s+/g, ' ').trim();
         
         // Find best match in local TKPI database
         let found = TKPI_DATABASE.find(x => x.nama.toLowerCase() === cleanKeyword);
@@ -3439,7 +3477,7 @@ Example Output format:
           if (words.length > 0) {
             let bestMatch = null;
             let maxScore = -9999;
-            const genericTerms = ['daging', 'mentah', 'segar', 'matang', 'rebus', 'kukus', 'goreng', 'kering', 'bubuk', 'daun', 'biji', 'buah', 'tepung', 'minyak', 'air', 'muda', 'tua', 'putih', 'merah', 'kuning', 'hijau'];
+            const genericTerms = ['sayur', 'sayuran', 'daging', 'mentah', 'segar', 'matang', 'rebus', 'kukus', 'goreng', 'kering', 'bubuk', 'daun', 'biji', 'buah', 'tepung', 'minyak', 'air', 'muda', 'tua', 'putih', 'merah', 'kuning', 'hijau'];
             const processingTerms = ['goreng', 'rebus', 'kukus', 'kering', 'bakar', 'panggang', 'asin', 'olahan', 'awetan'];
             
             for (const x of TKPI_DATABASE) {
@@ -3449,7 +3487,8 @@ Example Output format:
               let score = 0;
               
               words.forEach((word, idx) => {
-                if (nameLowerClean.includes(word)) {
+                const matchesThisWord = nameWords.some(w => w === word || w.startsWith(word));
+                if (matchesThisWord) {
                   const isStart = nameLowerClean.startsWith(word) || nameLowerClean.split('/').some(part => part.trim().startsWith(word));
                   if (idx === 0 && isStart && !genericTerms.includes(word)) {
                     score += 15; // Noun startsWith synonym match (e.g. singkong, tahu)
@@ -3482,7 +3521,7 @@ Example Output format:
               });
               
               // Heavy penalty for leaf ('daun') crops if not specifically looking for a leaf
-              if (nameLowerClean.startsWith('daun') && !cleanKeyword.startsWith('daun')) {
+              if (nameLowerClean.startsWith('daun') && !cleanKeyword.includes('daun')) {
                 score -= 10;
               }
 
@@ -4902,10 +4941,26 @@ Example Output format:
 
   const renderTkpiModal = () => {
     // Filter items based on tkpiSearchQuery
-    const filteredTkpi = TKPI_DATABASE.filter(item => 
-      item.nama.toLowerCase().includes(tkpiSearchQuery.toLowerCase()) ||
-      item.kat.toLowerCase().includes(tkpiSearchQuery.toLowerCase())
-    );
+    const cleanQuery = tkpiSearchQuery.toLowerCase().trim();
+    const queryWords = cleanQuery.split(/\s+/).filter(w => w.length > 0);
+    
+    const filteredTkpi = TKPI_DATABASE.filter(item => {
+      if (!cleanQuery) return true;
+      
+      const nameLower = item.nama.toLowerCase();
+      const catLower = item.kat.toLowerCase();
+      
+      const nameWords = nameLower.split(/[\s,()\/]+/).filter(w => w.length > 0);
+      
+      return queryWords.every(qWord => {
+        if (catLower.includes(qWord)) return true;
+        
+        if (qWord === 'kol' || qWord === 'kubis') {
+          return nameWords.some(w => w === 'kol' || w.startsWith('kol') || w === 'kubis' || w.startsWith('kubis'));
+        }
+        return nameWords.some(w => w === qWord || w.startsWith(qWord));
+      });
+    });
 
     // Calculate nutrients based on tkpiPortionInput
     const portionGrams = parseFloat(tkpiPortionInput) || 0;
