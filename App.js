@@ -4045,27 +4045,51 @@ Example Output format:
         <View style={styles.gizseeHasilCard}>
           <Text style={styles.gizseeHasilTitle}>📊 Hasil Kalkulasi Gizi</Text>
           
-          <View style={styles.gizseeHasilGrid}>
-            <View style={styles.gizseeHasilCol}>
-              <View style={styles.gizseeHasilRow}>
-                <Text style={styles.gizseeHasilLabel}>⚡ Energi :</Text>
-                <Text style={styles.gizseeHasilVal}>{totals.kalori} kkal</Text>
-              </View>
-              <View style={styles.gizseeHasilRow}>
-                <Text style={styles.gizseeHasilLabel}>🍖 Protein :</Text>
-                <Text style={styles.gizseeHasilVal}>{totals.protein} g</Text>
-              </View>
+          {/* Main Energi Banner */}
+          <View style={styles.gizseeEnergiBanner}>
+            <View style={styles.gizseeEnergiTitleGroup}>
+              <Text style={{ fontSize: 20, marginRight: 6 }}>⚡</Text>
+              <Text style={styles.gizseeEnergiLabel}>Energi</Text>
             </View>
-            
-            <View style={styles.gizseeHasilCol}>
-              <View style={styles.gizseeHasilRow}>
-                <Text style={styles.gizseeHasilLabel}>🥑 Lemak :</Text>
-                <Text style={styles.gizseeHasilVal}>{totals.lemak} g</Text>
+            <Text style={styles.gizseeEnergiVal}>{totals.kalori} kkal</Text>
+          </View>
+
+          {/* 4 Macros Grid */}
+          <View style={styles.gizseeHasilGrid}>
+            {/* Protein */}
+            <View style={[styles.gizseeMacroCard, { borderColor: 'rgba(74, 222, 128, 0.15)', backgroundColor: 'rgba(74, 222, 128, 0.02)' }]}>
+              <View style={styles.gizseeMacroHeader}>
+                <Text style={{ fontSize: 16 }}>🍖</Text>
+                <Text style={styles.gizseeMacroLabel}>Protein</Text>
               </View>
-              <View style={styles.gizseeHasilRow}>
-                <Text style={styles.gizseeHasilLabel}>🍞 Karbohidrat :</Text>
-                <Text style={styles.gizseeHasilVal}>{totals.karbo} g</Text>
+              <Text style={[styles.gizseeMacroVal, { color: '#4ADE80' }]}>{totals.protein} g</Text>
+            </View>
+
+            {/* Lemak */}
+            <View style={[styles.gizseeMacroCard, { borderColor: 'rgba(251, 146, 60, 0.15)', backgroundColor: 'rgba(251, 146, 60, 0.02)' }]}>
+              <View style={styles.gizseeMacroHeader}>
+                <Text style={{ fontSize: 16 }}>🥑</Text>
+                <Text style={styles.gizseeMacroLabel}>Lemak</Text>
               </View>
+              <Text style={[styles.gizseeMacroVal, { color: '#FB923C' }]}>{totals.lemak} g</Text>
+            </View>
+
+            {/* Karbohidrat */}
+            <View style={[styles.gizseeMacroCard, { borderColor: 'rgba(96, 165, 250, 0.15)', backgroundColor: 'rgba(96, 165, 250, 0.02)' }]}>
+              <View style={styles.gizseeMacroHeader}>
+                <Text style={{ fontSize: 16 }}>🍞</Text>
+                <Text style={styles.gizseeMacroLabel}>Karbohidrat</Text>
+              </View>
+              <Text style={[styles.gizseeMacroVal, { color: '#60A5FA' }]}>{totals.karbo} g</Text>
+            </View>
+
+            {/* Serat */}
+            <View style={[styles.gizseeMacroCard, { borderColor: 'rgba(52, 211, 153, 0.15)', backgroundColor: 'rgba(52, 211, 153, 0.02)' }]}>
+              <View style={styles.gizseeMacroHeader}>
+                <Text style={{ fontSize: 16 }}>🥬</Text>
+                <Text style={styles.gizseeMacroLabel}>Serat</Text>
+              </View>
+              <Text style={[styles.gizseeMacroVal, { color: '#34D399' }]}>{totals.serat} g</Text>
             </View>
           </View>
 
@@ -6597,42 +6621,77 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   gizseeHasilCard: {
-    backgroundColor: '#161B29',
-    borderRadius: 12,
+    backgroundColor: '#111625',
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#2D3748',
+    borderColor: '#222A3F',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   gizseeHasilTitle: {
     color: '#FFF',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
-    marginBottom: 12,
+    marginBottom: 14,
     letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  gizseeEnergiBanner: {
+    backgroundColor: 'rgba(250, 204, 21, 0.05)',
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(250, 204, 21, 0.15)',
+  },
+  gizseeEnergiTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  gizseeEnergiLabel: {
+    color: '#E2E8F0',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  gizseeEnergiVal: {
+    color: '#FACC15',
+    fontSize: 18,
+    fontWeight: '800',
   },
   gizseeHasilGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  gizseeHasilCol: {
-    flex: 0.48,
+  gizseeMacroCard: {
+    width: '48%',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
   },
-  gizseeHasilRow: {
+  gizseeMacroHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.03)',
+    alignItems: 'center',
+    marginBottom: 6,
   },
-  gizseeHasilLabel: {
+  gizseeMacroLabel: {
     color: '#A5ACCC',
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 6,
   },
-  gizseeHasilVal: {
-    color: '#FFF',
-    fontSize: 13,
-    fontWeight: '700',
+  gizseeMacroVal: {
+    fontSize: 16,
+    fontWeight: '800',
   },
   gizseeReportCard: {
     backgroundColor: '#1E2538',
